@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daara Jazbul Qulub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.jpeg" alt="Logo Daara Jazbul Qulub">
+      <div>
+        <strong>DAARA JAZBUL QULUB</strong>
+        <span>Plateforme du Dahira</span>
+      </div>
+    </div>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <nav id="nav">
+      <a href="#accueil">Accueil</a>
+      <a href="#khassayides">Khassaïdes</a>
+      <a href="#audios">Audios</a>
+      <a href="#videos">Vidéos</a>
+      <a href="#cours">Cours</a>
+      <a href="#annonces">Annonces</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="accueil" class="hero">
+      <div class="hero-text">
+        <p class="badge">ACCÈS LIBRE</p>
+        <h1>Bienvenue sur<br><span>Daara Jazbul Qulub</span></h1>
+        <p>Une plateforme gratuite pour accéder aux khassaïdes, enseignements, audios, vidéos et informations du Dahira.</p>
+        <div class="actions">
+          <a class="btn primary" href="#khassayides">Explorer les contenus</a>
+          <a class="btn secondary" href="#annonces">Voir les annonces</a>
+        </div>
+      </div>
+      <div class="hero-logo">
+        <img src="assets/logo.jpeg" alt="Daara Jazbul Qulub">
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <p>NOTRE PLATEFORME</p>
+        <h2>Tout le contenu du Dahira au même endroit</h2>
+      </div>
+      <div class="cards">
+        <article class="card" id="khassayides"><div class="icon">📖</div><h3>Khassaïdes</h3><p>Consulter les khassaïdes et documents disponibles.</p><button>Accéder</button></article>
+        <article class="card" id="audios"><div class="icon">🎧</div><h3>Audios</h3><p>Écouter les récitations et contenus audio.</p><button>Accéder</button></article>
+        <article class="card" id="videos"><div class="icon">🎥</div><h3>Vidéos</h3><p>Retrouver les vidéos et activités du Dahira.</p><button>Accéder</button></article>
+        <article class="card" id="cours"><div class="icon">📚</div><h3>Cours</h3><p>Enseignements, cours et ressources éducatives.</p><button>Accéder</button></article>
+        <article class="card" id="annonces"><div class="icon">📢</div><h3>Annonces</h3><p>Informations, programmes et activités du Dahira.</p><button>Accéder</button></article>
+        <article class="card"><div class="icon">👤</div><h3>Espace membre</h3><p>Inscription et connexion gratuites pour les membres.</p><button>Créer un compte</button></article>
+      </div>
+    </section>
+
+    <section class="free">
+      <div>
+        <p class="badge">100% GRATUIT</p>
+        <h2>La plateforme est accessible sans paiement</h2>
+        <p>Aucun abonnement obligatoire. Les contenus publics restent accessibles gratuitement.</p>
+      </div>
+      <div class="checklist">
+        <span>✓ Inscription gratuite</span>
+        <span>✓ Aucun abonnement</span>
+        <span>✓ Accès aux contenus</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img src="assets/logo.jpeg" alt="">
+    <div><strong>Daara Jazbul Qulub</strong><br><small>Plateforme gratuite du Dahira</small></div>
+    <p>© 2026 — Tous droits réservés</p>
+  </footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById('nav').classList.toggle('open');
+}
+</script>
+</body>
+</html>
