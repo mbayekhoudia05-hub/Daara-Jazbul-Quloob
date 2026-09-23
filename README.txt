@@ -1,19 +1,6 @@
-# Daara Jazbul Qulub — Version 1
-
-Cette première version est une maquette web responsive.
-
-## Ouvrir
-Double-cliquer sur `index.html`.
-
-## Contenu
-- Accueil
-- Khassaïdes
-- Audios
-- Vidéos
-- Cours
-- Annonces
-- Espace membre (interface uniquement pour cette V1)
-- Accès gratuit
-
-## Suite du projet
-La prochaine étape peut ajouter une vraie inscription/connexion gratuite, une base de données, un espace administrateur et le stockage des audios/vidéos/documents.
+DAARA JAZBUL QULUB — V2
+1. Ouvre config.js.
+2. Remplace COLLER_ICI_LA_PUBLISHABLE_KEY par ta Publishable key Supabase.
+3. Ne mets jamais de clé secret/service_role dans config.js.
+4. Téléverse index.html, style.css, config.js, app.js et assets/logo.jpeg sur GitHub.
+5. Les tables profiles et contents doivent déjà exister.
