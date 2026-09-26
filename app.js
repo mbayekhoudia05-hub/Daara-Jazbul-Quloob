@@ -7,6 +7,7 @@ async function init(){
  const c=window.DJQ_CONFIG;
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
  $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
+ $('closeMemberFinance').onclick=()=>hide('memberFinanceModal');
  $('printCardBtn').onclick=()=>window.print();
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
@@ -338,4 +339,33 @@ async function updateExistingMember(e){
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
  msg('memberMessage','Membre '+r.data.member_number+' modifié avec succès.',true);cancelEditMember();await loadMembers();
+}
+
+
+async function viewMemberContributions(member){
+  if(!sb||!isAdmin)return;
+  const r=await sb.from('contributions')
+    .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .eq('member_id',member.id)
+    .eq('status','paid')
+    .order('payment_month',{ascending:false});
+
+  if(r.error){alert(r.error.message);return;}
+  const rows=r.data||[];
+  $('memberFinanceHead').innerHTML=`<strong>${esc(member.member_number||'')}</strong> — ${esc(member.first_name||'')} ${esc(member.last_name||'')}`;
+
+  const total=rows.reduce((s,x)=>s+Number(x.amount||0),0);
+  $('memberFinanceTotal').textContent=formatMoney(total);
+  $('memberFinanceCount').textContent=String(rows.length);
+  $('memberFinanceLast').textContent=rows[0]?.paid_at?new Date(rows[0].paid_at).toLocaleDateString('fr-FR'):'—';
+
+  $('memberFinanceRows').innerHTML=rows.length ? rows.map(x=>`<tr>
+    <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+    <td><strong>${esc(formatMoney(x.amount))}</strong></td>
+    <td>${esc(contributionMethodLabel(x.payment_method))}</td>
+    <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
+    <td><button class="table-btn" onclick='printContributionReceipt(${JSON.stringify(x)})'>🧾 Reçu</button></td>
+  </tr>`).join('') : '<tr><td colspan="5">Aucune cotisation enregistrée pour ce membre.</td></tr>';
+
+  show('memberFinanceModal');
 }

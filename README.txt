@@ -1,15 +1,16 @@
-Daara Jazbul Qulub — V9 Tableau financier
+Daara Jazbul Qulub — V10 Suivi individuel des cotisations
 
-Cette version ajoute au module de cotisations :
-- tableau de bord financier ;
-- total encaissé global et mensuel ;
-- suivi Wave / Orange Money ;
-- recherche par membre et par mois ;
-- export CSV ;
-- reçu de cotisation imprimable.
+Nouveauté :
+- bouton Cotisations dans la gestion des membres ;
+- fiche individuelle des paiements ;
+- total payé par membre ;
+- nombre de paiements ;
+- date du dernier paiement ;
+- historique des mois payés ;
+- impression du reçu depuis la fiche.
 
 IMPORTANT :
-1. Conserve ton config.js actuel qui fonctionne avec ta clé Supabase PUBLISHABLE.
-2. Ne mets jamais de clé sb_secret_ ou service_role dans GitHub.
-3. Conserve logo.jpeg à la racine du dépôt.
-4. Cette version ne réalise pas encore de paiement réel Wave/Orange Money : elle enregistre les paiements saisis par l'administrateur.
+- Conserver le config.js actuel qui fonctionne.
+- Conserver logo.jpeg à la racine.
+- Ne jamais publier sb_secret_ ou service_role.
+- Aucun paiement réel Wave/Orange Money n'est déclenché par cette version.

@@ -141,4 +141,24 @@
 
 <section id="memberCard" class="section card-section hidden"><div class="head"><span>CARTE DE MEMBRE</span><h2>Carte numérique</h2><p id="cardIntro"></p></div><div class="member-card" id="printCard"><div class="card-top"><img src="logo.jpeg" alt="Logo"><div><strong>DAARA JAZBUL QULUB</strong><small>CARTE DE MEMBRE</small></div></div><div class="card-body"><img id="cardPhoto" class="card-photo" src="logo.jpeg" alt="Photo membre"><div class="card-info"><h3 id="cardName">—</h3><p><b>N° membre :</b> <span id="cardNumber">—</span></p><p><b>Téléphone :</b> <span id="cardPhone">—</span></p><p><b>Adhésion :</b> <span id="cardDate">—</span></p><p><b>Statut :</b> <span id="cardStatus">—</span></p></div><div id="qrcode" class="qrcode"></div></div><div class="card-bottom">Cette carte est délivrée par Daara Jazbul Qulub.</div></div><div class="card-actions"><button class="primary" id="printCardBtn">🖨️ Imprimer / PDF</button><button class="secondary" id="closeCardBtn">Fermer</button></div></section>
 <section id="memberPublic" class="section hidden"><div class="head"><span>VÉRIFICATION</span><h2>Carte de membre</h2></div><div id="publicMemberBox" class="verify-box">Chargement…</div></section></main>
-<div id="authModal" class="modal hidden"><div class="modalbox"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Connexion</h2><form id="authForm"><input id="email" type="email" placeholder="Adresse e-mail" required><input id="password" type="password" placeholder="Mot de passe" required minlength="6"><button class="primary" id="authSubmit">Se connecter</button><p id="authMessage"></p></form><button class="linkbtn" id="switchAuth">Créer un compte gratuit</button></div></div><footer>© 2026 Daara Jazbul Qulub — Plateforme gratuite du Dahira</footer></body></html>
+<div id="authModal" class="modal hidden"><div class="modalbox"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Connexion</h2><form id="authForm"><input id="email" type="email" placeholder="Adresse e-mail" required><input id="password" type="password" placeholder="Mot de passe" required minlength="6"><button class="primary" id="authSubmit">Se connecter</button><p id="authMessage"></p></form><button class="linkbtn" id="switchAuth">Créer un compte gratuit</button></div></div><footer>© 2026 Daara Jazbul Qulub — Plateforme gratuite du Dahira</footer>
+<div id="memberFinanceModal" class="modal hidden">
+  <div class="modal-box">
+    <button type="button" class="modal-close" id="closeMemberFinance">×</button>
+    <h2>💰 Suivi des cotisations</h2>
+    <div id="memberFinanceHead"></div>
+    <div class="stats contribution-stats">
+      <div class="stat"><strong id="memberFinanceTotal">0 FCFA</strong><span>Total payé</span></div>
+      <div class="stat"><strong id="memberFinanceCount">0</strong><span>Paiements</span></div>
+      <div class="stat"><strong id="memberFinanceLast">—</strong><span>Dernier paiement</span></div>
+    </div>
+    <div class="member-table-wrap">
+      <table>
+        <thead><tr><th>Mois</th><th>Montant</th><th>Mode</th><th>Date</th><th>Reçu</th></tr></thead>
+        <tbody id="memberFinanceRows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body></html>
