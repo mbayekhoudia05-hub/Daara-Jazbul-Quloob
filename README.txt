@@ -1,6 +1,10 @@
-DAARA JAZBUL QULUB - V6 REDO
-- Le logo doit rester à la racine du dépôt sous le nom exact: logo.jpeg
-- Ne remplacez pas config.js si votre clé publishable fonctionne déjà.
-- Si vous utilisez ce config.js, remplacez uniquement COLLER_ICI_LA_PUBLISHABLE_KEY par votre clé sb_publishable_...
-- Ne mettez jamais de clé sb_secret_ ou service_role dans le site public.
-- Gestion: ajout, modification, photo, carte et QR de vérification.
+DAARA JAZBUL QULUB - V7
+
+Cette version conserve la plateforme complète (Accueil, Contenus, Annonces, Administration, Membres, Carte et Vérification) et ajoute la modification des membres et l'ajout/remplacement de photo.
+
+IMPORTANT:
+- Le logo doit rester à la racine du dépôt: logo.jpeg
+- Ne remplace PAS ton config.js actuel si ta connexion Supabase fonctionne déjà.
+- Ne mets jamais de sb_secret_ ou service_role dans le site public.
+- Remplace seulement index.html, style.css et app.js.
+- Le membre DJQ-000001 existant est conservé dans Supabase: ne le recrée pas.

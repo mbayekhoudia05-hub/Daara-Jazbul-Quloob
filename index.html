@@ -1,86 +1,10 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Daara Jazbul Qulub</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
-<body>
-<header class="top">
-  <div class="brand">
-    <img src="logo.jpeg" alt="Logo Daara Jazbul Qulub" onerror="this.style.display='none'">
-    <div><strong>Daara Jazbul Qulub</strong><small>Espace membre</small></div>
-  </div>
-  <button id="logoutBtn" class="danger hidden">Déconnexion</button>
-</header>
-
-<main class="container">
-  <section id="loginSection" class="panel">
-    <h1>Connexion administrateur</h1>
-    <form id="loginForm">
-      <label>Email<input id="email" type="email" required></label>
-      <label>Mot de passe<input id="password" type="password" required></label>
-      <button class="primary">Se connecter</button>
-    </form>
-    <p id="loginMsg" class="msg"></p>
-  </section>
-
-  <section id="appSection" class="hidden">
-    <div class="hero">
-      <img src="logo.jpeg" alt="Logo" class="heroLogo" onerror="this.style.display='none'">
-      <div><h1>Gestion des membres</h1><p>Daara Jazbul Qulub</p></div>
-    </div>
-
-    <div class="stats">
-      <div><b id="activeCount">0</b><span>Membres actifs</span></div>
-      <div><b id="totalCount">0</b><span>Total membres</span></div>
-    </div>
-
-    <section class="panel">
-      <h2 id="formTitle">Ajouter un membre</h2>
-      <form id="memberForm">
-        <input id="memberId" type="hidden">
-        <div class="grid">
-          <label>Prénom<input id="firstName" required></label>
-          <label>Nom<input id="lastName" required></label>
-          <label>Téléphone<input id="phone"></label>
-          <label>Email<input id="memberEmail" type="email"></label>
-          <label>Statut
-            <select id="status"><option value="active">Actif</option><option value="inactive">Inactif</option></select>
-          </label>
-          <label>Photo du membre
-            <input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
-          </label>
-        </div>
-        <div id="photoPreviewWrap" class="photoPreview hidden">
-          <img id="photoPreview" alt="Aperçu de la photo">
-        </div>
-        <div class="actions">
-          <button class="primary" id="saveBtn">Enregistrer</button>
-          <button type="button" class="secondary hidden" id="cancelEdit">Annuler la modification</button>
-        </div>
-        <p id="formMsg" class="msg"></p>
-      </form>
-    </section>
-
-    <section class="panel">
-      <h2>Liste des membres</h2>
-      <div id="membersList"></div>
-    </section>
-  </section>
-</main>
-
-<div id="cardModal" class="modal hidden">
-  <div class="modalBox">
-    <button id="closeModal" class="close">×</button>
-    <div id="cardArea"></div>
-  </div>
-</div>
-
-<script src="config.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js"></script></head><body>
+<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
+<main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
+<section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
+<section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
+<section id="admin" class="section hidden"><div class="head"><span>ADMINISTRATION</span><h2>Gérer les contenus</h2></div><form id="contentForm"><label>Type<select id="type"><option value="khasside">Khassaïde</option><option value="audio">Audio</option><option value="video">Vidéo</option><option value="cours">Cours</option><option value="annonce">Annonce</option></select></label><label>Titre<input id="title" required></label><label>Description<textarea id="description"></textarea></label><label>Lien du contenu (facultatif)<input id="external_url" type="url" placeholder="https://..."></label><button class="primary">Publier</button><p id="formMessage"></p></form></section>
+<section id="members" class="section alt hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Gestion des membres</h2><p>Ajoute les membres, leur photo et génère leur carte avec QR Code.</p></div><div class="stats"><div class="stat"><strong id="memberCount">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="totalMemberCount">0</strong><span>Total membres</span></div></div><form id="memberForm" class="member-form"><h3>Ajouter un membre</h3><div class="form-row"><label>Prénom<input id="memberFirstName" required></label><label>Nom<input id="memberLastName" required></label></div><div class="form-row"><label>Téléphone<input id="memberPhone" type="tel" placeholder="77 000 00 00"></label><label>Email<input id="memberEmail" type="email"></label></div><label class="photo-upload-label">📷 Photo du membre<input id="memberPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>Choisis une photo JPG, PNG ou WEBP (5 Mo maximum). Elle sera automatiquement enregistrée sur la carte.</small></label><div id="photoPreviewWrap" class="photo-preview hidden"><img id="photoPreview" src="logo.jpeg" alt="Aperçu"><div><strong>Aperçu de la photo</strong><span id="photoPreviewName"></span></div></div><button class="primary">Créer le membre</button><p id="memberMessage"></p></form><div class="member-table-wrap"><table><thead><tr><th>N° membre</th><th>Nom</th><th>Téléphone</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="memberRows"><tr><td colspan="6">Aucun membre.</td></tr></tbody></table></div></section>
+<section id="memberCard" class="section card-section hidden"><div class="head"><span>CARTE DE MEMBRE</span><h2>Carte numérique</h2><p id="cardIntro"></p></div><div class="member-card" id="printCard"><div class="card-top"><img src="logo.jpeg" alt="Logo"><div><strong>DAARA JAZBUL QULUB</strong><small>CARTE DE MEMBRE</small></div></div><div class="card-body"><img id="cardPhoto" class="card-photo" src="logo.jpeg" alt="Photo membre"><div class="card-info"><h3 id="cardName">—</h3><p><b>N° membre :</b> <span id="cardNumber">—</span></p><p><b>Téléphone :</b> <span id="cardPhone">—</span></p><p><b>Adhésion :</b> <span id="cardDate">—</span></p><p><b>Statut :</b> <span id="cardStatus">—</span></p></div><div id="qrcode" class="qrcode"></div></div><div class="card-bottom">Cette carte est délivrée par Daara Jazbul Qulub.</div></div><div class="card-actions"><button class="primary" id="printCardBtn">🖨️ Imprimer / PDF</button><button class="secondary" id="closeCardBtn">Fermer</button></div></section>
+<section id="memberPublic" class="section hidden"><div class="head"><span>VÉRIFICATION</span><h2>Carte de membre</h2></div><div id="publicMemberBox" class="verify-box">Chargement…</div></section></main>
+<div id="authModal" class="modal hidden"><div class="modalbox"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Connexion</h2><form id="authForm"><input id="email" type="email" placeholder="Adresse e-mail" required><input id="password" type="password" placeholder="Mot de passe" required minlength="6"><button class="primary" id="authSubmit">Se connecter</button><p id="authMessage"></p></form><button class="linkbtn" id="switchAuth">Créer un compte gratuit</button></div></div><footer>© 2026 Daara Jazbul Qulub — Plateforme gratuite du Dahira</footer></body></html>
