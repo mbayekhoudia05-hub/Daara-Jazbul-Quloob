@@ -1,43 +1,65 @@
-let sb=null,currentUser=null,isAdmin=false,signupMode=false;
-const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
-function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
-function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav')}else{hide('admin');hide('members');hide('membersNav')}}
-function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
-async function init(){
- const c=window.DJQ_CONFIG;
- $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
- $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
- $('printCardBtn').onclick=()=>window.print();$('closeCardBtn').onclick=()=>hide('memberCard');
- if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;
- const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
-}
-async function setUser(u){currentUser=u;if(!u){isAdmin=false;setAdminUI();hide('logoutBtn');show('loginBtn');return}hide('loginBtn');show('logoutBtn');const r=await sb.from('profiles').select('role').eq('id',u.id).maybeSingle();isAdmin=r.data?.role==='admin';setAdminUI();if(isAdmin)await loadMembers()}
-async function auth(e){e.preventDefault();const email=$('email').value,password=$('password').value;const r=signupMode?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(r.error)return msg('authMessage',r.error.message);msg('authMessage',signupMode?'Compte créé.':'Connexion réussie.',true);if(!signupMode)setTimeout(closeAuth,500)}
-async function load(){if(!sb)return;const r=await sb.from('contents').select('*').eq('published',true).order('created_at',{ascending:false});if(!r.error)render(r.data||[])}
-function render(rows){$('contentGrid').innerHTML='';$('announcementGrid').innerHTML='';if(!rows.length)$('contentGrid').innerHTML='<div class="loading">Aucun contenu publié.</div>';for(const x of rows){const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢'}[x.type]||'📄';const h='<article class="card"><span class="tag">'+icon+' '+esc(x.type)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';if(x.type==='annonce')$('announcementGrid').insertAdjacentHTML('beforeend',h);else $('contentGrid').insertAdjacentHTML('beforeend',h)}}
-async function publish(e){e.preventDefault();if(!isAdmin)return;const r=await sb.from('contents').insert({type:$('type').value,title:$('title').value,description:$('description').value,external_url:$('external_url').value||null,published:true,created_by:currentUser.id});if(r.error)return msg('formMessage',r.error.message);msg('formMessage','Contenu publié.',true);e.target.reset();load()}
-function loadDemo(){render([{type:'khasside',title:'Khassaïdes',description:'Les khassaïdes du Dahira seront disponibles ici.'},{type:'audio',title:'Audios',description:'Les récitations seront disponibles ici.'},{type:'video',title:'Vidéos',description:'Les vidéos du Dahira seront disponibles ici.'},{type:'cours',title:'Cours',description:'Les enseignements seront disponibles ici.'}])}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-addEventListener('DOMContentLoaded',init);
+const cfg=window.DJQ_CONFIG;
+const sb=supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+let members=[], editing=null;
 
-async function loadMembers(){
- if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
- if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'assets/logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
-}
+function msg(el,t,ok=false){$(el).textContent=t;$(el).style.color=ok?"#087443":"#b42318"}
+function publicVerifyUrl(id){return location.origin+location.pathname+"?verify="+encodeURIComponent(id)}
 
-async function addMember(e){
- e.preventDefault();if(!isAdmin)return;let photoUrl=null;const file=$('memberPhoto').files[0];
- if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
- if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null}).select('id,member_number').single();
- if(r.error){msg('memberMessage',r.error.message);return}
- if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
- msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
+async function start(){
+ const {data:{session}}=await sb.auth.getSession();
+ if(session) await showApp(); else showLogin();
+ $('loginForm').onsubmit=login;
+ $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
+ $('photo').onchange=previewPhoto;
+ $('memberForm').onsubmit=saveMember;
+ $('cancelEdit').onclick=resetForm;
+ $('closeModal').onclick=()=>$('cardModal').classList.add('hidden');
+ const p=new URLSearchParams(location.search); if(p.get('verify')) await showVerification(p.get('verify'));
 }
-function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
-function showMemberCard(m){
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'assets/logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+function showLogin(){ $('loginSection').classList.remove('hidden');$('appSection').classList.add('hidden');$('logoutBtn').classList.add('hidden')}
+async function login(e){e.preventDefault();msg('loginMsg','Connexion...');const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){msg('loginMsg',error.message);return}await showApp()}
+async function showApp(){ $('loginSection').classList.add('hidden');$('appSection').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');await loadMembers()}
+async function loadMembers(){const {data,error}=await sb.from('members').select('*').order('created_at',{ascending:false});if(error){msg('formMsg',error.message);return}members=data||[];$('totalCount').textContent=members.length;$('activeCount').textContent=members.filter(x=>x.status==='active').length;renderMembers()}
+function renderMembers(){
+ $('membersList').innerHTML=members.map(m=>`
+ <div class="member">
+  <div class="memberInfo">
+   <img class="avatar" src="${m.photo_url||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2258%22 height=%2258%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23e7efe9%22/%3E%3C/svg%3E'}">
+   <div><b>${esc(m.member_number)}</b><br>${esc(m.first_name)} ${esc(m.last_name)}<br><small>${esc(m.phone||'')}</small> <span class="tag ${m.status==='active'?'':'off'}">${m.status==='active'?'Actif':'Inactif'}</span></div>
+  </div>
+  <div class="memberBtns"><button class="secondary" onclick="editMember('${m.id}')">Modifier</button><button class="primary" onclick="showCard('${m.id}')">Voir carte</button></div>
+ </div>`).join('')||'<p>Aucun membre.</p>'
 }
-async function handlePublicMember(){const n=new URLSearchParams(location.search).get('member');if(!n||!sb)return;hide('accueil');hide('contenus');hide('annonces');show('memberPublic');const r=await sb.from('members').select('member_number,first_name,last_name,status,membership_date,photo_url').eq('member_number',n).eq('status','active').maybeSingle();if(r.error||!r.data){$('publicMemberBox').innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';return}const m=r.data;$('publicMemberBox').innerHTML=`<img src="${esc(m.photo_url||'assets/logo.jpeg')}" alt="Photo"><h3>${esc(m.first_name)} ${esc(m.last_name)}</h3><p><b>N° membre :</b> ${esc(m.member_number)}</p><p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p><p class="verify-ok">✓ Carte valide — membre actif</p>`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function previewPhoto(e){const f=e.target.files[0];if(!f){$('photoPreviewWrap').classList.add('hidden');return}if(f.size>5*1024*1024){msg('formMsg','Photo trop lourde : maximum 5 Mo.');e.target.value='';return}const u=URL.createObjectURL(f);$('photoPreview').src=u;$('photoPreviewWrap').classList.remove('hidden')}
+function editMember(id){const m=members.find(x=>x.id===id);if(!m)return;editing=m;$('memberId').value=m.id;$('firstName').value=m.first_name||'';$('lastName').value=m.last_name||'';$('phone').value=m.phone||'';$('memberEmail').value=m.email||'';$('status').value=m.status||'active';$('formTitle').textContent='Modifier le membre '+m.member_number;$('cancelEdit').classList.remove('hidden');$('saveBtn').textContent='Enregistrer les modifications';if(m.photo_url){$('photoPreview').src=m.photo_url;$('photoPreviewWrap').classList.remove('hidden')}window.scrollTo({top:0,behavior:'smooth'})}
+function resetForm(){editing=null;$('memberForm').reset();$('memberId').value='';$('formTitle').textContent='Ajouter un membre';$('cancelEdit').classList.add('hidden');$('saveBtn').textContent='Enregistrer';$('photoPreviewWrap').classList.add('hidden');msg('formMsg','')}
+async function uploadPhoto(file,memberId){
+ const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=memberId+'-'+Date.now()+'.'+ext;
+ const {error}=await sb.storage.from('member-photos').upload(path,file,{upsert:true,contentType:file.type});if(error)throw error;
+ const {data}=sb.storage.from('member-photos').getPublicUrl(path);return data.publicUrl;
+}
+async function saveMember(e){
+ e.preventDefault();msg('formMsg','Enregistrement...');
+ try{
+  const payload={first_name:$('firstName').value.trim(),last_name:$('lastName').value.trim(),phone:$('phone').value.trim()||null,email:$('memberEmail').value.trim()||null,status:$('status').value};
+  let id;
+  if(editing){const {data,error}=await sb.from('members').update(payload).eq('id',editing.id).select().single();if(error)throw error;id=data.id}
+  else {const {data,error}=await sb.from('members').insert(payload).select().single();if(error)throw error;id=data.id}
+  const file=$('photo').files[0];if(file){const url=await uploadPhoto(file,id);const {error}=await sb.from('members').update({photo_url:url}).eq('id',id);if(error)throw error}
+  msg('formMsg',editing?'Membre modifié avec succès.':'Membre ajouté avec succès.',true);resetForm();await loadMembers()
+ }catch(err){msg('formMsg',err.message||String(err))}
+}
+async function showCard(id){
+ const m=members.find(x=>x.id===id);if(!m)return;
+ $('cardArea').innerHTML=`<div class="card"><div class="cardHead"><img src="logo.jpeg" onerror="this.style.display='none'"><div><b>DAARA JAZBUL QULUB</b><br><small>CARTE DE MEMBRE</small></div></div><div class="cardBody"><img class="cardPhoto" src="${m.photo_url||''}" alt="Photo membre"><div><p><b>${esc(m.first_name)} ${esc(m.last_name)}</b></p><p>N° membre : <b>${esc(m.member_number)}</b></p><p>Adhésion : ${esc(m.membership_date||'')}</p><p>Statut : <b>${m.status==='active'?'ACTIF':'INACTIF'}</b></p></div><div class="qr"><div id="qrBox"></div><small>Scanner pour vérifier</small></div></div></div>`;
+ $('cardModal').classList.remove('hidden');
+ new QRCode($('qrBox'),{text:publicVerifyUrl(m.id),width:110,height:110});
+}
+async function showVerification(id){
+ const {data,error}=await sb.from('members').select('id,member_number,first_name,last_name,photo_url,status,membership_date').eq('id',id).single();
+ if(error||!data){document.body.innerHTML='<main class="container"><section class="panel"><h1>Membre introuvable</h1></section></main>';return}
+ document.body.innerHTML=`<main class="container"><section class="panel"><div class="hero"><img src="logo.jpeg" class="heroLogo"><div><h1>Vérification du membre</h1><p>Daara Jazbul Qulub</p></div></div><div class="card"><div class="cardBody"><img class="cardPhoto" src="${data.photo_url||''}"><div><h2>${esc(data.first_name)} ${esc(data.last_name)}</h2><p>N° membre : <b>${esc(data.member_number)}</b></p><p>Date d'adhésion : ${esc(data.membership_date||'')}</p><p>Statut : <b>${data.status==='active'?'ACTIF':'INACTIF'}</b></p><div class="verify">${data.status==='active'?'✓ MEMBRE ACTIF':'Membre inactif'}</div></div></div></div></section></main>`;
+}
+start();
