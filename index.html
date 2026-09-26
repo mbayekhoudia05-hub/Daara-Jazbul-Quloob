@@ -1,5 +1,5 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js"></script></head><body>
-<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">Cotisations</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
+<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
 <main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
@@ -87,6 +87,58 @@
     </table>
   </div>
 </section>
+
+<section id="financeDashboard" class="section hidden">
+  <div class="head">
+    <span>ESPACE ADMINISTRATEUR</span>
+    <h2>📊 Tableau de bord financier</h2>
+    <p>Suivi global des cotisations, paiements et membres.</p>
+  </div>
+
+  <div class="stats contribution-stats">
+    <div class="stat"><strong id="financeTotal">0 FCFA</strong><span>Total encaissé</span></div>
+    <div class="stat"><strong id="financeMonth">0 FCFA</strong><span>Encaissé ce mois</span></div>
+    <div class="stat"><strong id="financeWave">0 FCFA</strong><span>Via Wave</span></div>
+    <div class="stat"><strong id="financeOrange">0 FCFA</strong><span>Via Orange Money</span></div>
+  </div>
+
+  <div class="member-form">
+    <h3>🔎 Recherche et suivi</h3>
+    <div class="form-row">
+      <label>Membre
+        <select id="financeMemberFilter">
+          <option value="">Tous les membres</option>
+        </select>
+      </label>
+      <label>Mois
+        <input id="financeMonthFilter" type="month">
+      </label>
+    </div>
+    <div class="button-row">
+      <button type="button" class="secondary" id="financeResetBtn">Réinitialiser</button>
+      <button type="button" class="primary" id="financeExportBtn">📥 Exporter CSV</button>
+    </div>
+  </div>
+
+  <div class="member-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Membre</th>
+          <th>Mois</th>
+          <th>Montant</th>
+          <th>Mode</th>
+          <th>Date</th>
+          <th>Reçu</th>
+        </tr>
+      </thead>
+      <tbody id="financeRows">
+        <tr><td colspan="6">Aucune donnée.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section id="memberCard" class="section card-section hidden"><div class="head"><span>CARTE DE MEMBRE</span><h2>Carte numérique</h2><p id="cardIntro"></p></div><div class="member-card" id="printCard"><div class="card-top"><img src="logo.jpeg" alt="Logo"><div><strong>DAARA JAZBUL QULUB</strong><small>CARTE DE MEMBRE</small></div></div><div class="card-body"><img id="cardPhoto" class="card-photo" src="logo.jpeg" alt="Photo membre"><div class="card-info"><h3 id="cardName">—</h3><p><b>N° membre :</b> <span id="cardNumber">—</span></p><p><b>Téléphone :</b> <span id="cardPhone">—</span></p><p><b>Adhésion :</b> <span id="cardDate">—</span></p><p><b>Statut :</b> <span id="cardStatus">—</span></p></div><div id="qrcode" class="qrcode"></div></div><div class="card-bottom">Cette carte est délivrée par Daara Jazbul Qulub.</div></div><div class="card-actions"><button class="primary" id="printCardBtn">🖨️ Imprimer / PDF</button><button class="secondary" id="closeCardBtn">Fermer</button></div></section>
 <section id="memberPublic" class="section hidden"><div class="head"><span>VÉRIFICATION</span><h2>Carte de membre</h2></div><div id="publicMemberBox" class="verify-box">Chargement…</div></section></main>
 <div id="authModal" class="modal hidden"><div class="modalbox"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Connexion</h2><form id="authForm"><input id="email" type="email" placeholder="Adresse e-mail" required><input id="password" type="password" placeholder="Mot de passe" required minlength="6"><button class="primary" id="authSubmit">Se connecter</button><p id="authMessage"></p></form><button class="linkbtn" id="switchAuth">Créer un compte gratuit</button></div></div><footer>© 2026 Daara Jazbul Qulub — Plateforme gratuite du Dahira</footer></body></html>

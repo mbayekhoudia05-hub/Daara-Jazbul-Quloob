@@ -1,20 +1,15 @@
-DAARA JAZBUL QULUB - V8
+Daara Jazbul Qulub — V9 Tableau financier
 
-Cette version conserve les fonctions précédentes et ajoute :
-- Gestion des membres
-- Modification + photo
-- Carte membre + QR Code
-- Vérification de carte
-- Gestion des cotisations
-- Total encaissé du mois
-- Nombre de paiements du mois
-- Membres actifs ayant payé / non payé
-- Historique des cotisations
-- Suppression d'une cotisation
+Cette version ajoute au module de cotisations :
+- tableau de bord financier ;
+- total encaissé global et mensuel ;
+- suivi Wave / Orange Money ;
+- recherche par membre et par mois ;
+- export CSV ;
+- reçu de cotisation imprimable.
 
 IMPORTANT :
-1. Ne remplace PAS ton config.js actuel s'il fonctionne déjà.
-2. Garde ton logo.jpeg à la racine du dépôt.
-3. La table Supabase public.contributions doit déjà être créée avec le SQL fourni précédemment.
-4. Les clés secrètes/service_role ne doivent jamais être mises dans GitHub.
-5. Wave et Orange Money sont ici enregistrés comme modes de paiement ; leur API réelle sera intégrée plus tard côté serveur.
+1. Conserve ton config.js actuel qui fonctionne avec ta clé Supabase PUBLISHABLE.
+2. Ne mets jamais de clé sb_secret_ ou service_role dans GitHub.
+3. Conserve logo.jpeg à la racine du dépôt.
+4. Cette version ne réalise pas encore de paiement réel Wave/Orange Money : elle enregistre les paiements saisis par l'administrateur.

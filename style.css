@@ -6,3 +6,5 @@
 .danger-btn{border-color:#a52d2d;color:#a52d2d}
 @media(max-width:900px){.contribution-stats{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.contribution-stats{grid-template-columns:1fr}}
+
+.button-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.button-row button{width:auto}.table-btn{margin:2px 3px}
