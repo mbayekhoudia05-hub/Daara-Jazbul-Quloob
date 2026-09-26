@@ -1,10 +1,20 @@
-DAARA JAZBUL QULUB - V7
+DAARA JAZBUL QULUB - V8
 
-Cette version conserve la plateforme complète (Accueil, Contenus, Annonces, Administration, Membres, Carte et Vérification) et ajoute la modification des membres et l'ajout/remplacement de photo.
+Cette version conserve les fonctions précédentes et ajoute :
+- Gestion des membres
+- Modification + photo
+- Carte membre + QR Code
+- Vérification de carte
+- Gestion des cotisations
+- Total encaissé du mois
+- Nombre de paiements du mois
+- Membres actifs ayant payé / non payé
+- Historique des cotisations
+- Suppression d'une cotisation
 
-IMPORTANT:
-- Le logo doit rester à la racine du dépôt: logo.jpeg
-- Ne remplace PAS ton config.js actuel si ta connexion Supabase fonctionne déjà.
-- Ne mets jamais de sb_secret_ ou service_role dans le site public.
-- Remplace seulement index.html, style.css et app.js.
-- Le membre DJQ-000001 existant est conservé dans Supabase: ne le recrée pas.
+IMPORTANT :
+1. Ne remplace PAS ton config.js actuel s'il fonctionne déjà.
+2. Garde ton logo.jpeg à la racine du dépôt.
+3. La table Supabase public.contributions doit déjà être créée avec le SQL fourni précédemment.
+4. Les clés secrètes/service_role ne doivent jamais être mises dans GitHub.
+5. Wave et Orange Money sont ici enregistrés comme modes de paiement ; leur API réelle sera intégrée plus tard côté serveur.
