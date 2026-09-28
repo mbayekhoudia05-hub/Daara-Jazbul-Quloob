@@ -1,5 +1,5 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js"></script></head><body>
-<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
+<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><a href="#unpaidMembers" id="unpaidNav" class="hidden">📅 Suivi paiements</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
 <main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
@@ -88,6 +88,23 @@
   </div>
 </section>
 
+<section id="unpaidMembers" class="section hidden">
+  <div class="head"><span>ESPACE ADMINISTRATEUR</span>
+  <h2>📅 Suivi des cotisations</h2>
+  <p>Vérifie les membres ayant payé ou non pour un mois donné.</p></div>
+  <div class="member-form"><div class="form-row">
+    <label>Mois à contrôler<input type="month" id="unpaidMonth"></label>
+    <label>Recherche<input type="text" id="unpaidSearch" placeholder="Nom ou numéro membre"></label>
+  </div></div>
+  <div class="stats contribution-stats">
+    <div class="stat"><strong id="paidMembersCount">0</strong><span>À jour</span></div>
+    <div class="stat"><strong id="unpaidMembersCount">0</strong><span>Non payés</span></div>
+    <div class="stat"><strong id="checkedMembersCount">0</strong><span>Membres actifs</span></div>
+  </div>
+  <div class="member-table-wrap"><table><thead><tr>
+    <th>Membre</th><th>Mois</th><th>Statut</th><th>Montant payé</th><th>Action</th>
+  </tr></thead><tbody id="unpaidRows"><tr><td colspan="5">Aucune donnée.</td></tr></tbody></table></div>
+</section>
 <section id="financeDashboard" class="section hidden">
   <div class="head">
     <span>ESPACE ADMINISTRATEUR</span>

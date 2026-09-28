@@ -1,7 +1,7 @@
 let sb=null,currentUser=null,isAdmin=false,signupMode=false;
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
-function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav');show('contributions');show('contributionsNav');show('financeDashboard');show('financeNav')}else{hide('admin');hide('members');hide('membersNav');hide('contributions');hide('contributionsNav');hide('financeDashboard');hide('financeNav')}}
+function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav');show('contributions');show('contributionsNav');show('financeDashboard');show('financeNav');show('unpaidMembers');show('unpaidNav')}else{hide('admin');hide('members');hide('membersNav');hide('contributions');hide('contributionsNav');hide('financeDashboard');hide('financeNav');hide('unpaidMembers');hide('unpaidNav')}}
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
 async function init(){
  const c=window.DJQ_CONFIG;
@@ -12,7 +12,14 @@ async function init(){
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
  setDefaultContributionMonth();
- if($('financeMonthFilter')){
+ 
+if($("unpaidMonth")){
+  $("unpaidMonth").value=currentYM();
+  $("unpaidMonth").onchange=loadUnpaidTracker;
+  $("unpaidSearch").oninput=loadUnpaidTracker;
+}
+
+if($('financeMonthFilter')){
    $('financeMonthFilter').value='';
    $('financeMemberFilter').onchange=loadFinanceDashboard;
    $('financeMonthFilter').onchange=loadFinanceDashboard;
@@ -23,7 +30,7 @@ async function init(){
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;
  const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
 }
-async function setUser(u){currentUser=u;if(!u){isAdmin=false;setAdminUI();hide('logoutBtn');show('loginBtn');return}hide('loginBtn');show('logoutBtn');const r=await sb.from('profiles').select('role').eq('id',u.id).maybeSingle();isAdmin=r.data?.role==='admin';setAdminUI();if(isAdmin){await loadMembers();await loadContributions();await loadFinanceDashboard()}}
+async function setUser(u){currentUser=u;if(!u){isAdmin=false;setAdminUI();hide('logoutBtn');show('loginBtn');return}hide('loginBtn');show('logoutBtn');const r=await sb.from('profiles').select('role').eq('id',u.id).maybeSingle();isAdmin=r.data?.role==='admin';setAdminUI();if(isAdmin){await loadMembers();await loadContributions();await loadFinanceDashboard();await loadUnpaidTracker()}}
 async function auth(e){e.preventDefault();const email=$('email').value,password=$('password').value;const r=signupMode?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(r.error)return msg('authMessage',r.error.message);msg('authMessage',signupMode?'Compte créé.':'Connexion réussie.',true);if(!signupMode)setTimeout(closeAuth,500)}
 async function load(){if(!sb)return;const r=await sb.from('contents').select('*').eq('published',true).order('created_at',{ascending:false});if(!r.error)render(r.data||[])}
 function render(rows){$('contentGrid').innerHTML='';$('announcementGrid').innerHTML='';if(!rows.length)$('contentGrid').innerHTML='<div class="loading">Aucun contenu publié.</div>';for(const x of rows){const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢'}[x.type]||'📄';const h='<article class="card"><span class="tag">'+icon+' '+esc(x.type)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';if(x.type==='annonce')$('announcementGrid').insertAdjacentHTML('beforeend',h);else $('contentGrid').insertAdjacentHTML('beforeend',h)}}
@@ -368,4 +375,54 @@ async function viewMemberContributions(member){
   </tr>`).join('') : '<tr><td colspan="5">Aucune cotisation enregistrée pour ce membre.</td></tr>';
 
   show('memberFinanceModal');
+}
+
+
+function currentYM(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+
+async function loadUnpaidTracker(){
+  if(!sb||!isAdmin)return;
+  const month=$("unpaidMonth")?.value||currentYM();
+  if($("unpaidMonth") && !$("unpaidMonth").value) $("unpaidMonth").value=month;
+
+  const mr=await sb.from("members").select("id,member_number,first_name,last_name,status,membership_date").eq("status","active").order("first_name",{ascending:true});
+  const cr=await sb.from("contributions").select("member_id,amount,payment_month,status").eq("status","paid");
+  if(mr.error){alert(mr.error.message);return;}
+  if(cr.error){alert(cr.error.message);return;}
+
+  const members=mr.data||[], paidMap={};
+  (cr.data||[]).filter(x=>String(x.payment_month||"").startsWith(month)).forEach(x=>{
+    paidMap[x.member_id]=(paidMap[x.member_id]||0)+Number(x.amount||0);
+  });
+
+  const search=($("unpaidSearch")?.value||"").toLowerCase().trim();
+  const filtered=members.filter(m=>(!search||(`${m.member_number||""} ${m.first_name||""} ${m.last_name||""}`).toLowerCase().includes(search)));
+
+  const paid=members.filter(m=>paidMap[m.id]>0).length;
+  $("paidMembersCount").textContent=paid;
+  $("unpaidMembersCount").textContent=members.length-paid;
+  $("checkedMembersCount").textContent=members.length;
+
+  $("unpaidRows").innerHTML=filtered.length?filtered.map(m=>{
+    const amount=paidMap[m.id]||0, ok=amount>0;
+    return `<tr>
+      <td><strong>${esc(m.member_number||"")}</strong><br>${esc((m.first_name||"")+" "+(m.last_name||""))}</td>
+      <td>${esc(month)}</td>
+      <td><span class="status-pill ${ok?"paid-pill":"unpaid-pill"}">${ok?"🟢 PAYÉ":"🔴 NON PAYÉ"}</span></td>
+      <td>${esc(ok?formatMoney(amount):"0 FCFA")}</td>
+      <td><button class="table-btn" onclick='viewMemberContributions(${JSON.stringify(m)})'>Historique</button>
+      ${!ok?`<button class="table-btn" onclick='prefillContribution(${JSON.stringify(m)},"${month}")'>➕ Ajouter</button>`:""}</td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="5">Aucun membre trouvé.</td></tr>';
+}
+
+function prefillContribution(member,month){
+  show("contributions");
+  if($("contributionMember")) $("contributionMember").value=member.id;
+  if($("contributionMonth")) $("contributionMonth").value=month;
+  const form=document.querySelector("#contributionForm");
+  if(form) form.scrollIntoView({behavior:"smooth",block:"start"});
 }

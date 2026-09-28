@@ -1,16 +1,7 @@
-Daara Jazbul Qulub — V10 Suivi individuel des cotisations
+Daara Jazbul Qulub — V11 Suivi des impayés
 
-Nouveauté :
-- bouton Cotisations dans la gestion des membres ;
-- fiche individuelle des paiements ;
-- total payé par membre ;
-- nombre de paiements ;
-- date du dernier paiement ;
-- historique des mois payés ;
-- impression du reçu depuis la fiche.
+Ajouts : suivi mensuel PAYÉ/NON PAYÉ des membres actifs, recherche, historique et ajout direct d'une cotisation manquante.
 
-IMPORTANT :
-- Conserver le config.js actuel qui fonctionne.
-- Conserver logo.jpeg à la racine.
-- Ne jamais publier sb_secret_ ou service_role.
-- Aucun paiement réel Wave/Orange Money n'est déclenché par cette version.
+Le statut PAYÉ signifie qu'au moins une cotisation payée existe pour le membre et le mois sélectionné. Aucun montant mensuel obligatoire n'est imposé par cette version.
+
+Conserver le config.js actuel et logo.jpeg. Ne jamais publier sb_secret_ ou service_role.
