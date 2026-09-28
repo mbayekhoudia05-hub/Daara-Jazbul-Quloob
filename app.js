@@ -490,6 +490,52 @@ async function loadPaymentTransactions(){
       <td>${esc(formatMoney(x.amount))}</td><td>${method}</td>
       <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
       <td>${status}</td><td>${esc(new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
+      <td>
+        ${x.status==="pending"?`<button class="table-btn" onclick='confirmPaymentTransaction(${JSON.stringify(x)})'>✅ Confirmer</button>
+        <button class="table-btn danger-btn" onclick='cancelPaymentTransaction(${JSON.stringify(x.id)})'>❌ Annuler</button>`:""}
+      </td>
     </tr>`;
-  }).join(""):'<tr><td colspan="7">Aucune transaction.</td></tr>';
+  }).join(""):'<tr><td colspan="8">Aucune transaction.</td></tr>';
+}
+
+
+async function confirmPaymentTransaction(x){
+  if(!confirm("Confirmer cette transaction et créer automatiquement la cotisation ?"))return;
+
+  const u=await sb.from("payment_transactions").update({status:"confirmed"}).eq("id",x.id);
+  if(u.error){alert(u.error.message);return;}
+
+  // Avoid duplicate contribution when the same confirmed transaction is processed twice.
+  let existing={data:null,error:null};
+  if(x.reference){
+    const er=await sb.from("contributions").select("id").eq("reference",x.reference).eq("member_id",x.member_id).maybeSingle();
+    existing=er;
+  }
+  if(existing.error && existing.error.code!=="PGRST116"){alert(existing.error.message);return;}
+
+  if(!existing.data){
+    const c=await sb.from("contributions").insert({
+      member_id:x.member_id,
+      amount:x.amount,
+      payment_month:x.payment_month,
+      payment_method:x.payment_method==="orange_money"?"orange_money":"wave",
+      status:"paid",
+      reference:x.reference||null,
+      note:x.note||"Paiement confirmé depuis le module Paiements"
+    });
+    if(c.error){alert("Transaction confirmée, mais la cotisation n'a pas pu être créée : "+c.error.message);await loadPaymentTransactions();return;}
+  }
+
+  alert("Paiement confirmé et cotisation enregistrée.");
+  await loadPaymentTransactions();
+  await loadContributions();
+  await loadFinanceDashboard();
+  await loadUnpaidTracker();
+}
+
+async function cancelPaymentTransaction(id){
+  if(!confirm("Annuler cette transaction ?"))return;
+  const r=await sb.from("payment_transactions").update({status:"cancelled"}).eq("id",id);
+  if(r.error){alert(r.error.message);return;}
+  await loadPaymentTransactions();
 }

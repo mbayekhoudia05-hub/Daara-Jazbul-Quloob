@@ -1,17 +1,13 @@
-Daara Jazbul Qulub — V12 Paiements
+Daara Jazbul Qulub — V13 Confirmation des paiements
 
-Cette version prépare une gestion sécurisée des transactions Wave / Orange Money :
-- création d'une transaction ;
-- membre, montant, mois ;
-- Wave ou Orange Money ;
-- référence ;
-- statuts En attente / Confirmé / Annulé ;
-- tableau des transactions ;
-- statistiques.
+Nouveauté :
+- boutons Confirmer / Annuler pour les transactions en attente ;
+- lorsqu'une transaction Wave ou Orange Money est confirmée, une cotisation PAYÉE est automatiquement créée ;
+- les tableaux Finances et Suivi paiements sont actualisés ;
+- protection contre la création répétée d'une cotisation pour une même référence.
 
 IMPORTANT :
-Cette version est un module de gestion interne. Elle NE déclenche PAS encore un paiement réel et ne communique pas directement avec Wave ou Orange Money.
-Pour les API réelles, les identifiants marchands et secrets devront rester côté serveur (Supabase Edge Function ou autre backend sécurisé).
+Cette version confirme manuellement les transactions saisies par l'administrateur. Elle ne communique pas encore avec les API réelles Wave/Orange Money.
+Pour les API réelles, utiliser un backend / Supabase Edge Function avec les secrets côté serveur.
 
 Conserver le config.js actuel et logo.jpeg.
-Ne jamais mettre sb_secret_ ou service_role dans GitHub.
