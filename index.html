@@ -115,11 +115,14 @@
       </div>
       <div class="form-row">
         <label>Mois de cotisation<input id="paymentMonth" type="month" required></label>
-        <label>Statut<select id="paymentStatus" required>
-          <option value="pending">⏳ En attente</option>
-          <option value="confirmed">✅ Confirmé</option>
-          <option value="cancelled">❌ Annulé</option>
-        </select></label>
+        <label class="payment-status-field">📌 Statut du paiement
+          <select id="paymentStatus" required>
+            <option value="pending" selected>⏳ EN ATTENTE</option>
+            <option value="confirmed">✅ CONFIRMÉ</option>
+            <option value="cancelled">❌ ANNULÉ</option>
+          </select>
+          <small>Choisis <b>EN ATTENTE</b> si le paiement doit encore être vérifié.</small>
+        </label>
       </div>
       <label>Note<textarea id="paymentNote" rows="2" placeholder="Information complémentaire"></textarea></label>
       <button class="primary" type="submit">Enregistrer la transaction</button>

@@ -449,9 +449,13 @@ async function savePaymentTransaction(e){
   const payment_method=$("paymentMethod").value;
   const reference=$("paymentReference").value.trim()||null;
   const payment_month=$("paymentMonth").value+"-01";
-  const status=$("paymentStatus").value;
+  const status=$("paymentStatus").value || "pending";
   const note=$("paymentNote").value.trim()||null;
 
+  if(!["pending","confirmed","cancelled"].includes(status)){
+    alert("Statut de paiement invalide.");
+    return;
+  }
   if(!member_id||!amount||!payment_month){alert("Remplis les champs obligatoires.");return;}
 
   const r=await sb.from("payment_transactions").insert({
@@ -461,6 +465,7 @@ async function savePaymentTransaction(e){
 
   alert("Transaction enregistrée.");
   $("paymentTransactionForm").reset();
+  $("paymentStatus").value="pending";
   const d=new Date();
   $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   await loadPaymentTransactions();
@@ -468,7 +473,7 @@ async function savePaymentTransaction(e){
 
 async function loadPaymentTransactions(){
   const r=await sb.from("payment_transactions")
-    .select("id,member_id,amount,payment_method,reference,payment_month,status,note,created_at,members(member_number,first_name,last_name)")
+    .select("id,member_id,amount,payment_method,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
   if(r.error){alert(r.error.message);return;}
   const rows=r.data||[];
@@ -482,14 +487,15 @@ async function loadPaymentTransactions(){
 
   $("paymentTransactionRows").innerHTML=rows.length?rows.map(x=>{
     const method=x.payment_method==="wave"?"🌊 Wave":"🟠 Orange Money";
-    const status=x.status==="confirmed"?"<span class='status-pill paid-pill'>✅ Confirmé</span>":
-      x.status==="cancelled"?"<span class='status-pill unpaid-pill'>❌ Annulé</span>":
-      "<span class='status-pill'>⏳ En attente</span>";
+    const status=x.status==="confirmed"?"<span class='status-pill paid-pill'>✅ CONFIRMÉ</span>":
+      x.status==="cancelled"?"<span class='status-pill unpaid-pill'>❌ ANNULÉ</span>":
+      "<span class='status-pill pending-pill'>⏳ EN ATTENTE</span>";
     return `<tr>
       <td><strong>${esc(x.members?.member_number||"")}</strong><br>${esc((x.members?.first_name||"")+" "+(x.members?.last_name||""))}</td>
       <td>${esc(formatMoney(x.amount))}</td><td>${method}</td>
       <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
-      <td>${status}</td><td>${esc(new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
+      <td>${status}</td>
+      <td>${esc(x.confirmed_at?new Date(x.confirmed_at).toLocaleDateString("fr-FR"):new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
       <td>
         ${x.status==="pending"?`<button class="table-btn" onclick='confirmPaymentTransaction(${JSON.stringify(x)})'>✅ Confirmer</button>
         <button class="table-btn danger-btn" onclick='cancelPaymentTransaction(${JSON.stringify(x.id)})'>❌ Annuler</button>`:""}
@@ -502,7 +508,7 @@ async function loadPaymentTransactions(){
 async function confirmPaymentTransaction(x){
   if(!confirm("Confirmer cette transaction et créer automatiquement la cotisation ?"))return;
 
-  const u=await sb.from("payment_transactions").update({status:"confirmed"}).eq("id",x.id);
+  const u=await sb.from("payment_transactions").update({status:"confirmed",confirmed_at:new Date().toISOString()}).eq("id",x.id);
   if(u.error){alert(u.error.message);return;}
 
   // Avoid duplicate contribution when the same confirmed transaction is processed twice.

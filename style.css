@@ -19,3 +19,24 @@
 .status-pill{background:#f1f1f1;color:#555}.form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:700px){.form-row{grid-template-columns:1fr}}
 
 .danger-btn{border:1px solid #c33!important;color:#a12626!important;background:#fff!important}.table-btn{white-space:nowrap}
+
+.payment-status-field{
+  border:2px solid #e1c255!important;
+  border-radius:10px;
+  padding:12px!important;
+  background:#fffdf2;
+}
+.payment-status-field select{
+  font-weight:800;
+  font-size:15px;
+}
+.payment-status-field small{
+  color:#617066;
+  font-weight:500;
+  line-height:1.4;
+}
+.pending-pill{
+  background:#fff7d6;
+  color:#8a6500;
+  border:1px solid #e1c255;
+}

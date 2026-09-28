@@ -1,13 +1,18 @@
-Daara Jazbul Qulub — V13 Confirmation des paiements
+Daara Jazbul Qulub — V14 Paiements / Statut visible
 
-Nouveauté :
-- boutons Confirmer / Annuler pour les transactions en attente ;
-- lorsqu'une transaction Wave ou Orange Money est confirmée, une cotisation PAYÉE est automatiquement créée ;
-- les tableaux Finances et Suivi paiements sont actualisés ;
-- protection contre la création répétée d'une cotisation pour une même référence.
+Cette version conserve les fonctions de V13 et renforce le module Paiements.
+
+Nouveautés :
+- Le champ « 📌 Statut du paiement » est clairement visible.
+- « ⏳ EN ATTENTE » est sélectionné par défaut.
+- Options : EN ATTENTE / CONFIRMÉ / ANNULÉ.
+- Les statuts sont affichés clairement dans le tableau.
+- Une transaction confirmée enregistre la date de confirmation.
+- La confirmation crée automatiquement la cotisation payée comme dans V13.
+- Les tableaux Cotisations, Finances et Suivi paiements sont actualisés.
 
 IMPORTANT :
-Cette version confirme manuellement les transactions saisies par l'administrateur. Elle ne communique pas encore avec les API réelles Wave/Orange Money.
-Pour les API réelles, utiliser un backend / Supabase Edge Function avec les secrets côté serveur.
-
-Conserver le config.js actuel et logo.jpeg.
+- Garder votre config.js actuel avec votre Publishable key Supabase.
+- Ne jamais mettre une clé sb_secret_ ou service_role dans GitHub.
+- Garder logo.jpeg à la racine du dépôt.
+- Cette version ne connecte pas encore les API réelles Wave/Orange Money.
