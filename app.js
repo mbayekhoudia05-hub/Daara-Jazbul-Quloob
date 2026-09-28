@@ -1,7 +1,7 @@
 let sb=null,currentUser=null,isAdmin=false,signupMode=false;
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
-function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav');show('contributions');show('contributionsNav');show('financeDashboard');show('financeNav');show('unpaidMembers');show('unpaidNav')}else{hide('admin');hide('members');hide('membersNav');hide('contributions');hide('contributionsNav');hide('financeDashboard');hide('financeNav');hide('unpaidMembers');hide('unpaidNav')}}
+function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav');show('contributions');show('contributionsNav');show('financeDashboard');show('financeNav');show('unpaidMembers');show('unpaidNav');show('paymentTransactions');show('paymentsNav')}else{hide('admin');hide('members');hide('membersNav');hide('contributions');hide('contributionsNav');hide('financeDashboard');hide('financeNav');hide('unpaidMembers');hide('unpaidNav');hide('paymentTransactions');hide('paymentsNav')}}
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
 async function init(){
  const c=window.DJQ_CONFIG;
@@ -30,7 +30,7 @@ if($('financeMonthFilter')){
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;
  const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
 }
-async function setUser(u){currentUser=u;if(!u){isAdmin=false;setAdminUI();hide('logoutBtn');show('loginBtn');return}hide('loginBtn');show('logoutBtn');const r=await sb.from('profiles').select('role').eq('id',u.id).maybeSingle();isAdmin=r.data?.role==='admin';setAdminUI();if(isAdmin){await loadMembers();await loadContributions();await loadFinanceDashboard();await loadUnpaidTracker()}}
+async function setUser(u){currentUser=u;if(!u){isAdmin=false;setAdminUI();hide('logoutBtn');show('loginBtn');return}hide('loginBtn');show('logoutBtn');const r=await sb.from('profiles').select('role').eq('id',u.id).maybeSingle();isAdmin=r.data?.role==='admin';setAdminUI();if(isAdmin){await loadMembers();await loadContributions();await loadFinanceDashboard();await loadUnpaidTracker();await initPaymentTransactions()}}
 async function auth(e){e.preventDefault();const email=$('email').value,password=$('password').value;const r=signupMode?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(r.error)return msg('authMessage',r.error.message);msg('authMessage',signupMode?'Compte créé.':'Connexion réussie.',true);if(!signupMode)setTimeout(closeAuth,500)}
 async function load(){if(!sb)return;const r=await sb.from('contents').select('*').eq('published',true).order('created_at',{ascending:false});if(!r.error)render(r.data||[])}
 function render(rows){$('contentGrid').innerHTML='';$('announcementGrid').innerHTML='';if(!rows.length)$('contentGrid').innerHTML='<div class="loading">Aucun contenu publié.</div>';for(const x of rows){const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢'}[x.type]||'📄';const h='<article class="card"><span class="tag">'+icon+' '+esc(x.type)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';if(x.type==='annonce')$('announcementGrid').insertAdjacentHTML('beforeend',h);else $('contentGrid').insertAdjacentHTML('beforeend',h)}}
@@ -425,4 +425,71 @@ function prefillContribution(member,month){
   if($("contributionMonth")) $("contributionMonth").value=month;
   const form=document.querySelector("#contributionForm");
   if(form) form.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+
+async function initPaymentTransactions(){
+  if(!sb||!isAdmin)return;
+  const d=new Date();
+  if($("paymentMonth")) $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+
+  const mr=await sb.from("members").select("id,member_number,first_name,last_name").eq("status","active").order("first_name",{ascending:true});
+  if(mr.error){alert(mr.error.message);return;}
+  $("paymentMember").innerHTML='<option value="">Choisir un membre</option>'+
+    (mr.data||[]).map(m=>`<option value="${esc(m.id)}">${esc(m.member_number)} — ${esc(m.first_name)} ${esc(m.last_name)}</option>`).join('');
+
+  $("paymentTransactionForm").onsubmit=savePaymentTransaction;
+  await loadPaymentTransactions();
+}
+
+async function savePaymentTransaction(e){
+  e.preventDefault();
+  const member_id=$("paymentMember").value;
+  const amount=Number($("paymentAmount").value);
+  const payment_method=$("paymentMethod").value;
+  const reference=$("paymentReference").value.trim()||null;
+  const payment_month=$("paymentMonth").value+"-01";
+  const status=$("paymentStatus").value;
+  const note=$("paymentNote").value.trim()||null;
+
+  if(!member_id||!amount||!payment_month){alert("Remplis les champs obligatoires.");return;}
+
+  const r=await sb.from("payment_transactions").insert({
+    member_id,amount,payment_method,reference,payment_month,status,note
+  });
+  if(r.error){alert(r.error.message);return;}
+
+  alert("Transaction enregistrée.");
+  $("paymentTransactionForm").reset();
+  const d=new Date();
+  $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  await loadPaymentTransactions();
+}
+
+async function loadPaymentTransactions(){
+  const r=await sb.from("payment_transactions")
+    .select("id,member_id,amount,payment_method,reference,payment_month,status,note,created_at,members(member_number,first_name,last_name)")
+    .order("created_at",{ascending:false});
+  if(r.error){alert(r.error.message);return;}
+  const rows=r.data||[];
+  const pending=rows.filter(x=>x.status==="pending").length;
+  const confirmed=rows.filter(x=>x.status==="confirmed").reduce((s,x)=>s+Number(x.amount||0),0);
+  const cancelled=rows.filter(x=>x.status==="cancelled").length;
+
+  $("pendingPayments").textContent=pending;
+  $("confirmedPayments").textContent=formatMoney(confirmed);
+  $("cancelledPayments").textContent=cancelled;
+
+  $("paymentTransactionRows").innerHTML=rows.length?rows.map(x=>{
+    const method=x.payment_method==="wave"?"🌊 Wave":"🟠 Orange Money";
+    const status=x.status==="confirmed"?"<span class='status-pill paid-pill'>✅ Confirmé</span>":
+      x.status==="cancelled"?"<span class='status-pill unpaid-pill'>❌ Annulé</span>":
+      "<span class='status-pill'>⏳ En attente</span>";
+    return `<tr>
+      <td><strong>${esc(x.members?.member_number||"")}</strong><br>${esc((x.members?.first_name||"")+" "+(x.members?.last_name||""))}</td>
+      <td>${esc(formatMoney(x.amount))}</td><td>${method}</td>
+      <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
+      <td>${status}</td><td>${esc(new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="7">Aucune transaction.</td></tr>';
 }

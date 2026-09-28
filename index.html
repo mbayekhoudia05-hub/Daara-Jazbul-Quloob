@@ -1,5 +1,5 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js"></script></head><body>
-<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><a href="#unpaidMembers" id="unpaidNav" class="hidden">📅 Suivi paiements</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
+<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><a href="#unpaidMembers" id="unpaidNav" class="hidden">📅 Suivi paiements</a><a href="#paymentTransactions" id="paymentsNav" class="hidden">💳 Paiements</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header>
 <main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
@@ -88,6 +88,49 @@
   </div>
 </section>
 
+<section id="paymentTransactions" class="section hidden">
+  <div class="head"><span>ESPACE ADMINISTRATEUR</span>
+  <h2>💳 Transactions de paiement</h2>
+  <p>Préparation sécurisée des paiements Wave et Orange Money.</p></div>
+
+  <div class="stats contribution-stats">
+    <div class="stat"><strong id="pendingPayments">0</strong><span>En attente</span></div>
+    <div class="stat"><strong id="confirmedPayments">0 FCFA</strong><span>Confirmé</span></div>
+    <div class="stat"><strong id="cancelledPayments">0</strong><span>Annulé</span></div>
+  </div>
+
+  <div class="member-form">
+    <h3>➕ Enregistrer une transaction</h3>
+    <form id="paymentTransactionForm">
+      <div class="form-row">
+        <label>Membre<select id="paymentMember" required><option value="">Choisir un membre</option></select></label>
+        <label>Montant (FCFA)<input id="paymentAmount" type="number" min="1" required></label>
+      </div>
+      <div class="form-row">
+        <label>Moyen de paiement<select id="paymentMethod" required>
+          <option value="wave">🌊 Wave</option>
+          <option value="orange_money">🟠 Orange Money</option>
+        </select></label>
+        <label>Référence<input id="paymentReference" placeholder="Référence de transaction"></label>
+      </div>
+      <div class="form-row">
+        <label>Mois de cotisation<input id="paymentMonth" type="month" required></label>
+        <label>Statut<select id="paymentStatus" required>
+          <option value="pending">⏳ En attente</option>
+          <option value="confirmed">✅ Confirmé</option>
+          <option value="cancelled">❌ Annulé</option>
+        </select></label>
+      </div>
+      <label>Note<textarea id="paymentNote" rows="2" placeholder="Information complémentaire"></textarea></label>
+      <button class="primary" type="submit">Enregistrer la transaction</button>
+    </form>
+  </div>
+
+  <div class="member-table-wrap">
+    <table><thead><tr><th>Membre</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Mois</th><th>Statut</th><th>Date</th></tr></thead>
+    <tbody id="paymentTransactionRows"><tr><td colspan="7">Aucune transaction.</td></tr></tbody></table>
+  </div>
+</section>
 <section id="unpaidMembers" class="section hidden">
   <div class="head"><span>ESPACE ADMINISTRATEUR</span>
   <h2>📅 Suivi des cotisations</h2>
