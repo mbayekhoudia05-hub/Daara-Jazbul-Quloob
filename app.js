@@ -591,4 +591,52 @@ async function loadMembershipRequests() {
       `).join('')
     : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
 }
+async function submitMembershipRequest(e) {
+  e.preventDefault();
+
+  const first_name = $('requestFirstName').value.trim();
+  const last_name = $('requestLastName').value.trim();
+  const phone = $('requestPhone').value.trim();
+  const email = $('requestEmail').value.trim() || null;
+  const note = $('requestNote').value.trim() || null;
+
+  if (!first_name || !last_name || !phone) {
+    msg('membershipRequestMessage', 'Remplis les champs obligatoires.');
+    return;
+  }
+
+  if (!sb) {
+    msg('membershipRequestMessage', 'Connexion à la base de données indisponible.');
+    return;
+  }
+
+  const button = e.target.querySelector('button[type="submit"]');
+  button.disabled = true;
+
+  try {
+    const r = await sb.from('membership_requests').insert({
+      first_name,
+      last_name,
+      phone,
+      email,
+      note,
+      status: 'pending'
+    });
+
+    if (r.error) {
+      msg('membershipRequestMessage', 'Erreur : ' + r.error.message);
+      return;
+    }
+
+    msg(
+      'membershipRequestMessage',
+      'Demande envoyée avec succès. Elle sera examinée par l’administrateur.',
+      true
+    );
+    e.target.reset();
+  } finally {
+    button.disabled = false;
+  }
+}
+
 
