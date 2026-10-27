@@ -639,5 +639,67 @@ async function submitMembershipRequest(e) {
     button.disabled = false;
   }
 }
+async function approveMembershipRequest(id) {
+  if (!sb || !isAdmin) {
+    alert("Réservé à l'administrateur.");
+    return;
+  }
+
+  if (!confirm("Valider cette demande et créer la carte de membre ?")) return;
+
+  const r = await sb
+    .from('membership_requests')
+    .select('id, first_name, last_name, phone, email, status')
+    .eq('id', id)
+    .eq('status', 'pending')
+    .single();
+
+  if (r.error || !r.data) {
+    alert("Demande introuvable ou déjà traitée.");
+    await loadMembershipRequests();
+    return;
+  }
+
+  const x = r.data;
+
+  const created = await sb.from('members').insert({
+    first_name: x.first_name,
+    last_name: x.last_name,
+    phone: x.phone || null,
+    email: x.email || null
+  }).select('id, member_number').single();
+
+  if (created.error) {
+    alert("Impossible de créer le membre : " + created.error.message);
+    return;
+  }
+
+  const updated = await sb
+    .from('membership_requests')
+    .update({
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: currentUser.id
+    })
+    .eq('id', id)
+    .eq('status', 'pending');
+
+  if (updated.error) {
+    alert(
+      "Le membre " + created.data.member_number +
+      " a été créé, mais la demande n'a pas pu être mise à jour. " +
+      "Ne valide pas une deuxième fois. Erreur : " + updated.error.message
+    );
+    await loadMembers();
+    await loadMembershipRequests();
+    return;
+  }
+
+  alert("Demande validée. Numéro du membre : " + created.data.member_number);
+
+  await loadMembers();
+  await loadMembershipRequests();
+}
+
 
 
