@@ -545,3 +545,50 @@ async function cancelPaymentTransaction(id){
   if(r.error){alert(r.error.message);return;}
   await loadPaymentTransactions();
 }
+async function loadMembershipRequests() {
+  if (!sb || !isAdmin) return;
+
+  const box = document.getElementById('membershipRequestRows');
+  if (!box) {
+    console.warn("La zone membershipRequestRows n'existe pas encore dans index.html.");
+    return;
+  }
+
+  const r = await sb
+    .from('membership_requests')
+    .select('id, first_name, last_name, phone, email, note, status, created_at')
+    .order('created_at', { ascending: false });
+
+  if (r.error) {
+    box.innerHTML =
+      '<tr><td colspan="5">Erreur : ' + esc(r.error.message) + '</td></tr>';
+    return;
+  }
+
+  const requests = r.data || [];
+
+  box.innerHTML = requests.length
+    ? requests.map(x => `
+        <tr>
+          <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
+          <td>${esc(x.phone)}</td>
+          <td>${esc(x.email || '—')}</td>
+          <td>${esc(x.status === 'pending' ? 'En attente' :
+                     x.status === 'approved' ? 'Approuvée' : 'Refusée')}</td>
+          <td>
+            ${x.status === 'pending'
+              ? `<button class="table-btn"
+                  onclick="approveMembershipRequest('${esc(x.id)}')">
+                  Valider
+                </button>
+                <button class="table-btn danger-btn"
+                  onclick="rejectMembershipRequest('${esc(x.id)}')">
+                  Refuser
+                </button>`
+              : '—'}
+          </td>
+        </tr>
+      `).join('')
+    : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
+}
+
