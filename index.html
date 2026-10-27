@@ -107,16 +107,32 @@
         <label>Montant (FCFA)<input id="paymentAmount" type="number" min="1" required></label>
       </div>
       <div class="form-row">
-        <label>Moyen de paiement<select id="paymentMethod" required>
-          <option value="wave">🌊 Wave</option>
-          <option value="orange_money">🟠 Orange Money</option>
-        </select></label>
-        <label>Référence<input id="paymentReference" placeholder="Référence de transaction"></label>
+        <label>Moyen de paiement
+          <select id="paymentMethod" required>
+            <option value="wave">🌊 Wave</option>
+            <option value="orange_money">🟠 Orange Money</option>
+          </select>
+        </label>
+        <label>Référence
+          <input id="paymentReference" placeholder="Référence de transaction">
+        </label>
       </div>
+
+      <div class="payment-instructions">
+        <h3>📲 Envoyer votre cotisation</h3>
+        <p>🌊 <strong>Wave :</strong> 761 263 937</p>
+        <p>🟠 <strong>Orange Money :</strong> 788 301 558</p>
+        <p>Après le transfert, indiquez la référence de la transaction.
+        Votre paiement sera validé après vérification par l'administrateur.</p>
+      </div>
+
       <div class="form-row">
-        <label>Mois de cotisation<input id="paymentMonth" type="month" required></label>
+        <label>Mois de cotisation
+          <input id="paymentMonth" type="month" required>
+        </label>
         <label class="payment-status-field">📌 Statut du paiement
           <select id="paymentStatus" required>
+
             <option value="pending" selected>⏳ EN ATTENTE</option>
             <option value="confirmed">✅ CONFIRMÉ</option>
             <option value="cancelled">❌ ANNULÉ</option>
