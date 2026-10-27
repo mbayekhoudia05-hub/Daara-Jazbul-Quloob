@@ -701,5 +701,38 @@ async function approveMembershipRequest(id) {
   await loadMembershipRequests();
 }
 
+async function rejectMembershipRequest(id) {
+  if (!sb || !isAdmin) {
+    alert("Réservé à l'administrateur.");
+    return;
+  }
+
+  if (!confirm("Veux-tu vraiment refuser cette demande ?")) return;
+
+  const r = await sb
+    .from('membership_requests')
+    .update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: currentUser.id
+    })
+    .eq('id', id)
+    .eq('status', 'pending')
+    .select('id');
+
+  if (r.error) {
+    alert("Erreur : " + r.error.message);
+    return;
+  }
+
+  if (!r.data || r.data.length === 0) {
+    alert("Cette demande a déjà été traitée ou n'existe plus.");
+  } else {
+    alert("Demande refusée.");
+  }
+
+  await loadMembershipRequests();
+}
+
 
 
