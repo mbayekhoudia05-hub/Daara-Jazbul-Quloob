@@ -40,3 +40,26 @@
   color:#8a6500;
   border:1px solid #e1c255;
 }
+/* Consignes de paiement Wave et Orange Money */
+.payment-instructions {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #d6e4f0;
+  border-radius: 12px;
+  background: #f4f8fc;
+  color: #1f2937;
+}
+
+.payment-instructions h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.payment-instructions p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
