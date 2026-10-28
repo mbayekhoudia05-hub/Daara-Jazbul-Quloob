@@ -561,34 +561,90 @@ async function loadPaymentTransactions(){
 }
 
 
-async function confirmPaymentTransaction(x){
-  if(!confirm("Confirmer cette transaction et créer automatiquement la cotisation ?"))return;
 
-  const u=await sb.from("payment_transactions").update({status:"confirmed",confirmed_at:new Date().toISOString()}).eq("id",x.id);
-  if(u.error){alert(u.error.message);return;}
-
-  // Avoid duplicate contribution when the same confirmed transaction is processed twice.
-  let existing={data:null,error:null};
-  if(x.reference){
-    const er=await sb.from("contributions").select("id").eq("reference",x.reference).eq("member_id",x.member_id).maybeSingle();
-    existing=er;
+async function confirmPaymentTransaction(x) {
+  if (!sb || !isAdmin) {
+    alert("Action réservée à l'administrateur.");
+    return;
   }
-  if(existing.error && existing.error.code!=="PGRST116"){alert(existing.error.message);return;}
 
-  if(!existing.data){
-    const c=await sb.from("contributions").insert({
-      member_id:x.member_id,
-      amount:x.amount,
-      payment_month:x.payment_month,
-      payment_method:x.payment_method==="orange_money"?"orange_money":"wave",
-      status:"paid",
-      reference:x.reference||null,
-      note:x.note||"Paiement confirmé depuis le module Paiements"
+  if (!x || !x.id || !x.member_id || !x.amount || !x.payment_month) {
+    alert("Informations de transaction incomplètes.");
+    return;
+  }
+
+  if (!confirm("Confirmer cette transaction et vérifier la cotisation correspondante ?")) {
+    return;
+  }
+
+  const method = x.payment_method || "wave";
+
+  // Rechercher une cotisation correspondant à cette opération,
+  // et non seulement à une référence éventuellement réutilisée.
+  let query = sb
+    .from("contributions")
+    .select("id")
+    .eq("member_id", x.member_id)
+    .eq("amount", x.amount)
+    .eq("payment_month", x.payment_month)
+    .eq("payment_method", method)
+    .eq("status", "paid");
+
+  if (x.reference) {
+    query = query.eq("reference", x.reference);
+  } else {
+    query = query.is("reference", null);
+  }
+
+  const existing = await query.limit(1).maybeSingle();
+
+  if (existing.error) {
+    alert("Vérification impossible : " + existing.error.message);
+    return;
+  }
+
+  // Créer la cotisation si aucune correspondance n'a été trouvée.
+  if (!existing.data) {
+    const c = await sb.from("contributions").insert({
+      member_id: x.member_id,
+      amount: x.amount,
+      payment_month: x.payment_month,
+      payment_method: method,
+      status: "paid",
+      reference: x.reference || null,
+      note: x.note || "Paiement confirmé depuis le module Paiements"
     });
-    if(c.error){alert("Transaction confirmée, mais la cotisation n'a pas pu être créée : "+c.error.message);await loadPaymentTransactions();return;}
+
+    if (c.error) {
+      alert("Cotisation non créée : " + c.error.message +
+        ". La transaction n'a pas été confirmée par cette opération.");
+      return;
+    }
   }
 
-  alert("Paiement confirmé et cotisation enregistrée.");
+  // Confirmer la transaction seulement après avoir vérifié
+  // ou créé la cotisation.
+  const u = await sb
+    .from("payment_transactions")
+    .update({
+      status: "confirmed",
+      confirmed_at: new Date().toISOString()
+    })
+    .eq("id", x.id);
+
+  if (u.error) {
+    alert(
+      "La cotisation existe peut-être déjà, mais la transaction " +
+      "n'a pas pu être mise à jour. Ne recrée pas le paiement. " +
+      "Erreur : " + u.error.message
+    );
+    await loadPaymentTransactions();
+    await loadContributions();
+    return;
+  }
+
+  alert("Vérification terminée et transaction confirmée.");
+
   await loadPaymentTransactions();
   await loadContributions();
   await loadFinanceDashboard();
