@@ -196,6 +196,29 @@ async function deleteContribution(id){
 
 addEventListener('DOMContentLoaded',init);
 
+document.addEventListener('click', function(e) {
+  const link = e.target.closest('nav a[href^="#"]');
+  if (!link) return;
+
+  const id = link.getAttribute('href').slice(1);
+  const section = document.getElementById(id);
+
+  if (!section) return;
+
+  e.preventDefault();
+
+  if (id === 'membershipRequests') {
+    if (!isAdmin) {
+      alert("Cette section est réservée à l'administrateur.");
+      return;
+    }
+    show('membershipRequests');
+    loadMembershipRequests();
+  }
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 
 async function loadFinanceDashboard(){
   if(!sb||!isAdmin)return;
