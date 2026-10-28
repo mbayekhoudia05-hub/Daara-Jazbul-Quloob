@@ -1,7 +1,39 @@
 let sb=null,currentUser=null,isAdmin=false,signupMode=false;
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
-function setAdminUI(){if(isAdmin){show('admin');show('members');show('membersNav');show('contributions');show('contributionsNav');show('financeDashboard');show('financeNav');show('unpaidMembers');show('unpaidNav');show('paymentTransactions');show('paymentsNav')}else{hide('admin');hide('members');hide('membersNav');hide('contributions');hide('contributionsNav');hide('financeDashboard');hide('financeNav');hide('unpaidMembers');hide('unpaidNav');hide('paymentTransactions');hide('paymentsNav')}}
+
+function setAdminUI(){
+  if(isAdmin){
+    show('admin');
+    show('members');
+    show('membersNav');
+    show('membershipRequests');
+    show('membershipRequestsNav');
+    show('contributions');
+    show('contributionsNav');
+    show('financeDashboard');
+    show('financeNav');
+    show('unpaidMembers');
+    show('unpaidNav');
+    show('paymentTransactions');
+    show('paymentsNav');
+  }else{
+    hide('admin');
+    hide('members');
+    hide('membersNav');
+    hide('membershipRequests');
+    hide('membershipRequestsNav');
+    hide('contributions');
+    hide('contributionsNav');
+    hide('financeDashboard');
+    hide('financeNav');
+    hide('unpaidMembers');
+    hide('unpaidNav');
+    hide('paymentTransactions');
+    hide('paymentsNav');
+  }
+}
+
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
 async function init(){
  const c=window.DJQ_CONFIG;
