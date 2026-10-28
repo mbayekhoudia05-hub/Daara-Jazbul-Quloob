@@ -563,26 +563,21 @@ async function loadPaymentTransactions(){
 
 
 
+
 async function confirmPaymentTransaction(x) {
   if (!sb || !isAdmin) {
     alert("Action réservée à l'administrateur.");
     return;
   }
 
-  if (!x || !x.id || !x.member_id || x.amount == null ||
-      Number(x.amount) <= 0 || !x.payment_month) {
-    alert("Informations de transaction incomplètes ou invalides.");
-    return;
-  }
-
-  if (x.status === "confirmed") {
-    alert("Cette transaction est déjà confirmée.");
-    await loadPaymentTransactions();
+  if (!x || !x.id) {
+    alert("Identifiant de transaction manquant.");
     return;
   }
 
   if (x.status !== "pending") {
     alert("Seules les transactions en attente peuvent être confirmées.");
+    await loadPaymentTransactions();
     return;
   }
 
@@ -590,76 +585,36 @@ async function confirmPaymentTransaction(x) {
     return;
   }
 
-  const method = x.payment_method;
-  if (!["wave", "orange_money"].includes(method)) {
-    alert("Moyen de paiement non reconnu.");
-    return;
-  }
+  const result = await sb.rpc("confirm_payment_transaction", {
+    p_transaction_id: x.id
+  });
 
-  // Vérifier si cette transaction a déjà une cotisation liée.
-  const existing = await sb
-    .from("contributions")
-    .select("id")
-    .eq("payment_transaction_id", x.id)
-    .maybeSingle();
-
-  if (existing.error) {
-    alert("Vérification impossible : " + existing.error.message);
-    return;
-  }
-
-  // Créer une cotisation liée à cette transaction si nécessaire.
-  if (!existing.data) {
-    const c = await sb.from("contributions").insert({
-      member_id: x.member_id,
-      amount: x.amount,
-      payment_month: x.payment_month,
-      payment_method: method,
-      status: "paid",
-      reference: x.reference || null,
-      note: x.note || "Paiement confirmé depuis le module Paiements",
-      paid_at: new Date().toISOString(),
-      payment_transaction_id: x.id
-    });
-
-    if (c.error) {
-      alert("Cotisation non créée : " + c.error.message);
-      return;
-    }
-  }
-
-  // Confirmer uniquement si la transaction est encore en attente.
-  const u = await sb
-    .from("payment_transactions")
-    .update({
-      status: "confirmed",
-      confirmed_at: new Date().toISOString()
-    })
-    .eq("id", x.id)
-    .eq("status", "pending")
-    .select("id");
-
-  if (u.error) {
-    alert("La cotisation a peut-être été créée, mais la transaction n'a pas pu être confirmée. Vérifie son état avant de recommencer. Détail : " + u.error.message);
+  if (result.error) {
+    alert("Confirmation impossible : " + result.error.message);
     await loadPaymentTransactions();
-    await loadContributions();
     return;
   }
 
-  if (!u.data || u.data.length === 0) {
-    alert("La transaction n'était plus en attente. Vérifie les paiements avant toute nouvelle action.");
+  const outcome = result.data?.status;
+
+  if (outcome !== "confirmed" && outcome !== "already_confirmed") {
+    alert("Résultat inattendu. Vérifie l'état de la transaction avant de recommencer.");
     await loadPaymentTransactions();
-    await loadContributions();
     return;
   }
 
-  alert("Transaction confirmée et cotisation liée.");
+  alert(
+    outcome === "already_confirmed"
+      ? "Cette transaction était déjà confirmée."
+      : "Paiement confirmé et cotisation enregistrée."
+  );
 
   await loadPaymentTransactions();
   await loadContributions();
   await loadFinanceDashboard();
   await loadUnpaidTracker();
 }
+
 
 async function cancelPaymentTransaction(id){
   if(!confirm("Annuler cette transaction ?"))return;
