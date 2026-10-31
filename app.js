@@ -3,36 +3,45 @@ const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
 function setAdminUI(){
+  const sections=['adminDashboard','admin','members','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const navs=['dashboardNav','membersNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
+  sections.forEach(hide);
+  navs.forEach(hide);
   if(isAdmin){
-    show('admin');
-    show('members');
-    show('membersNav');
-    show('membershipRequests');
-    show('membershipRequestsNav');
-    show('contributions');
-    show('contributionsNav');
-    show('financeDashboard');
-    show('financeNav');
-    show('unpaidMembers');
-    show('unpaidNav');
-    show('paymentTransactions');
-    show('paymentsNav');
-  }else{
-    hide('admin');
-    hide('members');
-    hide('membersNav');
-    hide('membershipRequests');
-    hide('membershipRequestsNav');
-    hide('contributions');
-    hide('contributionsNav');
-    hide('financeDashboard');
-    hide('financeNav');
-    hide('unpaidMembers');
-    hide('unpaidNav');
-    hide('paymentTransactions');
-    hide('paymentsNav');
+    navs.forEach(show);
+    show('adminDashboard');
+    updateAdminDashboard();
   }
 }
+function showAdminSection(id){
+  if(!isAdmin)return;
+  const allowed=['adminDashboard','admin','members','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  if(!allowed.includes(id))return;
+  allowed.forEach(hide);
+  show(id);
+  const link=document.querySelector('[data-admin-target="'+id+'"]');
+  document.querySelectorAll('.app-sidebar nav a').forEach(a=>a.classList.remove('active'));
+  if(link)link.classList.add('active');
+  if(id==='adminDashboard')updateAdminDashboard();
+}
+function updateAdminDashboard(){
+  const copy=(from,to)=>{const a=$(from),b=$(to);if(a&&b)b.textContent=a.textContent};
+  copy('memberCount','dashMembers');
+  copy('contributionMonthTotal','dashContributions');
+  copy('pendingPayments','dashPayments');
+  const pending=document.querySelectorAll('#membershipRequestRows tr');
+  const n=[...pending].filter(tr=>tr.textContent.includes('En attente')).length;
+  const d=$('dashPending');if(d)d.textContent=String(n);
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('.app-sidebar nav a[data-admin-target]');
+  if(!a||!isAdmin)return;
+  e.preventDefault();
+  showAdminSection(a.dataset.adminTarget);
+  if(window.innerWidth<=800){
+    document.body.classList.remove('sidebar-mobile-open');
+  }
+});
 
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
 function esc(s){
@@ -238,6 +247,8 @@ async function setUser(u){
     await loadFinanceDashboard();
     await loadUnpaidTracker();
     await initPaymentTransactions();
+    showAdminSection('adminDashboard');
+    updateAdminDashboard();
   }
 }
 async function loadConnectedMemberDashboard(member){
