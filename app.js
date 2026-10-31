@@ -36,6 +36,12 @@ function updateAdminDashboard(){
   const d=$('dashPending');if(d)d.textContent=String(n);
 }
 document.addEventListener('click',e=>{
+  const button=e.target.closest('[data-action="export-members"],[data-action="export-commissions"]');
+  if(!button||!isAdmin)return;
+  if(button.dataset.action==='export-members')void exportMembersCSV();
+  if(button.dataset.action==='export-commissions')void exportCommissionsCSV();
+});
+document.addEventListener('click',e=>{
   const a=e.target.closest('.app-sidebar nav a[data-admin-target]');
   if(!a||!isAdmin)return;
   e.preventDefault();
@@ -739,6 +745,63 @@ async function exportFinanceCSV(){
 
 function csvCell(v){
   return '"'+String(v??'').replace(/"/g,'""')+'"';
+}
+
+function safeExportCell(value){
+  const text=String(value??'');
+  return csvCell(/^[\s\u0000-\u001f]*[=+@-]/.test(text) ? "'"+text : text);
+}
+
+function downloadAdminCSV(filename,headers,rows){
+  const lines=[headers,...rows].map(row=>row.map(safeExportCell).join(';'));
+  const blob=new Blob(["\ufeff"+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function exportMembersCSV(){
+  if(!sb||!isAdmin)return;
+  const [membersResult,commissionsResult]=await Promise.all([
+    sb.from('members').select('member_number,first_name,last_name,phone,email,status,membership_date,commission_id').order('created_at',{ascending:false}),
+    sb.from('commissions').select('id,name')
+  ]);
+  if(membersResult.error){alert('Export des membres impossible : '+membersResult.error.message);return;}
+  if(commissionsResult.error){alert('Export des commissions impossible : '+commissionsResult.error.message);return;}
+  const commissionById=new Map((commissionsResult.data||[]).map(c=>[c.id,c.name]));
+  const rows=(membersResult.data||[]).map(m=>[
+    m.member_number,m.first_name,m.last_name,m.phone,m.email,
+    m.status==='active'?'Actif':'Inactif',m.membership_date,
+    commissionById.get(m.commission_id)||'Aucune'
+  ]);
+  downloadAdminCSV('membres_daara_jazbul_qulub.csv',
+    ['N° membre','Prénom','Nom','Téléphone','E-mail','Statut','Date adhésion','Commission'],rows);
+  alert('Export des membres terminé : '+rows.length+' ligne(s).');
+}
+
+async function exportCommissionsCSV(){
+  if(!sb||!isAdmin)return;
+  const [commissionsResult,membersResult]=await Promise.all([
+    sb.from('commissions').select('name,description,is_active,responsible_member_id,successor_member_id').order('name'),
+    sb.from('members').select('id,first_name,last_name,member_number')
+  ]);
+  if(commissionsResult.error){alert('Export des commissions impossible : '+commissionsResult.error.message);return;}
+  if(membersResult.error){alert('Export des commissions impossible : '+membersResult.error.message);return;}
+  const memberById=new Map((membersResult.data||[]).map(m=>[m.id,
+    [m.member_number,m.first_name,m.last_name].filter(Boolean).join(' ')]));
+  const rows=(commissionsResult.data||[]).map(c=>[
+    c.name,c.description,c.is_active?'Active':'Inactive',
+    memberById.get(c.responsible_member_id)||'Non désigné',
+    memberById.get(c.successor_member_id)||'Non désigné'
+  ]);
+  downloadAdminCSV('commissions_daara_jazbul_qulub.csv',
+    ['Commission','Description','Statut','Président','Vice-président'],rows);
+  alert('Export des commissions terminé : '+rows.length+' ligne(s).');
 }
 
 function printContributionReceipt(x){
