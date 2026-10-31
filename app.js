@@ -101,9 +101,19 @@ async function load(){
     .select('*')
     .order('created_at',{ascending:false});
 
-  if(!r.error){
-    render((r.data||[]).filter(x=>x.published));
-    if(isAdmin){window._djqContentRows=r.data||[];renderAdminContents(window._djqContentRows);}
+  if(r.error){
+    if(isAdmin){
+      const box=$('adminContentRows');
+      if(box)box.innerHTML='<div class="loading">Erreur de chargement : '+esc(r.error.message)+'</div>';
+      msg('formMessage',"Chargement des contenus impossible : "+r.error.message);
+    }
+    return;
+  }
+  const rows=r.data||[];
+  render(rows.filter(x=>x.published));
+  if(isAdmin){
+    window._djqContentRows=rows;
+    renderAdminContents(rows);
   }
 }
 
@@ -144,7 +154,10 @@ function resetContentForm(){
 }
 function startEditContent(id){
   const x=window._djqContentRows?.find(row=>String(row.id)===String(id));
-  if(!x)return;
+  if(!x){
+    msg('formMessage',"Impossible de retrouver ce contenu. Actualise la page puis réessaie.");
+    return;
+  }
   $('editingContentId').value=x.id;
   $('type').value=x.type;
   $('title').value=x.title||'';
@@ -154,19 +167,49 @@ function startEditContent(id){
   show('cancelContentEditBtn');
   showAdminSection('admin');
   $('contentForm').scrollIntoView({behavior:'smooth',block:'start'});
+  $('title').focus();
 }
 async function publish(e){
   e.preventDefault();
-  if(!isAdmin||!currentUser)return;
+  const status=$('formMessage');
+  const button=$('contentSubmitBtn');
+  if(!sb){msg('formMessage',"Connexion à la base de données indisponible.");return;}
+  if(!currentUser){msg('formMessage',"Votre session a expiré. Reconnecte-toi puis réessaie.");return;}
+  if(!isAdmin){msg('formMessage',"Ton compte est connecté, mais son rôle administrateur n'est pas reconnu. Ne ferme pas la session; vérifie le rôle du profil.");return;}
   const id=$('editingContentId').value;
-  const payload={type:$('type').value,title:$('title').value.trim(),description:$('description').value.trim(),external_url:$('external_url').value.trim()||null,published:true};
-  const r=id
-    ? await sb.from('contents').update(payload).eq('id',id)
-    : await sb.from('contents').insert({...payload,created_by:currentUser.id});
-  if(r.error){msg('formMessage',r.error.message);return;}
-  msg('formMessage',id?'Modifications enregistrées.':'Contenu publié.',true);
-  resetContentForm();
-  await load();
+  const title=$('title').value.trim();
+  if(!title){msg('formMessage',"Le titre est obligatoire.");$('title').focus();return;}
+  const payload={
+    type:$('type').value,
+    title,
+    description:$('description').value.trim(),
+    external_url:$('external_url').value.trim()||null,
+    published:true
+  };
+  button.disabled=true;
+  button.textContent=id?'Enregistrement…':'Publication…';
+  if(status)status.textContent='';
+  try{
+    const r=id
+      ? await sb.from('contents').update(payload).eq('id',id).select('id').maybeSingle()
+      : await sb.from('contents').insert({...payload,created_by:currentUser.id}).select('id').single();
+    if(r.error){
+      msg('formMessage',"Enregistrement impossible : "+r.error.message);
+      return;
+    }
+    if(!r.data){
+      msg('formMessage',"Aucune ligne n'a été modifiée. Vérifie les droits d'accès Supabase (RLS) du compte administrateur.");
+      return;
+    }
+    msg('formMessage',id?'Modifications enregistrées avec succès.':'Contenu publié avec succès.',true);
+    resetContentForm();
+    await load();
+  }catch(err){
+    msg('formMessage',"Erreur inattendue : "+(err?.message||String(err)));
+  }finally{
+    button.disabled=false;
+    button.textContent=$('editingContentId').value?'Enregistrer les modifications':'Publier';
+  }
 }
 function setDefaultContributionMonth(){
   const el=$('contributionMonth');
