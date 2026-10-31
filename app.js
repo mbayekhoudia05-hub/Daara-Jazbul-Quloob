@@ -268,7 +268,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -1044,20 +1044,38 @@ async function cancelPaymentTransaction(id){
 
 async function loadCommissions(){
   if(!sb||!isAdmin)return;
-  const [cr,mr]=await Promise.all([
-    sb.from('commissions').select('id,name,description,responsible_member_id,is_active').order('name'),
-    sb.from('members').select('id,member_number,first_name,last_name').order('first_name')
-  ]);
-  if(cr.error){msg('commissionMessage','Erreur : '+cr.error.message);return;}
-  if(mr.error){msg('commissionMessage','Erreur membres : '+mr.error.message);return;}
-  const members=mr.data||[];
   const box=$('commissionRows');
-  box.innerHTML=(cr.data||[]).length?(cr.data||[]).map(c=>{
-    const options='<option value="">Aucun responsable</option>'+members.map(m=>
-      '<option value="'+esc(m.id)+'" '+(c.responsible_member_id===m.id?'selected':'')+'>'+esc(m.member_number)+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
-    ).join('');
-    return '<tr><td><strong>'+esc(c.name)+'</strong></td><td>'+esc(c.description||'—')+'</td><td><select data-commission-select="'+esc(c.id)+'">'+options+'</select></td><td>'+(c.is_active?'Active':'Inactive')+'</td><td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'">Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td></tr>';
-  }).join(''):'<tr><td colspan="5">Aucune commission enregistrée.</td></tr>';
+  if(!box)return;
+  box.innerHTML='<tr><td colspan="5">Chargement des commissions…</td></tr>';
+  try{
+    // Charger d'abord les commissions : l'échec du chargement des membres
+    // ne doit jamais masquer la liste des commissions.
+    const cr=await sb.from('commissions')
+      .select('id,name,description,responsible_member_id,is_active')
+      .order('name');
+    if(cr.error){
+      box.innerHTML='<tr><td colspan="5">Erreur de chargement : '+esc(cr.error.message)+'</td></tr>';
+      msg('commissionMessage','Impossible de charger les commissions : '+cr.error.message);
+      return;
+    }
+    const mr=await sb.from('members')
+      .select('id,member_number,first_name,last_name')
+      .order('first_name');
+    const members=mr.error?[]:(mr.data||[]);
+    const rows=cr.data||[];
+    box.innerHTML=rows.length?rows.map(c=>{
+      const options='<option value="">Aucun responsable</option>'+members.map(m=>
+        '<option value="'+esc(m.id)+'" '+(c.responsible_member_id===m.id?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
+      ).join('');
+      return '<tr><td><strong>'+esc(c.name)+'</strong></td><td>'+esc(c.description||'—')+'</td><td><select data-commission-select="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+options+'</select></td><td>'+(c.is_active?'Active':'Inactive')+'</td><td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td></tr>';
+    }).join(''):'<tr><td colspan="5">Aucune commission enregistrée.</td></tr>';
+    if(mr.error)msg('commissionMessage','Les commissions sont chargées, mais la liste des membres est indisponible : '+mr.error.message);
+    else if(!rows.length)msg('commissionMessage','Aucune commission trouvée dans la base de données.');
+    else msg('commissionMessage','7 commissions et '+rows.length+' commission(s) au total chargées.',true);
+  }catch(err){
+    box.innerHTML='<tr><td colspan="5">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
+    msg('commissionMessage','Erreur inattendue pendant le chargement des commissions.');
+  }
 }
 async function saveCommission(e){
   e.preventDefault();
@@ -1100,12 +1118,12 @@ async function loadMembershipRequests() {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, note, status, created_at')
+    .select('id, first_name, last_name, phone, email, note, commission_id, commissions(name), status, created_at')
     .order('created_at', { ascending: false });
 
   if (r.error) {
     box.innerHTML =
-      '<tr><td colspan="5">Erreur : ' + esc(r.error.message) + '</td></tr>';
+      '<tr><td colspan="6">Erreur : ' + esc(r.error.message) + '</td></tr>';
     return;
   }
 
@@ -1117,6 +1135,7 @@ async function loadMembershipRequests() {
           <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
           <td>${esc(x.phone)}</td>
           <td>${esc(x.email || '—')}</td>
+          <td>${esc(x.commissions?.name || '—')}</td>
           <td>${esc(x.status === 'pending' ? 'En attente' :
                      x.status === 'approved' ? 'Approuvée' : 'Refusée')}</td>
           <td>
@@ -1133,7 +1152,26 @@ async function loadMembershipRequests() {
           </td>
         </tr>
       `).join('')
-    : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
+    : '<tr><td colspan="6">Aucune demande pour le moment.</td></tr>';
+}
+async function loadPublicCommissions(){
+  const select=$('requestCommission');
+  if(!select||!sb)return;
+  select.innerHTML='<option value="">Chargement des commissions…</option>';
+  const r=await sb.from('commissions')
+    .select('id,name')
+    .eq('is_active',true)
+    .order('name');
+  if(r.error){
+    select.innerHTML='<option value="">Commissions indisponibles — réessaie plus tard</option>';
+    msg('membershipRequestMessage','Impossible de charger les commissions : '+r.error.message);
+    return;
+  }
+  const rows=r.data||[];
+  select.innerHTML='<option value="">Choisir une commission *</option>'+
+    rows.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+  select.disabled=!rows.length;
+  if(!rows.length)select.innerHTML='<option value="">Aucune commission active disponible</option>';
 }
 async function submitMembershipRequest(e) {
   e.preventDefault();
@@ -1143,9 +1181,10 @@ async function submitMembershipRequest(e) {
   const phone = $('requestPhone').value.trim();
   const email = $('requestEmail').value.trim() || null;
   const note = $('requestNote').value.trim() || null;
+  const commission_id = $('requestCommission').value || null;
 
-  if (!first_name || !last_name || !phone) {
-    msg('membershipRequestMessage', 'Remplis les champs obligatoires.');
+  if (!first_name || !last_name || !phone || !commission_id) {
+    msg('membershipRequestMessage', 'Remplis les champs obligatoires et choisis une commission.');
     return;
   }
 
@@ -1164,6 +1203,7 @@ async function submitMembershipRequest(e) {
       phone,
       email,
       note,
+      commission_id,
       status: 'pending'
     });
 
@@ -1192,7 +1232,7 @@ async function approveMembershipRequest(id) {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, status')
+    .select('id, first_name, last_name, phone, email, commission_id, status')
     .eq('id', id)
     .eq('status', 'pending')
     .single();
@@ -1209,7 +1249,8 @@ async function approveMembershipRequest(id) {
     first_name: x.first_name,
     last_name: x.last_name,
     phone: x.phone || null,
-    email: x.email || null
+    email: x.email || null,
+    commission_id: x.commission_id || null
   }).select('id, member_number').single();
 
   if (created.error) {
