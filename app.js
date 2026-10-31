@@ -161,7 +161,7 @@ async function loadConnectedMemberDashboard(member){
   $('memberDahiraCharters').innerHTML=hr.error
     ?'Erreur de chargement.'
     :(hr.data||[]).map(x=>{
-      const url=/^https?:\\/\\//i.test(x.file_url||'')?x.file_url:'';
+   const url=/^https?:\/\//i.test(x.file_url||'')?x.file_url:'';
       return `<article><h4>${esc(x.title)}</h4>
         <p>${esc(x.description)}</p>
         ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Consulter la charte</a>`:''}
