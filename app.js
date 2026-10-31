@@ -147,7 +147,7 @@ function renderAdminCharters(rows){
       pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Charte-'+(index+1)+'.pdf">⬇ Télécharger le PDF</a>':'',
       external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien complémentaire</a>':''
     ].filter(Boolean).join(' ');
-    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p><div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div>'+(pdf?'<iframe id="'+viewerId+'" class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#toolbar=1&navpanes=0&view=FitH" loading="eager"></iframe>':'')+'</article>';
+    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
   }).join('');
 }
 
@@ -155,7 +155,7 @@ function contentCard(x){
   const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢',information:'ℹ️',charte:'📜'}[x.type]||'📄';
   const external=(x.external_url||'').match(/^https?:\/\//i)?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir le lien →</a>':'';
   const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-link" target="_blank" rel="noopener" href="'+esc(x.file_url)+'">📄 Consulter le PDF</a>':'';
-  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+pdf+external+'</article>';
+  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+charterText+pdf+external+'</article>';
 }
 function contentTypeLabel(type){
   return ({khasside:'Khassaïde',audio:'Audio',video:'Vidéo',cours:'Cours',annonce:'Annonce',information:'Information du Dahira',charte:'Charte du Dahira'})[type]||type;
@@ -221,6 +221,7 @@ function startEditContent(id){
   $('type').value=x.type;
   $('title').value=x.title||'';
   $('description').value=x.description||'';
+  if($('charterText'))$('charterText').value=x.charter_text||'';
   $('external_url').value=x.external_url||'';
   const info=$('pdfCurrentInfo');
   if(info)info.innerHTML=x.file_url?'<a href="'+esc(x.file_url)+'" target="_blank" rel="noopener">PDF actuellement associé : consulter</a>':'Aucun PDF associé pour le moment.';
@@ -259,6 +260,7 @@ async function publish(e){
     }
     const payload={
       type:$('type').value,title,description:$('description').value.trim(),
+      charter_text:$('type').value==='charte'?($('charterText')?.value||'').trim()||null:null,
       external_url:$('external_url').value.trim()||null,
       ...(fileUrl?{file_url:fileUrl}:{}),published:true
     };
@@ -497,7 +499,7 @@ async function loadConnectedMemberDashboard(member){
   }
 
   const hr=await sb.from('contents')
-    .select('title,description,external_url,file_url')
+    .select('title,description,external_url,file_url,charter_text')
     .eq('type','charte')
     .eq('published',true)
     .order('created_at',{ascending:false});
@@ -513,12 +515,11 @@ async function loadConnectedMemberDashboard(member){
         return `<article class="member-charter">
           <h4>📜 ${esc(x.title)}</h4>
           <p>${esc(x.description||'')}</p>
+          ${x.charter_text?`<div class="charter-full-text" aria-label="Texte intégral du règlement">${esc(x.charter_text)}</div>`:''}
           ${url?`<p><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien complémentaire ↗</a></p>`:''}
           ${pdfUrl?`<div class="charter-pdf-actions">
-            <a class="pdf-link" href="#member-charter-pdf-${index}">👁️ Lire ici dans la plateforme</a>
-            <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF</a>
-          </div>
-          <iframe id="member-charter-pdf-${index}" class="charter-pdf-viewer" src="${esc(pdfUrl)}#toolbar=1&navpanes=0&view=FitH" title="Lecture de ${esc(x.title)}" loading="eager"></iframe>`:''}
+            <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF original</a>
+          </div>`:''}
         </article>`;
       }).join('')||'Aucune charte publiée pour le moment.';
   }
