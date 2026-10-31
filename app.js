@@ -4,7 +4,7 @@ function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
 function setAdminUI(){
   const sections=['adminDashboard','admin','members','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
-  const navs=['dashboardNav','membersNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
+  const navs=['dashboardNav','adminNav','membersNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
