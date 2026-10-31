@@ -421,6 +421,20 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
 
+  // Commission du membre
+  const commission=member.commissions||null;
+  const commissionName=$('myCommissionName');
+  const commissionDescription=$('myCommissionDescription');
+  const commissionRole=$('myCommissionRole');
+  if(commissionName)commissionName.textContent=commission?.name||'Aucune commission attribuée';
+  if(commissionDescription)commissionDescription.textContent=commission?.description||'Aucune description disponible.';
+  if(commissionRole){
+    const roles=[];
+    if(commission?.responsible_member_id===member.id)roles.push('Président de commission');
+    if(commission?.successor_member_id===member.id)roles.push('Vice-président / successeur');
+    commissionRole.textContent=roles.length?roles.join(' · '):'Membre de la commission';
+  }
+
   // Cotisations personnelles
   const cr=await sb.from('contributions')
     .select('id,amount,payment_month,payment_method,status,paid_at,created_at')
@@ -428,7 +442,7 @@ async function loadConnectedMemberDashboard(member){
     .order('payment_month',{ascending:false});
 
   if(cr.error){
-    $('myContributionRows').innerHTML='<tr><td colspan="5">Erreur de chargement.</td></tr>';
+    $('myContributionRows').innerHTML='<tr><td colspan="5">Impossible de charger vos cotisations : '+esc(cr.error.message)+'</td></tr>';
   }else{
     const rows=cr.data||[];
     const paid=rows.filter(x=>x.status==='paid');
