@@ -648,7 +648,7 @@ function printContributionReceipt(x){
 async function loadMembers(){
  if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.commission?.name||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
 }
 
 async function addMember(e){
@@ -972,7 +972,7 @@ async function loadMembershipRequests() {
 
   if (r.error) {
     box.innerHTML =
-      '<tr><td colspan="5">Erreur : ' + esc(r.error.message) + '</td></tr>';
+      '<tr><td colspan="6">Erreur : ' + esc(r.error.message) + '</td></tr>';
     return;
   }
 
@@ -984,6 +984,7 @@ async function loadMembershipRequests() {
           <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
           <td>${esc(x.phone)}</td>
           <td>${esc(x.email || '—')}</td>
+          <td>${esc(x.commission?.name || '—')}</td>
           <td>${esc(x.status === 'pending' ? 'En attente' :
                      x.status === 'approved' ? 'Approuvée' : 'Refusée')}</td>
           <td>
@@ -1000,7 +1001,7 @@ async function loadMembershipRequests() {
           </td>
         </tr>
       `).join('')
-    : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
+    : '<tr><td colspan="6">Aucune demande pour le moment.</td></tr>';
 }
 
 async function loadCommissions(){
