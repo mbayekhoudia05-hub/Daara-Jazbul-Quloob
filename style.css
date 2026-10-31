@@ -90,3 +90,53 @@ footer{background:linear-gradient(120deg,#052f20,#075b35);padding:38px 20px;colo
 @media(max-width:800px){header{align-items:flex-start;gap:10px;flex-wrap:wrap}nav{width:100%;justify-content:center;padding:6px 0 2px}nav a{display:inline-block;font-size:12px}.hero{min-height:auto}.hero:before{right:-35%;top:10%}}
 @media(max-width:600px){.brand{margin:0 auto 4px}nav{gap:7px 12px}nav button{padding:8px 12px;font-size:12px}.hero{padding:48px 22px}.hero h1{font-size:39px}.hero-logo{width:190px;height:190px}.section{padding:48px 18px}.head{margin-bottom:28px}.card{padding:20px}.section form{padding:20px}.member-table-wrap{border-radius:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+
+
+/* DJQ V16 COLLAPSIBLE LEFT SIDEBAR */
+:root{--sidebar-width:270px;--sidebar-mini:78px}
+body{padding-left:var(--sidebar-width);transition:padding-left .25s ease}
+.app-sidebar{position:fixed;z-index:1001;inset:0 auto 0 0;width:var(--sidebar-width);height:100dvh;padding:24px 16px 18px;background:linear-gradient(180deg,#063d27,#075b35 72%,#06452c);color:#fff;display:flex;flex-direction:column;gap:12px;box-shadow:8px 0 32px rgba(4,40,24,.15);overflow-x:hidden;overflow-y:auto;transition:width .25s ease,transform .25s ease}
+.app-sidebar .brand{margin:0 0 18px;padding:4px 7px;color:#fff;min-width:230px}
+.app-sidebar .brand img{width:48px;height:48px;flex:0 0 48px;border:2px solid #e9d99e}
+.app-sidebar .brand b{color:#fff;font-size:12px;white-space:nowrap}
+.app-sidebar .brand small{color:#d3e7da;white-space:nowrap}
+.sidebar-caption{padding:8px 12px 4px;color:#c0d9ca;font-size:10px;font-weight:800;letter-spacing:1.7px;white-space:nowrap}
+.app-sidebar nav{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:100%}
+.app-sidebar nav a{display:flex;align-items:center;gap:14px;min-height:46px;padding:10px 13px;border:1px solid transparent;border-radius:11px;color:#eff8f1;text-decoration:none;font-size:14px;font-weight:650;white-space:nowrap;transition:background .18s,border-color .18s}
+.app-sidebar nav a:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.13);color:#fff}
+.app-sidebar nav a:first-child{background:rgba(255,255,255,.12)}
+.app-sidebar nav a>span{overflow:hidden;text-overflow:ellipsis}
+.sidebar-account{margin-top:auto;padding:14px 4px 0;border-top:1px solid rgba(255,255,255,.18)}
+.sidebar-account button{width:100%;min-height:43px;border-radius:10px;border:1px solid rgba(255,255,255,.5);background:#fff;color:#075b35;font-weight:800;cursor:pointer}
+.sidebar-account button#logoutBtn{background:transparent;color:#fff}
+.topbar{position:sticky;top:0;z-index:40;height:68px;min-height:68px;margin:0 0 0 calc(-1 * var(--sidebar-width));width:calc(100% + var(--sidebar-width));padding:0 25px;display:flex;align-items:center;justify-content:flex-start;gap:16px;background:rgba(255,255,255,.94);color:#173126;border:0;border-bottom:1px solid #e3eae4;box-shadow:0 5px 22px rgba(8,55,33,.06);backdrop-filter:blur(12px)}
+.sidebar-toggle{width:42px;height:42px;display:grid;place-items:center;border:1px solid #dce8df;border-radius:11px;background:#f5faf6;color:#075b35;font-size:21px;cursor:pointer}
+.topbar-title strong,.topbar-title small{display:block}.topbar-title strong{font-size:14px;color:#063d27}.topbar-title small{font-size:11px;color:#68796f}
+body.sidebar-collapsed{padding-left:var(--sidebar-mini)}
+body.sidebar-collapsed .app-sidebar{width:var(--sidebar-mini);padding-left:12px;padding-right:12px}
+body.sidebar-collapsed .app-sidebar .brand{min-width:0;justify-content:center;padding:0;margin:0 0 18px}
+body.sidebar-collapsed .app-sidebar .brand img{width:48px;height:48px}
+body.sidebar-collapsed .app-sidebar .brand span,
+body.sidebar-collapsed .sidebar-caption,
+body.sidebar-collapsed .app-sidebar nav a>span,
+body.sidebar-collapsed .sidebar-account button{display:none}
+body.sidebar-collapsed .app-sidebar nav a{justify-content:center;padding:10px 4px;font-size:18px}
+body.sidebar-collapsed .sidebar-account{min-height:10px}
+body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:calc(100% + var(--sidebar-mini))}
+.sidebar-backdrop{display:none}
+@media(max-width:800px){
+ body{padding-left:0}
+ .app-sidebar{width:min(290px,84vw);transform:translateX(-105%);box-shadow:12px 0 40px rgba(0,0,0,.2)}
+ body.sidebar-mobile-open .app-sidebar{transform:translateX(0)}
+ body.sidebar-mobile-open .sidebar-backdrop{display:block;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.42)}
+ .topbar,body.sidebar-collapsed .topbar{margin-left:0;width:100%;height:62px;min-height:62px;padding:0 16px}
+ body.sidebar-collapsed .app-sidebar{width:min(290px,84vw);padding:24px 16px 18px}
+ body.sidebar-collapsed .app-sidebar .brand{min-width:230px;justify-content:flex-start;margin:0 0 18px}
+ body.sidebar-collapsed .app-sidebar .brand span,
+ body.sidebar-collapsed .sidebar-caption,
+ body.sidebar-collapsed .app-sidebar nav a>span,
+ body.sidebar-collapsed .sidebar-account button{display:initial}
+ body.sidebar-collapsed .app-sidebar nav a{justify-content:flex-start;padding:10px 13px;font-size:14px}
+ body.sidebar-collapsed .sidebar-account button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){body,.app-sidebar{transition:none}}
