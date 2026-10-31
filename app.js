@@ -168,7 +168,49 @@ async function loadConnectedMemberDashboard(member){
       </article>`;
     }).join('')||'Aucune charte publiée pour le moment.';
 }
+async function submitMemberReport(e){
+  e.preventDefault();
 
+  if(!sb||!currentUser){
+    alert('Veuillez vous connecter.');
+    return;
+  }
+
+  const subject=$('memberReportSubject').value.trim();
+  const message=$('memberReportMessage').value.trim();
+
+  if(!subject||!message)return;
+
+  const mr=await sb.from('members')
+    .select('id')
+    .eq('auth_user_id',currentUser.id)
+    .maybeSingle();
+
+  if(mr.error||!mr.data){
+    msg('memberReportMessageStatus','Votre fiche de membre est introuvable.');
+    return;
+  }
+
+  const r=await sb.from('member_reports').insert({
+    member_id:mr.data.id,
+    auth_user_id:currentUser.id,
+    subject,
+    message
+  });
+
+  if(r.error){
+    msg('memberReportMessageStatus','Erreur : '+r.error.message);
+    return;
+  }
+
+  $('memberReportForm').reset();
+  msg('memberReportMessageStatus','Signalement envoyé à l’administrateur.',true);
+
+  await loadConnectedMemberDashboard({
+    id:mr.data.id,
+    auth_user_id:currentUser.id
+  });
+}
 async function loadContributionMembers(){
   if(!sb||!isAdmin)return;
   const r=await sb.from('members')
