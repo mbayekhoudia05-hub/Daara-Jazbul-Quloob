@@ -1,4 +1,4 @@
-let sb=null,currentUser=null,isAdmin=false,signupMode=false;
+let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
@@ -304,6 +304,7 @@ async function init(){
  $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
  $('closeMemberFinance').onclick=()=>hide('memberFinanceModal');
  $('printCardBtn').onclick=()=>window.print();
+ $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
  const contributionMonthInput=$('contributionMonth');
@@ -337,6 +338,7 @@ async function setUser(u){
   currentUser=u;
 
   if(!u){
+    currentMemberRecord=null;
     isAdmin=false;
     setAdminUI();
     hide('logoutBtn');
@@ -390,9 +392,11 @@ async function setUser(u){
     return;
   }
   if(mr.data && mr.data.status==='active'){
+    currentMemberRecord=mr.data;
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
   }else{
+    currentMemberRecord=null;
     hide('memberDashboard');
     show('membershipFormSection');
   }
@@ -967,6 +971,26 @@ async function addMember(e){
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
+async function showMyMemberCard(){
+ const member=currentMemberRecord;
+ if(!member||!currentUser||member.status!=='active'){
+   alert("Votre carte de membre n'est pas disponible. Vérifiez que votre adhésion est active.");
+   return;
+ }
+ let commission=null;
+ if(member.commission_id){
+   const result=await sb.from('commissions')
+     .select('name,description,responsible_member_id,successor_member_id')
+     .eq('id',member.commission_id)
+     .maybeSingle();
+   if(result.error){
+     alert("Impossible de charger les informations de votre commission : "+result.error.message);
+     return;
+   }
+   commission=result.data||null;
+ }
+ showMemberCard({...member,commissions:commission});
+}
 function showMemberCard(m){
  const commission=m.commissions?.name||'Aucune commission';
  const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
