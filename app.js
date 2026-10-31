@@ -23,6 +23,8 @@ function showAdminSection(id){
   document.querySelectorAll('.app-sidebar nav a').forEach(a=>a.classList.remove('active'));
   if(link)link.classList.add('active');
   if(id==='adminDashboard')updateAdminDashboard();
+  if(id==='commissions')void loadCommissions();
+  if(id==='membershipRequests')void loadMembershipRequests();
 }
 function updateAdminDashboard(){
   const copy=(from,to)=>{const a=$(from),b=$(to);if(a&&b)b.textContent=a.textContent};
@@ -268,7 +270,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -1046,35 +1048,39 @@ async function loadCommissions(){
   if(!sb||!isAdmin)return;
   const box=$('commissionRows');
   if(!box)return;
-  box.innerHTML='<tr><td colspan="5">Chargement des commissions…</td></tr>';
+  box.innerHTML='<tr><td colspan="6">Chargement des commissions…</td></tr>';
   try{
-    // Charger d'abord les commissions : l'échec du chargement des membres
-    // ne doit jamais masquer la liste des commissions.
     const cr=await sb.from('commissions')
-      .select('id,name,description,responsible_member_id,is_active')
+      .select('id,name,description,responsible_member_id,successor_member_id,is_active')
       .order('name');
     if(cr.error){
-      box.innerHTML='<tr><td colspan="5">Erreur de chargement : '+esc(cr.error.message)+'</td></tr>';
-      msg('commissionMessage','Impossible de charger les commissions : '+cr.error.message);
+      box.innerHTML='<tr><td colspan="6">Erreur Supabase : '+esc(cr.error.message)+'</td></tr>';
+      msg('commissionMessage','Chargement impossible : '+cr.error.message);
       return;
     }
     const mr=await sb.from('members')
-      .select('id,member_number,first_name,last_name')
+      .select('id,member_number,first_name,last_name,status')
       .order('first_name');
     const members=mr.error?[]:(mr.data||[]);
     const rows=cr.data||[];
+    const memberOptions=(selected)=>'<option value="">— Non désigné —</option>'+members.map(m=>
+      '<option value="'+esc(m.id)+'" '+(selected===m.id?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
+    ).join('');
     box.innerHTML=rows.length?rows.map(c=>{
-      const options='<option value="">Aucun responsable</option>'+members.map(m=>
-        '<option value="'+esc(m.id)+'" '+(c.responsible_member_id===m.id?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
-      ).join('');
-      return '<tr><td><strong>'+esc(c.name)+'</strong></td><td>'+esc(c.description||'—')+'</td><td><select data-commission-select="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+options+'</select></td><td>'+(c.is_active?'Active':'Inactive')+'</td><td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td></tr>';
-    }).join(''):'<tr><td colspan="5">Aucune commission enregistrée.</td></tr>';
-    if(mr.error)msg('commissionMessage','Les commissions sont chargées, mais la liste des membres est indisponible : '+mr.error.message);
-    else if(!rows.length)msg('commissionMessage','Aucune commission trouvée dans la base de données.');
-    else msg('commissionMessage','7 commissions et '+rows.length+' commission(s) au total chargées.',true);
+      return '<tr>'+
+        '<td><strong>'+esc(c.name)+'</strong></td>'+
+        '<td>'+esc(c.description||'—')+'</td>'+
+        '<td><select aria-label="Responsable de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select></td>'+
+        '<td><select aria-label="Successeur de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select></td>'+
+        '<td>'+(c.is_active?'Active':'Inactive')+'</td>'+
+        '<td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td>'+
+      '</tr>';
+    }).join(''):'<tr><td colspan="6">Aucune commission trouvée dans la base de données.</td></tr>';
+    if(mr.error)msg('commissionMessage','Les '+rows.length+' commissions sont affichées, mais les membres ne peuvent pas être chargés : '+mr.error.message);
+    else msg('commissionMessage',rows.length+' commission(s) chargée(s). Choisis un responsable et un successeur pour chaque commission.',true);
   }catch(err){
-    box.innerHTML='<tr><td colspan="5">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
-    msg('commissionMessage','Erreur inattendue pendant le chargement des commissions.');
+    box.innerHTML='<tr><td colspan="6">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
+    msg('commissionMessage','Erreur pendant le chargement : '+(err?.message||String(err)));
   }
 }
 async function saveCommission(e){
@@ -1091,11 +1097,19 @@ async function saveCommission(e){
 }
 async function assignCommission(id){
   if(!sb||!isAdmin)return;
-  const select=document.querySelector('[data-commission-select="'+CSS.escape(id)+'"]');
-  if(!select)return;
-  const r=await sb.from('commissions').update({responsible_member_id:select.value||null}).eq('id',id);
-  if(r.error){msg('commissionMessage','Affectation impossible : '+r.error.message);return;}
-  msg('commissionMessage','Responsable de commission mis à jour.',true);
+  const responsible=document.querySelector('[data-commission-responsible="'+CSS.escape(id)+'"]');
+  const successor=document.querySelector('[data-commission-successor="'+CSS.escape(id)+'"]');
+  if(!responsible||!successor)return;
+  if(responsible.value&&successor.value&&responsible.value===successor.value){
+    msg('commissionMessage','Le responsable et son successeur doivent être deux membres différents.');
+    return;
+  }
+  const r=await sb.from('commissions').update({
+    responsible_member_id:responsible.value||null,
+    successor_member_id:successor.value||null
+  }).eq('id',id);
+  if(r.error){msg('commissionMessage','Enregistrement impossible : '+r.error.message);return;}
+  msg('commissionMessage','Responsable et successeur enregistrés.',true);
   await loadCommissions();
 }
 async function toggleCommission(id,active){
