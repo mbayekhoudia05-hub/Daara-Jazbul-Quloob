@@ -23,7 +23,7 @@ function showAdminSection(id){
   document.querySelectorAll('.app-sidebar nav a').forEach(a=>a.classList.remove('active'));
   if(link)link.classList.add('active');
   if(id==='adminDashboard')updateAdminDashboard();
-  if(id==='commissions')void loadCommissions();
+  if(id==='commissions'||id==='members')void loadCommissions();
   if(id==='membershipRequests')void loadMembershipRequests();
 }
 function updateAdminDashboard(){
