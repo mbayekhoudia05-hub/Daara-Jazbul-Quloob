@@ -85,7 +85,7 @@ async function auth(e){
   const password=$('password').value;
 
   const r=signupMode
-    ? await sb.auth.signUp({email,password})
+    ? await sb.auth.signUp({email,password,options:{emailRedirectTo:window.location.href}})
     : await sb.auth.signInWithPassword({email,password});
 
   if(r.error){
@@ -93,8 +93,12 @@ async function auth(e){
     return;
   }
 
-  msg('authMessage',signupMode?'Compte créé.':'Connexion réussie.',true);
-  if(!signupMode)setTimeout(closeAuth,500);
+  if(signupMode){
+    msg('authMessage','Compte créé. Vérifie ta boîte e-mail et confirme ton adresse. Utilise exactement la même adresse que dans ta demande d’adhésion. Après validation par le Dahira, reconnecte-toi pour accéder à ton espace membre.',true);
+  }else{
+    msg('authMessage','Connexion réussie.',true);
+    setTimeout(closeAuth,500);
+  }
 }
 
 async function load(){
@@ -1230,12 +1234,12 @@ async function submitMembershipRequest(e) {
   const first_name = $('requestFirstName').value.trim();
   const last_name = $('requestLastName').value.trim();
   const phone = $('requestPhone').value.trim();
-  const email = $('requestEmail').value.trim() || null;
+  const email = $('requestEmail').value.trim().toLowerCase();
   const note = $('requestNote').value.trim() || null;
   const commission_id = $('requestCommission').value || null;
 
-  if (!first_name || !last_name || !phone || !commission_id) {
-    msg('membershipRequestMessage', 'Remplis les champs obligatoires et choisis une commission.');
+  if (!first_name || !last_name || !phone || !email || !commission_id) {
+    msg('membershipRequestMessage', 'Remplis tous les champs obligatoires et choisis une commission.');
     return;
   }
 
@@ -1295,12 +1299,29 @@ async function approveMembershipRequest(id) {
   }
 
   const x = r.data;
+  if(!x.email){
+    alert("Cette demande ne contient pas d’adresse e-mail. Demande au candidat de refaire sa demande avec une adresse e-mail valide avant la validation.");
+    return;
+  }
+
+  const existing = await sb.from('members')
+    .select('id, member_number')
+    .ilike('email', x.email)
+    .maybeSingle();
+  if(existing.error){
+    alert("Vérification de l’adresse e-mail impossible : "+existing.error.message);
+    return;
+  }
+  if(existing.data){
+    alert("Un membre utilise déjà cette adresse e-mail (N° "+existing.data.member_number+"). Vérifie sa fiche avant de poursuivre.");
+    return;
+  }
 
   const created = await sb.from('members').insert({
     first_name: x.first_name,
     last_name: x.last_name,
     phone: x.phone || null,
-    email: x.email || null,
+    email: x.email.toLowerCase(),
     commission_id: x.commission_id || null
   }).select('id, member_number').single();
 
@@ -1317,20 +1338,22 @@ async function approveMembershipRequest(id) {
       reviewed_by: currentUser.id
     })
     .eq('id', id)
-    .eq('status', 'pending');
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle();
 
-  if (updated.error) {
-    alert(
-      "Le membre " + created.data.member_number +
-      " a été créé, mais la demande n'a pas pu être mise à jour. " +
-      "Ne valide pas une deuxième fois. Erreur : " + updated.error.message
-    );
+  if (updated.error || !updated.data) {
+    const cleanup = await sb.from('members').delete().eq('id',created.data.id).select('id').maybeSingle();
+    const cleanupText = cleanup.error || !cleanup.data
+      ? " La fiche créée n’a pas pu être annulée automatiquement : vérifie les membres avant une nouvelle validation."
+      : " La création a été annulée ; tu peux réessayer.";
+    alert("La demande n'a pas pu être marquée comme validée." + cleanupText + (updated.error ? " Erreur : "+updated.error.message : ""));
     await loadMembers();
     await loadMembershipRequests();
     return;
   }
 
-  alert("Demande validée. Numéro du membre : " + created.data.member_number);
+  alert("Demande validée. Numéro du membre : " + created.data.member_number + ". Le candidat doit maintenant créer son compte avec l’adresse e-mail "+x.email+" via « Connexion » puis « Créer un compte gratuit », confirmer son e-mail et se connecter.");
 
   await loadMembers();
   await loadMembershipRequests();
