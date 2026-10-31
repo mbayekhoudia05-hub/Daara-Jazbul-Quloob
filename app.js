@@ -203,7 +203,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -261,6 +261,7 @@ async function setUser(u){
     await loadFinanceDashboard();
     await loadUnpaidTracker();
     await initPaymentTransactions();
+    await load();
     showAdminSection('adminDashboard');
     updateAdminDashboard();
   }
