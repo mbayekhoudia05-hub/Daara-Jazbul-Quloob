@@ -1083,7 +1083,7 @@ async function loadCommissions(){
       const vice=members.find(m=>m.id===c.successor_member_id);
       return '<tr>'+
         '<td><strong>'+esc(c.name)+'</strong></td>'+
-        '<td>'+esc(c.description||'—')+'</td>'+
+        '<td><textarea rows="3" maxlength="1000" aria-label="Description de '+esc(c.name)+'" data-commission-description="'+esc(c.id)+'" placeholder="Décris la mission et les activités de cette commission">'+esc(c.description||'')+'</textarea><button type="button" class="table-btn" data-action="update-commission-description" data-id="'+esc(c.id)+'">Enregistrer la description</button></td>'+
         '<td><label class="commission-role-label">Président</label><select aria-label="Président de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select>'+(president?'<small>'+esc(president.first_name)+' '+esc(president.last_name)+'</small>':'')+'</td>'+
         '<td><label class="commission-role-label">Vice-président</label><select aria-label="Vice-président de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select>'+(vice?'<small>'+esc(vice.first_name)+' '+esc(vice.last_name)+'</small>':'')+'</td>'+
         '<td>'+rosterHtml+'</td>'+
@@ -1108,6 +1108,16 @@ async function saveCommission(e){
   if(r.error){msg('commissionMessage','Erreur : '+r.error.message);return;}
   $('commissionForm').reset();
   msg('commissionMessage','Commission ajoutée.',true);
+  await loadCommissions();
+}
+async function updateCommissionDescription(id){
+  if(!sb||!isAdmin)return;
+  const field=document.querySelector('[data-commission-description="'+CSS.escape(id)+'"]');
+  if(!field)return;
+  const description=field.value.trim();
+  const r=await sb.from('commissions').update({description}).eq('id',id);
+  if(r.error){msg('commissionMessage','Enregistrement de la description impossible : '+r.error.message);return;}
+  msg('commissionMessage','Description de la commission mise à jour.',true);
   await loadCommissions();
 }
 async function assignCommission(id){
@@ -1414,6 +1424,7 @@ document.addEventListener('click', async function(e) {
       break;
     }
     case 'cancel-payment': cancelPaymentTransaction(id); break;
+    case 'update-commission-description': updateCommissionDescription(id); break;
     case 'assign-commission': assignCommission(id); break;
     case 'toggle-commission': toggleCommission(id,button.dataset.active==='true'); break;
     case 'approve-request': approveMembershipRequest(id); break;
