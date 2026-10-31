@@ -167,3 +167,16 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 
 /* Compteur des demandes d'adhésion en attente */
 .request-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#b42318;color:#fff;font-size:12px;font-weight:700;line-height:1;}
+
+/* Générateur d'affiches */
+.poster-maker-grid{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(320px,1.1fr);gap:22px;align-items:start}
+.poster-controls{display:grid;gap:13px}
+.poster-controls h3{margin:8px 0 0;color:#075c2d}
+.poster-controls label{display:grid;gap:7px;font-weight:700;font-size:14px}
+.poster-controls input{width:100%;padding:11px;border:1px solid #d5e0d8;border-radius:8px;font:inherit;background:#fff}
+.poster-controls small{font-weight:400;color:#64756a;line-height:1.4}
+.poster-fields-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.poster-preview-card{position:sticky;top:18px}
+.poster-preview-card canvas{display:block;width:min(100%,540px);height:auto;margin:14px auto 0;border-radius:10px;box-shadow:0 8px 28px #102d1d2b;background:#063c25}
+#posterMessage{min-height:20px;color:#075c2d}
+@media(max-width:850px){.poster-maker-grid{grid-template-columns:1fr}.poster-preview-card{position:static}}
