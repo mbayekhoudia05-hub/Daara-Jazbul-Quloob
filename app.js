@@ -412,32 +412,40 @@ async function loadConnectedMemberDashboard(member){
     `).join(''):'Aucun signalement envoyé.';
   }
 
-  // Informations du Dahira
-  const ir=await sb.from('dahira_information')
-    .select('title,content')
-    .order('updated_at',{ascending:false});
-
-  $('memberDahiraInformation').innerHTML=ir.error
-    ?'Erreur de chargement.'
-    :(ir.data||[]).map(x=>`
-      <article><h4>${esc(x.title)}</h4><p>${esc(x.content)}</p></article>
-    `).join('')||'Aucune information publiée pour le moment.';
-
-  // Chartes publiées
-  const hr=await sb.from('dahira_charters')
-    .select('title,description,file_url')
+  // Informations et chartes : utiliser la même source que le gestionnaire de contenus.
+  const ir=await sb.from('contents')
+    .select('title,description')
+    .eq('type','information')
     .eq('published',true)
     .order('created_at',{ascending:false});
 
-  $('memberDahiraCharters').innerHTML=hr.error
-    ?'Erreur de chargement.'
-    :(hr.data||[]).map(x=>{
-   const url=/^https?:\/\//i.test(x.file_url||'')?x.file_url:'';
-      return `<article><h4>${esc(x.title)}</h4>
-        <p>${esc(x.description)}</p>
-        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Consulter la charte</a>`:''}
-      </article>`;
-    }).join('')||'Aucune charte publiée pour le moment.';
+  const infoBox=$('memberDahiraInformation');
+  if(infoBox){
+    infoBox.innerHTML=ir.error
+      ?'Erreur de chargement.'
+      :(ir.data||[]).map(x=>`
+        <article><h4>${esc(x.title)}</h4><p>${esc(x.description||'')}</p></article>
+      `).join('')||'Aucune information publiée pour le moment.';
+  }
+
+  const hr=await sb.from('contents')
+    .select('title,description,external_url')
+    .eq('type','charte')
+    .eq('published',true)
+    .order('created_at',{ascending:false});
+
+  const charterBox=$('memberDahiraCharters');
+  if(charterBox){
+    charterBox.innerHTML=hr.error
+      ?'Erreur de chargement.'
+      :(hr.data||[]).map(x=>{
+        const url=/^https?:\\/\\//i.test(x.external_url||'')?x.external_url:'';
+        return `<article><h4>${esc(x.title)}</h4>
+          <p>${esc(x.description||'')}</p>
+          ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Consulter la charte</a>`:''}
+        </article>`;
+      }).join('')||'Aucune charte publiée pour le moment.';
+  }
 }
 async function submitMemberReport(e){
   e.preventDefault();
