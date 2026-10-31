@@ -14,6 +14,7 @@
     <a href="#commissions" id="commissionsNav" class="hidden" data-admin-target="commissions">♧ <span>Commissions</span></a>
     <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
     <a href="#financeDashboard" id="financeNav" class="hidden" data-admin-target="financeDashboard">▥ <span>Finances</span></a>
+    <a href="#posters" id="postersNav" class="hidden" data-admin-target="posters">🎨 <span>Générateur d’affiches</span></a>
     <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi paiements</span></a>
     <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
     <a href="#membershipRequests" id="membershipRequestsNav" class="hidden" data-admin-target="membershipRequests">✉ <span>Demandes d’adhésion</span> <b id="membershipRequestBadge" class="request-count hidden">0</b></a>
@@ -51,7 +52,27 @@
   window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
 })();
 </script>
-<main><section id="adminDashboard" class="section hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Tableau de bord</h2><p>Bienvenue dans la gestion de votre Dahira. Choisissez une rubrique dans le menu à gauche.</p></div><div class="stats contribution-stats"><div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div><div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div><div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div></div></section><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
+<main>
+<section id="posters" class="section hidden">
+ <div class="head"><span>COMMUNICATION</span><h2>🎨 Générateur d’affiches</h2><p>Créez une affiche pour une rencontre ou une activité du Daara, puis téléchargez-la pour la partager.</p></div>
+ <div class="poster-maker-grid">
+  <form id="posterForm" class="card poster-controls">
+   <h3>Informations de l’événement</h3>
+   <label>Titre de l’événement<input id="posterTitle" type="text" maxlength="90" placeholder="Ex. Grande journée de récital" required></label>
+   <label>Message complémentaire<input id="posterSubtitle" type="text" maxlength="140" placeholder="Ex. Vous êtes cordialement invités"></label>
+   <label>Lieu<input id="posterPlace" type="text" maxlength="100" placeholder="Adresse ou lieu de la rencontre" required></label>
+   <div class="poster-fields-two"><label>Date<input id="posterDate" type="date" required></label><label>Heure<input id="posterTime" type="time" required></label></div>
+   <h3>Photos de l’affiche</h3>
+   <label>Logo du Daara<input id="posterLogo" type="file" accept="image/*"><small>Le logo actuel du site sera utilisé si aucun fichier n’est choisi.</small></label>
+   <label>Photo de l’événement / de l’invité<input id="posterEventPhoto" type="file" accept="image/*"><small>Facultatif.</small></label>
+   <label>Photo du marabout<input id="posterMaraboutPhoto" type="file" accept="image/*"><small>Facultatif.</small></label>
+   <div class="button-row"><button type="button" class="primary" id="posterDownloadBtn">⬇ Télécharger l’affiche (PNG)</button><button type="button" class="secondary" id="posterResetBtn">Réinitialiser</button></div>
+   <p id="posterMessage" role="status"></p>
+  </form>
+  <div class="card poster-preview-card"><h3>Aperçu de l’affiche</h3><p>Format portrait prêt à partager sur WhatsApp et les réseaux sociaux.</p><canvas id="posterCanvas" width="1080" height="1350" aria-label="Aperçu de l’affiche générée"></canvas></div>
+ </div>
+</section>
+<section id="adminDashboard" class="section hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Tableau de bord</h2><p>Bienvenue dans la gestion de votre Dahira. Choisissez une rubrique dans le menu à gauche.</p></div><div class="stats contribution-stats"><div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div><div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div><div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div></div></section><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="dahiraInformation" class="section"><div class="head"><span>LE DAHIRA</span><h2>Informations du Dahira</h2><p>Présentation, mission, organisation et activités du Daara Jazbul Qulub.</p></div><div id="dahiraInformationGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="dahiraCharters" class="section alt"><div class="head"><span>RÈGLES DE VIE</span><h2>Chartes du Dahira</h2><p>Consultez les chartes et les règles de fonctionnement du Dahira.</p></div><div id="dahiraChartersGrid" class="grid"><div class="loading">Chargement…</div></div></section>
