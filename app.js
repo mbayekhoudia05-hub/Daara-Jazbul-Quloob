@@ -61,6 +61,9 @@ if($('financeMonthFilter')){
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
+  if($('memberReportForm')){
+  $('memberReportForm').onsubmit=submitMemberReport;
+}
  const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
 }
 async function loadConnectedMemberDashboard(member){
