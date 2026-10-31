@@ -27,12 +27,20 @@
   const sidebar=document.getElementById('appSidebar');
   if(!toggle||!sidebar||!backdrop)return;
   function setOpen(open){
-    body.classList.toggle('sidebar-collapsed',!open);
-    body.classList.toggle('sidebar-mobile-open',open&&window.innerWidth<=800);
+    if(window.innerWidth<=800){
+      body.classList.toggle('sidebar-mobile-open',open);
+    }else{
+      body.classList.toggle('sidebar-collapsed',!open);
+    }
     toggle.setAttribute('aria-expanded',String(open));
     toggle.setAttribute('aria-label',open?'Masquer le menu':'Afficher le menu');
   }
-  toggle.addEventListener('click',()=>setOpen(body.classList.contains('sidebar-collapsed')||!body.classList.contains('sidebar-mobile-open')));
+  toggle.addEventListener('click',()=>{
+    const isOpen=window.innerWidth<=800
+      ? body.classList.contains('sidebar-mobile-open')
+      : !body.classList.contains('sidebar-collapsed');
+    setOpen(!isOpen);
+  });
   backdrop.addEventListener('click',()=>setOpen(false));
   sidebar.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=800)setOpen(false)}));
   window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
