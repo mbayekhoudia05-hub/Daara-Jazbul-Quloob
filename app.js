@@ -99,60 +99,74 @@ async function load(){
   if(!sb)return;
   const r=await sb.from('contents')
     .select('*')
-    .eq('published',true)
     .order('created_at',{ascending:false});
 
-  if(!r.error)render(r.data||[]);
+  if(!r.error){
+    render((r.data||[]).filter(x=>x.published));
+    if(isAdmin){window._djqContentRows=r.data||[];renderAdminContents(window._djqContentRows);}
+  }
 }
 
+function contentCard(x){
+  const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢',information:'ℹ️',charte:'📜'}[x.type]||'📄';
+  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';
+}
+function contentTypeLabel(type){
+  return ({khasside:'Khassaïde',audio:'Audio',video:'Vidéo',cours:'Cours',annonce:'Annonce',information:'Information du Dahira',charte:'Charte du Dahira'})[type]||type;
+}
 function render(rows){
-  $('contentGrid').innerHTML='';
-  $('announcementGrid').innerHTML='';
-
-  if(!rows.length){
-    $('contentGrid').innerHTML='<div class="loading">Aucun contenu publié.</div>';
-  }
-
+  ['contentGrid','announcementGrid','dahiraInformationGrid','dahiraChartersGrid'].forEach(id=>{const el=$(id);if(el)el.innerHTML='';});
+  const targets={annonce:'announcementGrid',information:'dahiraInformationGrid',charte:'dahiraChartersGrid'};
   for(const x of rows){
-    const icon={
-      khasside:'📖',
-      audio:'🎧',
-      video:'🎥',
-      cours:'📚',
-      annonce:'📢'
-    }[x.type]||'📄';
-
-    const h='<article class="card"><span class="tag">'+icon+' '+esc(x.type)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';
-
-    if(x.type==='annonce'){
-      $('announcementGrid').insertAdjacentHTML('beforeend',h);
-    }else{
-      $('contentGrid').insertAdjacentHTML('beforeend',h);
-    }
+    const target=targets[x.type]||'contentGrid';
+    const el=$(target);
+    if(el)el.insertAdjacentHTML('beforeend',contentCard(x));
+  }
+  const emptyLabels={
+    contentGrid:'Aucun contenu public pour le moment.',
+    announcementGrid:'Aucune annonce publiée.',
+    dahiraInformationGrid:'Les informations du Dahira seront bientôt publiées.',
+    dahiraChartersGrid:'Les chartes du Dahira seront bientôt publiées.'
+  };
+  for(const [id,label] of Object.entries(emptyLabels)){
+    const el=$(id);if(el&&!el.children.length)el.innerHTML='<div class="loading">'+label+'</div>';
   }
 }
-
+function renderAdminContents(rows){
+  const box=$('adminContentRows');if(!box)return;
+  box.innerHTML=rows.length?rows.map(x=>'<article class="content-admin-row"><div><span class="tag">'+esc(contentTypeLabel(x.type))+(x.published?' · Publié':' · Brouillon')+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p></div><div class="content-admin-actions"><button type="button" class="table-btn" data-action="edit-content" data-id="'+esc(x.id)+'">Modifier</button><button type="button" class="table-btn danger-btn" data-action="delete-content" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<div class="loading">Aucun contenu enregistré.</div>';
+}
+function resetContentForm(){
+  $('editingContentId').value='';
+  $('contentForm').reset();
+  $('contentSubmitBtn').textContent='Publier';
+  hide('cancelContentEditBtn');
+}
+function startEditContent(id){
+  const x=window._djqContentRows?.find(row=>String(row.id)===String(id));
+  if(!x)return;
+  $('editingContentId').value=x.id;
+  $('type').value=x.type;
+  $('title').value=x.title||'';
+  $('description').value=x.description||'';
+  $('external_url').value=x.external_url||'';
+  $('contentSubmitBtn').textContent='Enregistrer les modifications';
+  show('cancelContentEditBtn');
+  showAdminSection('admin');
+  $('contentForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
 async function publish(e){
   e.preventDefault();
-  if(!isAdmin)return;
-
-  const r=await sb.from('contents').insert({
-    type:$('type').value,
-    title:$('title').value,
-    description:$('description').value,
-    external_url:$('external_url').value||null,
-    published:true,
-    created_by:currentUser.id
-  });
-
-  if(r.error){
-    msg('formMessage',r.error.message);
-    return;
-  }
-
-  msg('formMessage','Contenu publié.',true);
-  e.target.reset();
-  load();
+  if(!isAdmin||!currentUser)return;
+  const id=$('editingContentId').value;
+  const payload={type:$('type').value,title:$('title').value.trim(),description:$('description').value.trim(),external_url:$('external_url').value.trim()||null,published:true};
+  const r=id
+    ? await sb.from('contents').update(payload).eq('id',id)
+    : await sb.from('contents').insert({...payload,created_by:currentUser.id});
+  if(r.error){msg('formMessage',r.error.message);return;}
+  msg('formMessage',id?'Modifications enregistrées.':'Contenu publié.',true);
+  resetContentForm();
+  await load();
 }
 function setDefaultContributionMonth(){
   const el=$('contributionMonth');
@@ -1160,6 +1174,14 @@ document.addEventListener('click', async function(e) {
     return;
   }
   switch (button.dataset.action) {
+    case 'edit-content': startEditContent(id); break;
+    case 'delete-content': {
+      if(!confirm('Supprimer définitivement ce contenu ?'))break;
+      const removed=await sb.from('contents').delete().eq('id',id);
+      if(removed.error){alert('Suppression impossible : '+removed.error.message);break;}
+      await load();
+      break;
+    }
     case 'print-receipt': {
       const r = await sb.from('contributions')
         .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
