@@ -308,13 +308,24 @@ async function setUser(u){
   await sb.rpc('link_my_member_account');
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions!members_commission_id_fkey(name,description)')
+    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
   if(mr.error){
     alert('Erreur de chargement du profil : '+mr.error.message);
     return;
+  }
+
+  if(mr.data && mr.data.commission_id){
+    const commissionResult=await sb.from('commissions')
+      .select('name,description,responsible_member_id,successor_member_id')
+      .eq('id',mr.data.commission_id)
+      .maybeSingle();
+    if(commissionResult.error){
+      console.error('Chargement commission:',commissionResult.error.message);
+    }
+    mr.data.commissions=commissionResult.data||null;
   }
 
   if(mr.data){
@@ -1432,9 +1443,16 @@ document.addEventListener('click', async function(e) {
     case 'edit-member': editMember(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
-        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions!members_commission_id_fkey(name,description,responsible_member_id,successor_member_id)')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id')
         .eq('id', id).maybeSingle();
       if (r.error || !r.data) { alert("Membre introuvable."); return; }
+      if(r.data.commission_id){
+        const commissionResult=await sb.from('commissions')
+          .select('name,description,responsible_member_id,successor_member_id')
+          .eq('id',r.data.commission_id)
+          .maybeSingle();
+        r.data.commissions=commissionResult.data||null;
+      }
       showMemberCard(r.data);
       break;
     }
