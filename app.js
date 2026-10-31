@@ -768,7 +768,8 @@ async function addMember(e){
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
 function showMemberCard(m){
  const commission=m.commissions?.name||'Aucune commission';
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -800,6 +801,7 @@ async function handlePublicMember(){
     <h3>${esc(m.first_name)} ${esc(m.last_name)}</h3>
     <p><b>N° membre :</b> ${esc(m.member_number)}</p>
     <p><b>Commission :</b> ${esc(m.commission_name||'Aucune commission')}</p>
+    <p><b>Fonction :</b> ${esc(m.commission_role||'—')}</p>
     <p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p>
     <p class="verify-ok">✓ Carte valide — membre actif</p>
   `;
@@ -1429,7 +1431,7 @@ document.addEventListener('click', async function(e) {
     case 'edit-member': editMember(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
-        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name,description)')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name,description,responsible_member_id,successor_member_id)')
         .eq('id', id).maybeSingle();
       if (r.error || !r.data) { alert("Membre introuvable."); return; }
       showMemberCard(r.data);
