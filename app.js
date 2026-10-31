@@ -131,7 +131,9 @@ async function load(){
 
 function contentCard(x){
   const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢',information:'ℹ️',charte:'📜'}[x.type]||'📄';
-  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.external_url?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir →</a>':'')+'</article>';
+  const external=(x.external_url||'').match(/^https?:\/\//i)?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir le lien →</a>':'';
+  const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-link" target="_blank" rel="noopener" href="'+esc(x.file_url)+'">📄 Consulter le PDF</a>':'';
+  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+pdf+external+'</article>';
 }
 function contentTypeLabel(type){
   return ({khasside:'Khassaïde',audio:'Audio',video:'Vidéo',cours:'Cours',annonce:'Annonce',information:'Information du Dahira',charte:'Charte du Dahira'})[type]||type;
@@ -183,6 +185,7 @@ function renderAdminContents(rows){
 function resetContentForm(){
   $('editingContentId').value='';
   $('contentForm').reset();
+  const info=$('pdfCurrentInfo');if(info)info.textContent='PDF facultatif — 15 Mo maximum.';
   $('contentSubmitBtn').textContent='Publier';
   hide('cancelContentEditBtn');
 }
@@ -197,6 +200,8 @@ function startEditContent(id){
   $('title').value=x.title||'';
   $('description').value=x.description||'';
   $('external_url').value=x.external_url||'';
+  const info=$('pdfCurrentInfo');
+  if(info)info.innerHTML=x.file_url?'<a href="'+esc(x.file_url)+'" target="_blank" rel="noopener">PDF actuellement associé : consulter</a>':'Aucun PDF associé pour le moment.';
   $('contentSubmitBtn').textContent='Enregistrer les modifications';
   show('cancelContentEditBtn');
   showAdminSection('admin');
@@ -213,17 +218,28 @@ async function publish(e){
   const id=$('editingContentId').value;
   const title=$('title').value.trim();
   if(!title){msg('formMessage',"Le titre est obligatoire.");$('title').focus();return;}
-  const payload={
-    type:$('type').value,
-    title,
-    description:$('description').value.trim(),
-    external_url:$('external_url').value.trim()||null,
-    published:true
-  };
+  const pdfFile=$('contentPdf')?.files?.[0]||null;
+  if(pdfFile && (pdfFile.type!=='application/pdf' || !pdfFile.name.toLowerCase().endsWith('.pdf'))){
+    msg('formMessage',"Le fichier choisi doit être un document PDF.");return;
+  }
+  if(pdfFile && pdfFile.size>15*1024*1024){msg('formMessage',"Le PDF dépasse la limite de 15 Mo.");return;}
   button.disabled=true;
   button.textContent=id?'Enregistrement…':'Publication…';
   if(status)status.textContent='';
   try{
+    let fileUrl=null;
+    if(pdfFile){
+      const safeName=pdfFile.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'-').slice(-90);
+      const filePath='charters/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+safeName;
+      const upload=await sb.storage.from('dahira-documents').upload(filePath,pdfFile,{upsert:false,contentType:'application/pdf'});
+      if(upload.error){msg('formMessage',"Envoi du PDF impossible : "+upload.error.message);return;}
+      fileUrl=sb.storage.from('dahira-documents').getPublicUrl(filePath).data.publicUrl;
+    }
+    const payload={
+      type:$('type').value,title,description:$('description').value.trim(),
+      external_url:$('external_url').value.trim()||null,
+      ...(fileUrl?{file_url:fileUrl}:{}),published:true
+    };
     const r=id
       ? await sb.from('contents').update(payload).eq('id',id).select('id').maybeSingle()
       : await sb.from('contents').insert({...payload,created_by:currentUser.id}).select('id').single();
@@ -459,7 +475,7 @@ async function loadConnectedMemberDashboard(member){
   }
 
   const hr=await sb.from('contents')
-    .select('title,description,external_url')
+    .select('title,description,external_url,file_url')
     .eq('type','charte')
     .eq('published',true)
     .order('created_at',{ascending:false});
