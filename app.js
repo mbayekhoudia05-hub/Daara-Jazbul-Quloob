@@ -308,7 +308,7 @@ async function setUser(u){
   await sb.rpc('link_my_member_account');
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name,description)')
+    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions!members_commission_id_fkey(name,description)')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
@@ -1432,7 +1432,7 @@ document.addEventListener('click', async function(e) {
     case 'edit-member': editMember(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
-        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name,description,responsible_member_id,successor_member_id)')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions!members_commission_id_fkey(name,description,responsible_member_id,successor_member_id)')
         .eq('id', id).maybeSingle();
       if (r.error || !r.data) { alert("Membre introuvable."); return; }
       showMemberCard(r.data);
