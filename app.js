@@ -706,6 +706,8 @@ function startEditMember(m){
  $('memberLastName').value=m.last_name||'';
  $('memberPhone').value=m.phone||'';
  $('memberEmail').value=m.email||'';
+ $('memberAddress').value=m.address||'';
+ $('memberCommission').value=m.commission_id||'';
  $('memberPhoto').value='';
  if(m.photo_url){$('photoPreview').src=m.photo_url;show('photoPreviewWrap');$('photoPreviewName').textContent='Photo actuelle — choisir un nouveau fichier pour la remplacer.';}
  const btn=$('memberForm').querySelector('button.primary');btn.textContent='Enregistrer les modifications';
@@ -965,7 +967,7 @@ async function loadMembershipRequests() {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, note, status, created_at')
+    .select('id, first_name, last_name, phone, email, note, address, commission_id, commission:commissions(name), status, created_at')
     .order('created_at', { ascending: false });
 
   if (r.error) {
