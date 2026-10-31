@@ -3,8 +3,8 @@ const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
 function setAdminUI(){
-  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
-  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
+  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters'];
+  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','postersNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
