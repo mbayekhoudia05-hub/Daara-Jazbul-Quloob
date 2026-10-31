@@ -484,12 +484,19 @@ async function loadConnectedMemberDashboard(member){
   if(charterBox){
     charterBox.innerHTML=hr.error
       ?'Erreur de chargement.'
-      :(hr.data||[]).map(x=>{
+      :(hr.data||[]).map((x,index)=>{
         const url=(x.external_url||'').startsWith('https://')||(x.external_url||'').startsWith('http://')?x.external_url:'';
-        return `<article><h4>${esc(x.title)}</h4>
+        const pdfUrl=(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?x.file_url:'';
+        const downloadUrl=pdfUrl+(pdfUrl.includes('?')?'&':'?')+'download='+encodeURIComponent('Charte-'+(index+1)+'.pdf');
+        return `<article class="member-charter">
+          <h4>📜 ${esc(x.title)}</h4>
           <p>${esc(x.description||'')}</p>
-          ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien</a>`:''}
-          ${(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?`<p><a class="pdf-link" href="${esc(x.file_url)}" target="_blank" rel="noopener">📄 Consulter / télécharger le PDF</a></p>`:''}
+          ${url?`<p><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien complémentaire ↗</a></p>`:''}
+          ${pdfUrl?`<div class="charter-pdf-actions">
+            <a class="pdf-link" href="${esc(pdfUrl)}" target="_blank" rel="noopener">👁️ Lire la charte dans un nouvel onglet</a>
+            <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF</a>
+          </div>
+          <iframe class="charter-pdf-viewer" src="${esc(pdfUrl)}#toolbar=1&navpanes=0&view=FitH" title="Lecture de ${esc(x.title)}" loading="lazy"></iframe>`:''}
         </article>`;
       }).join('')||'Aucune charte publiée pour le moment.';
   }
