@@ -4,14 +4,15 @@
   <div class="sidebar-caption">MENU PRINCIPAL</div>
   <nav id="mainNavigation">
     <a href="#accueil">⌂ <span>Accueil</span></a>
-    <a href="#contenus">▤ <span>Contenus</span></a>
+    <a href="#admin">▤ <span>Contenus</span></a>
     <a href="#annonces">▣ <span>Annonces</span></a>
-    <a href="#members" id="membersNav" class="hidden">♙ <span>Membres</span></a>
-    <a href="#contributions" id="contributionsNav" class="hidden">₣ <span>Cotisations</span></a>
-    <a href="#financeDashboard" id="financeNav" class="hidden">▥ <span>Finances</span></a>
-    <a href="#unpaidMembers" id="unpaidNav" class="hidden">◷ <span>Suivi paiements</span></a>
-    <a href="#paymentTransactions" id="paymentsNav" class="hidden">▣ <span>Paiements</span></a>
-    <a href="#membershipRequests" id="membershipRequestsNav" class="hidden">✉ <span>Demandes d’adhésion</span></a>
+    <a href="#adminDashboard" id="dashboardNav" class="hidden">▦ <span>Tableau de bord</span></a>
+    <a href="#members" id="membersNav" class="hidden" data-admin-target="members">♙ <span>Membres</span></a>
+    <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
+    <a href="#financeDashboard" id="financeNav" class="hidden" data-admin-target="financeDashboard">▥ <span>Finances</span></a>
+    <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi paiements</span></a>
+    <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
+    <a href="#membershipRequests" id="membershipRequestsNav" class="hidden" data-admin-target="membershipRequests">✉ <span>Demandes d’adhésion</span></a>
   </nav>
   <div class="sidebar-account"><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></div>
 </aside>
@@ -46,7 +47,7 @@
   window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
 })();
 </script>
-<main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
+<main><section id="adminDashboard" class="section hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Tableau de bord</h2><p>Bienvenue dans la gestion de votre Dahira. Choisissez une rubrique dans le menu à gauche.</p></div><div class="stats contribution-stats"><div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div><div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div><div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div></div></section><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
 <section id="admin" class="section hidden"><div class="head"><span>ADMINISTRATION</span><h2>Gérer les contenus</h2></div><form id="contentForm"><label>Type<select id="type"><option value="khasside">Khassaïde</option><option value="audio">Audio</option><option value="video">Vidéo</option><option value="cours">Cours</option><option value="annonce">Annonce</option></select></label><label>Titre<input id="title" required></label><label>Description<textarea id="description"></textarea></label><label>Lien du contenu (facultatif)<input id="external_url" type="url" placeholder="https://..."></label><button class="primary">Publier</button><p id="formMessage"></p></form></section>
