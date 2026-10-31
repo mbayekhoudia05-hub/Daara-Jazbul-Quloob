@@ -328,7 +328,16 @@ async function setUser(u){
     mr.data.commissions=commissionResult.data||null;
   }
 
-  if(mr.data){
+  if(mr.data && mr.data.status!=='active' && !isAdmin){
+    alert("Ton accès à l’espace membre a été suspendu par l’administration. Contacte le responsable du Daara.");
+    await sb.auth.signOut();
+    hide('memberDashboard');
+    hide('logoutBtn');
+    show('loginBtn');
+    show('membershipFormSection');
+    return;
+  }
+  if(mr.data && mr.data.status==='active'){
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
   }else{
@@ -764,7 +773,26 @@ function printContributionReceipt(x){
 async function loadMembers(){
  if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="${esc(x.status||'active')}" data-id="${esc(x.id)}">${x.status==='active'?'Désactiver':'Réactiver'}</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="${esc(x.id)}">Supprimer</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+}
+
+async function toggleMemberStatus(id,nextStatus){
+ if(!isAdmin||!currentUser)return;
+ const label=nextStatus==='active'?'réactiver':'désactiver';
+ if(!confirm(`Confirmer : ${label} ce membre ? ${nextStatus==='inactive'?'Il ne pourra plus accéder à son espace membre ni consulter ses cotisations.':''}`))return;
+ const r=await sb.from('members').update({status:nextStatus}).eq('id',id).select('id,status').maybeSingle();
+ if(r.error||!r.data){alert('Modification impossible : '+(r.error?.message||'aucun membre modifié.'));return;}
+ await loadMembers();
+}
+async function deleteMemberPermanently(id){
+ if(!isAdmin||!currentUser)return;
+ const ok=confirm('SUPPRESSION DÉFINITIVE : cette action supprime la fiche du membre ainsi que ses cotisations et transactions de paiement liées. Les rapports associés peuvent empêcher la suppression. Préfère « Désactiver » si tu veux conserver son historique. Continuer ?');
+ if(!ok)return;
+ const r=await sb.from('members').delete().eq('id',id).select('id').maybeSingle();
+ if(r.error){alert('Suppression impossible : '+r.error.message+'\\nTu peux désactiver le membre pour lui couper l’accès tout en conservant son dossier.');return;}
+ if(!r.data){alert('Aucun membre supprimé.');return;}
+ await loadMembers();
+ alert('Membre supprimé. Son compte de connexion Supabase n’est pas supprimé automatiquement, mais il ne possède plus de fiche membre et ne peut donc plus accéder à son espace membre.');
 }
 
 async function addMember(e){
@@ -1441,6 +1469,8 @@ document.addEventListener('click', async function(e) {
     }
     case 'delete-contribution': deleteContribution(id); break;
     case 'edit-member': editMember(id); break;
+    case 'toggle-member-status': toggleMemberStatus(id,button.dataset.status==='active'?'inactive':'active'); break;
+    case 'delete-member': deleteMemberPermanently(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
         .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id')
