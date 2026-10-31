@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261031-commissions2"></script></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261031-commissions3"></script></head><body>
 <aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
   <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
   <div class="sidebar-caption">MENU PRINCIPAL</div>
@@ -79,7 +79,14 @@
 
     <label for="requestCommission">Commission souhaitée *</label>
     <select id="requestCommission" required>
-      <option value="">Chargement des commissions…</option>
+      <option value="">Choisir une commission *</option>
+      <option value="eefa047b-58cf-4883-b01b-e0ba42adbb12">Audiovisuelle</option>
+      <option value="7e188617-841d-4b49-a6c9-c75155c176eb">Communication</option>
+      <option value="4f81fa1a-9f6c-4b2b-a844-c2174b289243">Culturelle</option>
+      <option value="32cca276-68bd-46db-b03e-4b6fbdf219d0">Finance</option>
+      <option value="99275d1e-6258-41d5-90cd-1d44a1989b0d">Organisation</option>
+      <option value="e709a2be-ea28-4804-82f7-47ab0968e59d">Relations externes</option>
+      <option value="5435cb08-68cd-4c89-950f-141cf93c8460">Santé</option>
     </select>
 
     <label for="requestNote">Message (facultatif)</label>
@@ -104,8 +111,8 @@
     <button class="primary" type="submit">Ajouter la commission</button>
     <p id="commissionMessage"></p>
   </form>
-  <div class="member-table-wrap"><table><thead><tr><th>Commission</th><th>Description</th><th>Responsable</th><th>Statut</th><th>Actions</th></tr></thead>
-  <tbody id="commissionRows"><tr><td colspan="5">Chargement des commissions…</td></tr></tbody></table></div>
+  <div class="member-table-wrap"><table><thead><tr><th>Commission</th><th>Description</th><th>Responsable</th><th>Successeur</th><th>Statut</th><th>Actions</th></tr></thead>
+  <tbody id="commissionRows"><tr><td colspan="6">Chargement des commissions…</td></tr></tbody></table></div>
 </section>
 
 <section id="membershipRequests" class="section hidden">
