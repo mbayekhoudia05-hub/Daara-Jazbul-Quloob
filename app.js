@@ -185,7 +185,7 @@ if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
 }
- const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
+ const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,session)=>{setTimeout(()=>{void setUser(session?.user||null)},0)});load();await handlePublicMember();
 }
 async function setUser(u){
   currentUser=u;
