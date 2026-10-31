@@ -63,61 +63,110 @@ if($('financeMonthFilter')){
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
  const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
 }
-async function setUser(u){
-  currentUser=u;
+async function loadConnectedMemberDashboard(member){
+  show('memberDashboard');
 
-  if(!u){
-    isAdmin=false;
-    setAdminUI();
-    hide('logoutBtn');
-    show('loginBtn');
-    hide('memberDashboard');
-    show('membershipFormSection');
-    return;
-  }
+  $('memberWelcome').textContent=member.first_name||'Membre';
+  $('myMemberNumber').textContent=member.member_number||'—';
+  $('myMemberName').textContent=(member.first_name||'')+' '+(member.last_name||'');
+  $('myMemberPhone').textContent=member.phone||'—';
+  $('myMemberEmail').textContent=member.email||'—';
+  $('myMemberDate').textContent=member.membership_date||'—';
+  $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
 
-  hide('loginBtn');
-  show('logoutBtn');
+  // Cotisations personnelles
+  const cr=await sb.from('contributions')
+    .select('id,amount,payment_month,payment_method,status,paid_at,created_at')
+    .eq('member_id',member.id)
+    .order('payment_month',{ascending:false});
 
-  const r=await sb.from('profiles')
-    .select('role')
-    .eq('id',u.id)
-    .maybeSingle();
-
-  isAdmin=r.data?.role==='admin';
-  setAdminUI();
-
-  // Relier automatiquement le compte si l'e-mail est vérifié.
-  await sb.rpc('link_my_member_account');
-
-  // Retrouver la fiche du membre connecté.
-  const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url')
-    .eq('auth_user_id',u.id)
-    .maybeSingle();
-
-  if(mr.error){
-    alert('Erreur de chargement du profil : '+mr.error.message);
-    return;
-  }
-
-  if(mr.data){
-    hide('membershipFormSection');
-    await loadConnectedMemberDashboard(mr.data);
+  if(cr.error){
+    $('myContributionRows').innerHTML='<tr><td colspan="5">Erreur de chargement.</td></tr>';
   }else{
-    hide('memberDashboard');
-    show('membershipFormSection');
+    const rows=cr.data||[];
+    const paid=rows.filter(x=>x.status==='paid');
+    $('myTotalPaid').textContent=formatMoney(
+      paid.reduce((s,x)=>s+Number(x.amount||0),0)
+    );
+    $('myPaymentCount').textContent=paid.length;
+
+    $('myContributionRows').innerHTML=rows.length?rows.map(x=>`
+      <tr>
+        <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+        <td>${esc(formatMoney(x.amount))}</td>
+        <td>${esc(contributionMethodLabel(x.payment_method))}</td>
+        <td>${x.status==='paid'?'Payé':'En attente'}</td>
+        <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
+      </tr>
+    `).join(''):'<tr><td colspan="5">Aucune cotisation enregistrée.</td></tr>';
   }
 
-  // Conserver toutes les fonctions administrateur.
-  if(isAdmin){
-    await loadMembers();
-    await loadMembershipRequests();
-    await loadContributions();
-    await loadFinanceDashboard();
-    await loadUnpaidTracker();
-    await initPaymentTransactions();
+  // Transactions personnelles
+  const pr=await sb.from('payment_transactions')
+    .select('amount,payment_method,reference,payment_month,status,created_at')
+    .eq('member_id',member.id)
+    .order('created_at',{ascending:false});
+
+  if(pr.error){
+    $('myPaymentRows').innerHTML='<tr><td colspan="4">Erreur de chargement.</td></tr>';
+  }else{
+    const rows=pr.data||[];
+    $('myPaymentRows').innerHTML=rows.length?rows.map(x=>`
+      <tr>
+        <td>${esc(formatMoney(x.amount))}</td>
+        <td>${esc(x.payment_method==='wave'?'Wave':'Orange Money')}</td>
+        <td>${esc(x.reference||'—')}</td>
+        <td>${esc(x.status==='confirmed'?'Confirmé':x.status==='cancelled'?'Annulé':'En attente')}</td>
+      </tr>
+    `).join(''):'<tr><td colspan="4">Aucune transaction.</td></tr>';
   }
+
+  // Signalements personnels
+  const rr=await sb.from('member_reports')
+    .select('subject,message,status,admin_note,created_at')
+    .eq('auth_user_id',currentUser.id)
+    .order('created_at',{ascending:false});
+
+  if(rr.error){
+    $('myReportRows').textContent='Erreur de chargement des signalements.';
+  }else{
+    const rows=rr.data||[];
+    $('myReportRows').innerHTML=rows.length?rows.map(x=>`
+      <div class="card">
+        <strong>${esc(x.subject)}</strong>
+        <p>${esc(x.message)}</p>
+        <p>Statut : ${esc(x.status==='pending'?'En attente':x.status)}</p>
+        <p>Réponse de l'administrateur : ${esc(x.admin_note||'Aucune réponse pour le moment.')}</p>
+      </div>
+    `).join(''):'Aucun signalement envoyé.';
+  }
+
+  // Informations du Dahira
+  const ir=await sb.from('dahira_information')
+    .select('title,content')
+    .order('updated_at',{ascending:false});
+
+  $('memberDahiraInformation').innerHTML=ir.error
+    ?'Erreur de chargement.'
+    :(ir.data||[]).map(x=>`
+      <article><h4>${esc(x.title)}</h4><p>${esc(x.content)}</p></article>
+    `).join('')||'Aucune information publiée pour le moment.';
+
+  // Chartes publiées
+  const hr=await sb.from('dahira_charters')
+    .select('title,description,file_url')
+    .eq('published',true)
+    .order('created_at',{ascending:false});
+
+  $('memberDahiraCharters').innerHTML=hr.error
+    ?'Erreur de chargement.'
+    :(hr.data||[]).map(x=>{
+      const url=/^https?:\\/\\//i.test(x.file_url||'')?x.file_url:'';
+      return `<article><h4>${esc(x.title)}</h4>
+        <p>${esc(x.description)}</p>
+        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Consulter la charte</a>`:''}
+      </article>`;
+    }).join('')||'Aucune charte publiée pour le moment.';
 }
 
 async function loadContributionMembers(){
