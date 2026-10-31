@@ -435,6 +435,19 @@ async function loadConnectedMemberDashboard(member){
     commissionRole.textContent=roles.length?roles.join(' · '):'Membre de la commission';
   }
 
+  // Annuaire des commissions du Dahira (noms et descriptions publiquement consultables)
+  const allCommissionsBox=$('memberAllCommissions');
+  if(allCommissionsBox){
+    const allCommissions=await sb.from('commissions')
+      .select('name,description,is_active')
+      .eq('is_active',true)
+      .order('name');
+    allCommissionsBox.innerHTML=allCommissions.error
+      ?'Impossible de charger les commissions : '+esc(allCommissions.error.message)
+      :(allCommissions.data||[]).map(c=>'<article class="member-commission-item"><h4>'+esc(c.name)+'</h4><p>'+esc(c.description||'Description à venir.')+'</p></article>').join('')
+        ||'Aucune commission active pour le moment.';
+  }
+
   // Cotisations personnelles
   const cr=await sb.from('contributions')
     .select('id,amount,payment_month,payment_method,status,paid_at,created_at')
