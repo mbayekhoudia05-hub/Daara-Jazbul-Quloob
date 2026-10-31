@@ -8,6 +8,7 @@ function setAdminUI(){
     show('members');
     show('membersNav');
     show('membershipRequests');
+    show('commissionManagement');
     show('membershipRequestsNav');
     show('contributions');
     show('contributionsNav');
@@ -22,6 +23,7 @@ function setAdminUI(){
     hide('members');
     hide('membersNav');
     hide('membershipRequests');
+    hide('commissionManagement');
     hide('membershipRequestsNav');
     hide('contributions');
     hide('contributionsNav');
@@ -180,7 +182,11 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;
+ $('membershipRequestForm').onsubmit=submitMembershipRequest;
+ $('commissionForm').onsubmit=saveCommission;
+ $('commissionEditSelect').onchange=()=>loadCommissionEditor();
+ await loadCommissions();const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -992,6 +998,40 @@ async function loadMembershipRequests() {
       `).join('')
     : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
 }
+
+async function loadCommissions(){
+ if(!sb)return;
+ const r=await sb.from('commissions').select('id,name,description,is_active,responsible_member_id').order('name');
+ if(r.error){if($('publicCommissionGrid'))$('publicCommissionGrid').textContent='Commissions indisponibles.';if(isAdmin)msg('commissionMessage',r.error.message);return;}
+ const rows=r.data||[];
+ const opts=rows.filter(x=>x.is_active).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ if($('requestCommission'))$('requestCommission').innerHTML='<option value="">Choisir une commission</option>'+opts;
+ if($('memberCommission'))$('memberCommission').innerHTML='<option value="">Aucune commission</option>'+opts;
+ if($('publicCommissionGrid'))$('publicCommissionGrid').innerHTML=rows.filter(x=>x.is_active).map(x=>'<article class="card"><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||'Mission à préciser.')+'</p></article>').join('');
+ if(!isAdmin)return;
+ const mr=await sb.from('members').select('id,member_number,first_name,last_name').eq('status','active').order('first_name');
+ if(mr.error){msg('commissionMessage',mr.error.message);return;}
+ const members=mr.data||[];
+ $('commissionEditSelect').innerHTML=rows.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ $('commissionResponsible').innerHTML='<option value="">Aucun responsable</option>'+members.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.member_number)+' — '+esc(x.first_name)+' '+esc(x.last_name)+'</option>').join('');
+ $('commissionRows').innerHTML=rows.map(x=>{const m=members.find(y=>y.id===x.responsible_member_id);return '<tr><td>'+esc(x.name)+'</td><td>'+esc(x.description||'—')+'</td><td>'+esc(m?m.first_name+' '+m.last_name:'Non désigné')+'</td></tr>';}).join('');
+ loadCommissionEditor();
+}
+async function loadCommissionEditor(){
+ const id=$('commissionEditSelect').value;if(!id)return;
+ const r=await sb.from('commissions').select('description,responsible_member_id').eq('id',id).single();
+ if(r.error)return;
+ $('commissionDescription').value=r.data.description||'';
+ $('commissionResponsible').value=r.data.responsible_member_id||'';
+}
+async function saveCommission(e){
+ e.preventDefault();if(!sb||!isAdmin)return;
+ const id=$('commissionEditSelect').value;
+ const r=await sb.from('commissions').update({description:$('commissionDescription').value.trim(),responsible_member_id:$('commissionResponsible').value||null}).eq('id',id);
+ if(r.error){msg('commissionMessage','Erreur : '+r.error.message);return;}
+ msg('commissionMessage','Commission mise à jour.',true);await loadCommissions();
+}
+
 async function submitMembershipRequest(e) {
   e.preventDefault();
 
@@ -999,9 +1039,11 @@ async function submitMembershipRequest(e) {
   const last_name = $('requestLastName').value.trim();
   const phone = $('requestPhone').value.trim();
   const email = $('requestEmail').value.trim() || null;
+  const address = $('requestAddress').value.trim() || null;
+  const commission_id = $('requestCommission').value || null;
   const note = $('requestNote').value.trim() || null;
 
-  if (!first_name || !last_name || !phone) {
+  if (!first_name || !last_name || !phone || !commission_id) {
     msg('membershipRequestMessage', 'Remplis les champs obligatoires.');
     return;
   }
@@ -1020,6 +1062,8 @@ async function submitMembershipRequest(e) {
       last_name,
       phone,
       email,
+      address,
+      commission_id,
       note,
       status: 'pending'
     });
