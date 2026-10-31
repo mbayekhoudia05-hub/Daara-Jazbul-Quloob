@@ -1171,21 +1171,25 @@ async function loadMembershipRequests() {
 async function loadPublicCommissions(){
   const select=$('requestCommission');
   if(!select||!sb)return;
-  select.innerHTML='<option value="">Chargement des commissions…</option>';
+  const fallbackOptions=select.innerHTML;
   const r=await sb.from('commissions')
     .select('id,name')
     .eq('is_active',true)
     .order('name');
   if(r.error){
-    select.innerHTML='<option value="">Commissions indisponibles — réessaie plus tard</option>';
-    msg('membershipRequestMessage','Impossible de charger les commissions : '+r.error.message);
+    // Conserver les 7 choix préchargés dans la page si l'API est temporairement indisponible.
+    if(!select.options.length||select.options.length<2)select.innerHTML=fallbackOptions;
+    msg('membershipRequestMessage','Liste préchargée affichée. Actualisation Supabase impossible : '+r.error.message);
     return;
   }
   const rows=r.data||[];
-  select.innerHTML='<option value="">Choisir une commission *</option>'+
-    rows.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
-  select.disabled=!rows.length;
-  if(!rows.length)select.innerHTML='<option value="">Aucune commission active disponible</option>';
+  if(rows.length){
+    select.innerHTML='<option value="">Choisir une commission *</option>'+
+      rows.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+    select.disabled=false;
+  }else{
+    msg('membershipRequestMessage','Aucune commission active disponible dans la base.');
+  }
 }
 async function submitMembershipRequest(e) {
   e.preventDefault();
