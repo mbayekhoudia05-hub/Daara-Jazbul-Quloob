@@ -140,3 +140,5 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
  body.sidebar-collapsed .sidebar-account button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){body,.app-sidebar{transition:none}}
+
+.app-sidebar nav a.active{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.25);color:#fff;box-shadow:inset 3px 0 0 #e6cc70}.app-sidebar nav a.active:first-child{background:rgba(255,255,255,.18)}#adminDashboard .stats{max-width:1100px;grid-template-columns:repeat(4,minmax(0,1fr))}#adminDashboard .stat{min-height:112px;display:flex;flex-direction:column;justify-content:center;gap:8px}@media(max-width:800px){#adminDashboard .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){#adminDashboard .stats{grid-template-columns:1fr}}
