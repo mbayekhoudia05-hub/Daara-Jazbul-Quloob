@@ -35,6 +35,13 @@ function setAdminUI(){
 }
 
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
+function setDefaultContributionMonth(){
+  const el=$('contributionMonth');
+  if(el){
+    const d=new Date();
+    el.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }
+}
 async function init(){
  const c=window.DJQ_CONFIG;
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
