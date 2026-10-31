@@ -421,31 +421,50 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
 
-  // Commission du membre
-  const commission=member.commissions||null;
+  // Commission personnelle : relire directement la commission liée à la fiche membre.
+  // Cela évite de dépendre d'une ancienne relation ou d'un objet incomplet transmis à la fonction.
   const commissionName=$('myCommissionName');
   const commissionDescription=$('myCommissionDescription');
   const commissionRole=$('myCommissionRole');
+  let commission=null;
+  if(member.commission_id){
+    const commissionResult=await sb.from('commissions')
+      .select('id,name,description,responsible_member_id,successor_member_id')
+      .eq('id',member.commission_id)
+      .maybeSingle();
+    if(commissionResult.error){
+      if(commissionName)commissionName.textContent='Erreur de chargement';
+      if(commissionDescription)commissionDescription.textContent=commissionResult.error.message;
+    }else{
+      commission=commissionResult.data||null;
+    }
+  }
   if(commissionName)commissionName.textContent=commission?.name||'Aucune commission attribuée';
-  if(commissionDescription)commissionDescription.textContent=commission?.description||'Aucune description disponible.';
+  if(commissionDescription)commissionDescription.textContent=commission?.description||'Aucune description disponible pour le moment.';
   if(commissionRole){
     const roles=[];
     if(commission?.responsible_member_id===member.id)roles.push('Président de commission');
     if(commission?.successor_member_id===member.id)roles.push('Vice-président / successeur');
-    commissionRole.textContent=roles.length?roles.join(' · '):'Membre de la commission';
+    commissionRole.textContent=roles.length?roles.join(' · '):(commission?'Membre de la commission':'—');
   }
 
-  // Annuaire des commissions du Dahira (noms et descriptions publiquement consultables)
+  // Annuaire complet des commissions actives du Dahira.
   const allCommissionsBox=$('memberAllCommissions');
   if(allCommissionsBox){
+    allCommissionsBox.textContent='Chargement des commissions…';
     const allCommissions=await sb.from('commissions')
-      .select('name,description,is_active')
+      .select('id,name,description,is_active')
       .eq('is_active',true)
       .order('name');
-    allCommissionsBox.innerHTML=allCommissions.error
-      ?'Impossible de charger les commissions : '+esc(allCommissions.error.message)
-      :(allCommissions.data||[]).map(c=>'<article class="member-commission-item"><h4>'+esc(c.name)+'</h4><p>'+esc(c.description||'Description à venir.')+'</p></article>').join('')
-        ||'Aucune commission active pour le moment.';
+    if(allCommissions.error){
+      allCommissionsBox.textContent='Impossible de charger les commissions : '+allCommissions.error.message;
+    }else{
+      const rows=allCommissions.data||[];
+      allCommissionsBox.innerHTML=rows.length
+        ?'<p class="muted">'+rows.length+' commission(s) active(s) dans le Dahira</p>'+
+          rows.map(c=>'<article class="member-commission-item"><h4>'+esc(c.name)+'</h4><p>'+esc(c.description||'Description à venir.')+'</p></article>').join('')
+        :'Aucune commission active pour le moment.';
+    }
   }
 
   // Cotisations personnelles
