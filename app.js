@@ -187,6 +187,59 @@ if (requestForm) requestForm.onsubmit = submitMembershipRequest;
 }
  const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,s)=>setUser(s?.user||null));load();await handlePublicMember();
 }
+async function setUser(u){
+  currentUser=u;
+
+  if(!u){
+    isAdmin=false;
+    setAdminUI();
+    hide('logoutBtn');
+    show('loginBtn');
+    hide('memberDashboard');
+    show('membershipFormSection');
+    return;
+  }
+
+  hide('loginBtn');
+  show('logoutBtn');
+
+  const r=await sb.from('profiles')
+    .select('role')
+    .eq('id',u.id)
+    .maybeSingle();
+
+  isAdmin=r.data?.role==='admin';
+  setAdminUI();
+
+  await sb.rpc('link_my_member_account');
+
+  const mr=await sb.from('members')
+    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url')
+    .eq('auth_user_id',u.id)
+    .maybeSingle();
+
+  if(mr.error){
+    alert('Erreur de chargement du profil : '+mr.error.message);
+    return;
+  }
+
+  if(mr.data){
+    hide('membershipFormSection');
+    await loadConnectedMemberDashboard(mr.data);
+  }else{
+    hide('memberDashboard');
+    show('membershipFormSection');
+  }
+
+  if(isAdmin){
+    await loadMembers();
+    await loadMembershipRequests();
+    await loadContributions();
+    await loadFinanceDashboard();
+    await loadUnpaidTracker();
+    await initPaymentTransactions();
+  }
+}
 async function loadConnectedMemberDashboard(member){
   show('memberDashboard');
 
