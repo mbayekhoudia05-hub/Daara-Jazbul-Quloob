@@ -216,11 +216,12 @@ async function setUser(u){
 
   isAdmin=r.data?.role==='admin';
   setAdminUI();
+  await loadCommissions();
 
   await sb.rpc('link_my_member_account');
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url')
+    .select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
@@ -253,6 +254,7 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberNumber').textContent=member.member_number||'—';
   $('myMemberName').textContent=(member.first_name||'')+' '+(member.last_name||'');
   $('myMemberPhone').textContent=member.phone||'—';
+  $('myMemberCommission').textContent=member.commission?.name||'Non affecté';
   $('myMemberEmail').textContent=member.email||'—';
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
@@ -644,7 +646,7 @@ function printContributionReceipt(x){
 
 
 async function loadMembers(){
- if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
+ if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
  $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
 }
@@ -653,14 +655,14 @@ async function addMember(e){
  e.preventDefault();if(!isAdmin)return;if(editingMemberId)return updateExistingMember(e);let photoUrl=null;const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null}).select('id,member_number').single();
+ const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,address:$('memberAddress').value.trim()||null,commission_id:$('memberCommission').value||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
 function showMemberCard(m){
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=m.commission?.name||'Non affecté';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -718,7 +720,7 @@ function cancelEditMember(){
 }
 async function editMember(id){
  if(!sb||!isAdmin)return;
- const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').eq('id',id).single();
+ const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url').eq('id',id).single();
  if(r.error){msg('memberMessage',r.error.message);return}
  startEditMember(r.data);
 }
@@ -727,7 +729,7 @@ async function updateExistingMember(e){
  const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null};
+ const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,address:$('memberAddress').value.trim()||null,commission_id:$('memberCommission').value||null};
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
@@ -1093,7 +1095,7 @@ async function approveMembershipRequest(id) {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, status')
+    .select('id, first_name, last_name, phone, email, address, commission_id, status')
     .eq('id', id)
     .eq('status', 'pending')
     .single();
@@ -1110,7 +1112,9 @@ async function approveMembershipRequest(id) {
     first_name: x.first_name,
     last_name: x.last_name,
     phone: x.phone || null,
-    email: x.email || null
+    email: x.email || null,
+    address: x.address || null,
+    commission_id: x.commission_id || null
   }).select('id, member_number').single();
 
   if (created.error) {
