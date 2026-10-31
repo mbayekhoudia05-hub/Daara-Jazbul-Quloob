@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261031-final1"></script></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261031-commissions2"></script></head><body>
 <aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
   <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
   <div class="sidebar-caption">MENU PRINCIPAL</div>
@@ -77,6 +77,11 @@
     <label for="requestEmail">Adresse e-mail (facultatif)</label>
     <input id="requestEmail" type="email" maxlength="150">
 
+    <label for="requestCommission">Commission souhaitée *</label>
+    <select id="requestCommission" required>
+      <option value="">Chargement des commissions…</option>
+    </select>
+
     <label for="requestNote">Message (facultatif)</label>
     <textarea id="requestNote" rows="3" maxlength="1000"
       placeholder="Informations complémentaires"></textarea>
@@ -117,13 +122,14 @@
           <th>Nom</th>
           <th>Téléphone</th>
           <th>Email</th>
+          <th>Commission choisie</th>
           <th>Statut</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="membershipRequestRows">
         <tr>
-          <td colspan="5">Les demandes apparaîtront ici.</td>
+          <td colspan="6">Les demandes apparaîtront ici.</td>
         </tr>
       </tbody>
     </table>
