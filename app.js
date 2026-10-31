@@ -50,7 +50,11 @@ async function init(){
  $('printCardBtn').onclick=()=>window.print();
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
- setDefaultContributionMonth();
+ const contributionMonthInput=$('contributionMonth');
+if(contributionMonthInput){
+  const d=new Date();
+  contributionMonthInput.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
  
 if($("unpaidMonth")){
   $("unpaidMonth").value=currentYM();
