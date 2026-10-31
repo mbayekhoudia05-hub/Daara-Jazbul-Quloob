@@ -363,8 +363,39 @@ function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=
 function showMemberCard(m){
  show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
-async function handlePublicMember(){const n=new URLSearchParams(location.search).get('member');if(!n||!sb)return;hide('accueil');hide('contenus');hide('annonces');show('memberPublic');const r=await sb.from('members').select('member_number,first_name,last_name,status,membership_date,photo_url').eq('member_number',n).eq('status','active').maybeSingle();if(r.error||!r.data){$('publicMemberBox').innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';return}const m=r.data;$('publicMemberBox').innerHTML=`<img src="${esc(m.photo_url||'logo.jpeg')}" alt="Photo"><h3>${esc(m.first_name)} ${esc(m.last_name)}</h3><p><b>N° membre :</b> ${esc(m.member_number)}</p><p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p><p class="verify-ok">✓ Carte valide — membre actif</p>`}
+async function handlePublicMember(){
+  const n=new URLSearchParams(location.search).get('member');
+  if(!n||!sb)return;
 
+  hide('accueil');
+  hide('contenus');
+  hide('annonces');
+  show('memberPublic');
+
+  const r=await sb.rpc('get_public_member_card',{
+    p_member_number:n
+  });
+
+  if(r.error){
+    $('publicMemberBox').innerHTML='<p class="verify-no">Erreur de vérification de la carte.</p>';
+    return;
+  }
+
+  const m=Array.isArray(r.data)?r.data[0]:r.data;
+
+  if(!m){
+    $('publicMemberBox').innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';
+    return;
+  }
+
+  $('publicMemberBox').innerHTML=`
+    <img src="${esc(m.photo_url||'logo.jpeg')}" alt="Photo">
+    <h3>${esc(m.first_name)} ${esc(m.last_name)}</h3>
+    <p><b>N° membre :</b> ${esc(m.member_number)}</p>
+    <p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p>
+    <p class="verify-ok">✓ Carte valide — membre actif</p>
+  `;
+}
 
 let editingMemberId=null;
 function startEditMember(m){
