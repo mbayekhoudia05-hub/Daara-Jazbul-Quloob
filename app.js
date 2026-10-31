@@ -15,7 +15,7 @@ function setAdminUI(){
 }
 function showAdminSection(id){
   if(!isAdmin)return;
-  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters'];
   if(!allowed.includes(id))return;
   allowed.forEach(hide);
   show(id);
@@ -303,6 +303,7 @@ async function init(){
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
  $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
  $('closeMemberFinance').onclick=()=>hide('memberFinanceModal');
+ initPosterGenerator();
  $('printCardBtn').onclick=()=>window.print();
  $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
