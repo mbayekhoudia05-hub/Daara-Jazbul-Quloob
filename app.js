@@ -488,7 +488,8 @@ async function loadConnectedMemberDashboard(member){
         const url=(x.external_url||'').startsWith('https://')||(x.external_url||'').startsWith('http://')?x.external_url:'';
         return `<article><h4>${esc(x.title)}</h4>
           <p>${esc(x.description||'')}</p>
-          ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Consulter la charte</a>`:''}
+          ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien</a>`:''}
+          ${(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?`<p><a class="pdf-link" href="${esc(x.file_url)}" target="_blank" rel="noopener">📄 Consulter / télécharger le PDF</a></p>`:''}
         </article>`;
       }).join('')||'Aucune charte publiée pour le moment.';
   }
