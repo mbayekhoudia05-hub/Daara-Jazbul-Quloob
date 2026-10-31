@@ -158,3 +158,8 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .charter-pdf-actions .pdf-download{background:#075b35;color:#fff}
 .charter-pdf-viewer{display:block;width:100%;height: min(78vh,820px);min-height:480px;border:1px solid #dce7df;border-radius:10px;background:#f4f7f4;margin-top:12px}
 @media(max-width:600px){.charter-pdf-viewer{height:65vh;min-height:420px}.charter-pdf-actions{flex-direction:column}.charter-pdf-actions a{width:100%;box-sizing:border-box}}
+
+/* Lecture du règlement intérieur en texte intégral */
+.charter-full-text{margin:18px 0;padding:22px 24px;border:1px solid #dce7df;border-left:4px solid #075b35;border-radius:12px;background:#fbfdfb;color:#26352b;font:inherit;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;}
+#charterText{min-height:320px;line-height:1.65;font-family:inherit;}
+@media(max-width:600px){.charter-full-text{padding:15px;font-size:14px;line-height:1.75}}
