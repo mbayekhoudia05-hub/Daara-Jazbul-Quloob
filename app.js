@@ -141,12 +141,13 @@ function renderAdminCharters(rows){
   box.innerHTML=charters.map((x,index)=>{
     const pdf=(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?x.file_url:'';
     const external=(x.external_url||'').startsWith('https://')||(x.external_url||'').startsWith('http://')?x.external_url:'';
+    const viewerId='admin-charter-pdf-'+index;
     const actions=[
-      pdf?'<a class="pdf-link" href="'+esc(pdf)+'" target="_blank" rel="noopener">📖 Lire le PDF</a>':'',
-      pdf?'<a class="pdf-download" href="'+esc(pdf)+'?download=Charte-'+(index+1)+'.pdf">⬇ Télécharger</a>':'',
-      external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien</a>':''
+      pdf?'<a class="pdf-link" href="#'+viewerId+'">👁️ Lire ici dans la plateforme</a>':'',
+      pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Charte-'+(index+1)+'.pdf">⬇ Télécharger le PDF</a>':'',
+      external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien complémentaire</a>':''
     ].filter(Boolean).join(' ');
-    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p><div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div>'+(pdf?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#toolbar=1&navpanes=0" loading="lazy"></iframe>':'')+'</article>';
+    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p><div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div>'+(pdf?'<iframe id="'+viewerId+'" class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#toolbar=1&navpanes=0&view=FitH" loading="eager"></iframe>':'')+'</article>';
   }).join('');
 }
 
@@ -514,10 +515,10 @@ async function loadConnectedMemberDashboard(member){
           <p>${esc(x.description||'')}</p>
           ${url?`<p><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien complémentaire ↗</a></p>`:''}
           ${pdfUrl?`<div class="charter-pdf-actions">
-            <a class="pdf-link" href="${esc(pdfUrl)}" target="_blank" rel="noopener">👁️ Lire la charte dans un nouvel onglet</a>
+            <a class="pdf-link" href="#member-charter-pdf-${index}">👁️ Lire ici dans la plateforme</a>
             <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF</a>
           </div>
-          <iframe class="charter-pdf-viewer" src="${esc(pdfUrl)}#toolbar=1&navpanes=0&view=FitH" title="Lecture de ${esc(x.title)}" loading="lazy"></iframe>`:''}
+          <iframe id="member-charter-pdf-${index}" class="charter-pdf-viewer" src="${esc(pdfUrl)}#toolbar=1&navpanes=0&view=FitH" title="Lecture de ${esc(x.title)}" loading="eager"></iframe>`:''}
         </article>`;
       }).join('')||'Aucune charte publiée pour le moment.';
   }
