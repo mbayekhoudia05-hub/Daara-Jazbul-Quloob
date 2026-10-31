@@ -436,8 +436,8 @@ async function loadContributions(){
         <td>${esc(x.reference||'—')}</td>
         <td>${esc(new Date(x.paid_at).toLocaleDateString('fr-FR'))}</td>
         <td>
-          <button class="table-btn" onclick='printContributionReceipt(${JSON.stringify(x)})'>🧾 Reçu</button>
-          <button class="table-btn danger-btn" onclick='deleteContribution(${JSON.stringify(x.id)})'>Supprimer</button>
+          <button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button>
+          <button class="table-btn danger-btn" data-action="delete-contribution" data-id="${esc(x.id)}">Supprimer</button>
         </td>
       </tr>`).join('')
     : '<tr><td colspan="7">Aucune cotisation enregistrée.</td></tr>';
@@ -563,7 +563,7 @@ async function renderFinanceRows(rows){
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
     <td>${esc(new Date(x.paid_at).toLocaleDateString('fr-FR'))}</td>
-    <td><button class="table-btn" onclick='printContributionReceipt(${JSON.stringify(x)})'>🧾 Imprimer</button></td>
+    <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Imprimer</button></td>
   </tr>`).join('') : '<tr><td colspan="6">Aucune cotisation pour ces critères.</td></tr>';
 }
 
@@ -640,7 +640,7 @@ function printContributionReceipt(x){
 async function loadMembers(){
  if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
 }
 
 async function addMember(e){
@@ -751,7 +751,7 @@ async function viewMemberContributions(member){
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
     <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
-    <td><button class="table-btn" onclick='printContributionReceipt(${JSON.stringify(x)})'>🧾 Reçu</button></td>
+    <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button></td>
   </tr>`).join('') : '<tr><td colspan="5">Aucune cotisation enregistrée pour ce membre.</td></tr>';
 
   show('memberFinanceModal');
@@ -793,8 +793,8 @@ async function loadUnpaidTracker(){
       <td>${esc(month)}</td>
       <td><span class="status-pill ${ok?"paid-pill":"unpaid-pill"}">${ok?"🟢 PAYÉ":"🔴 NON PAYÉ"}</span></td>
       <td>${esc(ok?formatMoney(amount):"0 FCFA")}</td>
-      <td><button class="table-btn" onclick='viewMemberContributions(${JSON.stringify(m)})'>Historique</button>
-      ${!ok?`<button class="table-btn" onclick='prefillContribution(${JSON.stringify(m)},"${month}")'>➕ Ajouter</button>`:""}</td>
+      <td><button class="table-btn" data-action="member-history" data-id="${esc(m.id)}">Historique</button>
+      ${!ok?`<button class="table-btn" data-action="prefill-contribution" data-id="${esc(m.id)}" data-month="${esc(month)}">➕ Ajouter</button>`:""}</td>
     </tr>`;
   }).join(""):'<tr><td colspan="5">Aucun membre trouvé.</td></tr>';
 }
@@ -877,8 +877,8 @@ async function loadPaymentTransactions(){
       <td>${status}</td>
       <td>${esc(x.confirmed_at?new Date(x.confirmed_at).toLocaleDateString("fr-FR"):new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
       <td>
-        ${x.status==="pending"?`<button class="table-btn" onclick='confirmPaymentTransaction(${JSON.stringify(x)})'>✅ Confirmer</button>
-        <button class="table-btn danger-btn" onclick='cancelPaymentTransaction(${JSON.stringify(x.id)})'>❌ Annuler</button>`:""}
+        ${x.status==="pending"?`<button class="table-btn" data-action="confirm-payment" data-id="${esc(x.id)}">✅ Confirmer</button>
+        <button class="table-btn danger-btn" data-action="cancel-payment" data-id="${esc(x.id)}">❌ Annuler</button>`:""}
       </td>
     </tr>`;
   }).join(""):'<tr><td colspan="8">Aucune transaction.</td></tr>';
@@ -979,11 +979,11 @@ async function loadMembershipRequests() {
           <td>
             ${x.status === 'pending'
               ? `<button class="table-btn"
-                  onclick="approveMembershipRequest('${esc(x.id)}')">
+                  data-action="approve-request" data-id="${esc(x.id)}">
                   Valider
                 </button>
                 <button class="table-btn danger-btn"
-                  onclick="rejectMembershipRequest('${esc(x.id)}')">
+                  data-action="reject-request" data-id="${esc(x.id)}">
                   Refuser
                 </button>`
               : '—'}
@@ -1136,3 +1136,60 @@ async function rejectMembershipRequest(id) {
 
 
 
+
+
+// Actions de tableaux : aucun JavaScript utilisateur n'est injecté dans les attributs HTML.
+document.addEventListener('click', async function(e) {
+  const button = e.target.closest('[data-action]');
+  if (!button) return;
+  const id = button.dataset.id;
+  if (!id) return;
+  if (!isAdmin) {
+    alert("Action réservée à l'administrateur.");
+    return;
+  }
+  switch (button.dataset.action) {
+    case 'print-receipt': {
+      const r = await sb.from('contributions')
+        .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+        .eq('id', id).maybeSingle();
+      if (r.error || !r.data) { alert("Cotisation introuvable."); return; }
+      printContributionReceipt(r.data);
+      break;
+    }
+    case 'delete-contribution': deleteContribution(id); break;
+    case 'edit-member': editMember(id); break;
+    case 'show-member-card': {
+      const r = await sb.from('members')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url')
+        .eq('id', id).maybeSingle();
+      if (r.error || !r.data) { alert("Membre introuvable."); return; }
+      showMemberCard(r.data);
+      break;
+    }
+    case 'member-history': {
+      const r = await sb.from('members')
+        .select('id,member_number,first_name,last_name')
+        .eq('id', id).maybeSingle();
+      if (r.error || !r.data) { alert("Membre introuvable."); return; }
+      viewMemberContributions(r.data);
+      break;
+    }
+    case 'prefill-contribution': {
+      const r = await sb.from('members').select('id').eq('id', id).maybeSingle();
+      if (r.error || !r.data) { alert("Membre introuvable."); return; }
+      prefillContribution(r.data, button.dataset.month || currentYM());
+      break;
+    }
+    case 'confirm-payment': {
+      const r = await sb.from('payment_transactions')
+        .select('id,status').eq('id', id).maybeSingle();
+      if (r.error || !r.data) { alert("Transaction introuvable."); return; }
+      confirmPaymentTransaction(r.data);
+      break;
+    }
+    case 'cancel-payment': cancelPaymentTransaction(id); break;
+    case 'approve-request': approveMembershipRequest(id); break;
+    case 'reject-request': rejectMembershipRequest(id); break;
+  }
+});
