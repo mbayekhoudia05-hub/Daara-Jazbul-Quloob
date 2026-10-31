@@ -126,7 +126,28 @@ async function load(){
   if(isAdmin){
     window._djqContentRows=rows;
     renderAdminContents(rows);
+    renderAdminCharters(rows);
   }
+}
+
+function renderAdminCharters(rows){
+  const box=$('adminChartersList');
+  if(!box)return;
+  const charters=(rows||[]).filter(x=>x.type==='charte'&&x.published);
+  if(!charters.length){
+    box.innerHTML='<p class="loading">Aucune charte publiée pour le moment.</p>';
+    return;
+  }
+  box.innerHTML=charters.map((x,index)=>{
+    const pdf=(x.file_url||'').match(/^https?:\\/\\//i)?x.file_url:'';
+    const external=(x.external_url||'').match(/^https?:\\/\\//i)?x.external_url:'';
+    const actions=[
+      pdf?'<a class="pdf-link" href="'+esc(pdf)+'" target="_blank" rel="noopener">📖 Lire le PDF</a>':'',
+      pdf?'<a class="pdf-download" href="'+esc(pdf)+'?download=Charte-'+(index+1)+'.pdf">⬇ Télécharger</a>':'',
+      external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien</a>':''
+    ].filter(Boolean).join(' ');
+    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p><div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div>'+(pdf?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#toolbar=1&navpanes=0" loading="lazy"></iframe>':'')+'</article>';
+  }).join('');
 }
 
 function contentCard(x){
