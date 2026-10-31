@@ -8,6 +8,7 @@ function setAdminUI(){
     show('members');
     show('membersNav');
     show('membershipRequests');
+    show('commissionManagement');
     show('membershipRequestsNav');
     show('contributions');
     show('contributionsNav');
@@ -22,6 +23,7 @@ function setAdminUI(){
     hide('members');
     hide('membersNav');
     hide('membershipRequests');
+    hide('commissionManagement');
     hide('membershipRequestsNav');
     hide('contributions');
     hide('contributionsNav');
@@ -180,7 +182,11 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('memberForm').onsubmit=addMember;
+ $('membershipRequestForm').onsubmit=submitMembershipRequest;
+ $('commissionForm').onsubmit=saveCommission;
+ $('commissionEditSelect').onchange=()=>loadCommissionEditor();
+ await loadCommissions();const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -210,11 +216,12 @@ async function setUser(u){
 
   isAdmin=r.data?.role==='admin';
   setAdminUI();
+  await loadCommissions();
 
   await sb.rpc('link_my_member_account');
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url')
+    .select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
@@ -247,6 +254,7 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberNumber').textContent=member.member_number||'—';
   $('myMemberName').textContent=(member.first_name||'')+' '+(member.last_name||'');
   $('myMemberPhone').textContent=member.phone||'—';
+  $('myMemberCommission').textContent=member.commission?.name||'Non affecté';
   $('myMemberEmail').textContent=member.email||'—';
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
@@ -638,23 +646,23 @@ function printContributionReceipt(x){
 
 
 async function loadMembers(){
- if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
+ if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.commission?.name||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" onclick='editMember(${JSON.stringify(x.id)})'>Modifier</button> <button class="table-btn" onclick='showMemberCard(${JSON.stringify(x)})'>Voir carte</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
 }
 
 async function addMember(e){
  e.preventDefault();if(!isAdmin)return;if(editingMemberId)return updateExistingMember(e);let photoUrl=null;const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null}).select('id,member_number').single();
+ const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,address:$('memberAddress').value.trim()||null,commission_id:$('memberCommission').value||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
 function showMemberCard(m){
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=m.commission?.name||'Non affecté';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -698,6 +706,8 @@ function startEditMember(m){
  $('memberLastName').value=m.last_name||'';
  $('memberPhone').value=m.phone||'';
  $('memberEmail').value=m.email||'';
+ $('memberAddress').value=m.address||'';
+ $('memberCommission').value=m.commission_id||'';
  $('memberPhoto').value='';
  if(m.photo_url){$('photoPreview').src=m.photo_url;show('photoPreviewWrap');$('photoPreviewName').textContent='Photo actuelle — choisir un nouveau fichier pour la remplacer.';}
  const btn=$('memberForm').querySelector('button.primary');btn.textContent='Enregistrer les modifications';
@@ -712,7 +722,7 @@ function cancelEditMember(){
 }
 async function editMember(id){
  if(!sb||!isAdmin)return;
- const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').eq('id',id).single();
+ const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,commission_id,commission:commissions(name),status,membership_date,photo_url').eq('id',id).single();
  if(r.error){msg('memberMessage',r.error.message);return}
  startEditMember(r.data);
 }
@@ -721,7 +731,7 @@ async function updateExistingMember(e){
  const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null};
+ const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,address:$('memberAddress').value.trim()||null,commission_id:$('memberCommission').value||null};
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
@@ -957,12 +967,12 @@ async function loadMembershipRequests() {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, note, status, created_at')
+    .select('id, first_name, last_name, phone, email, note, address, commission_id, commission:commissions(name), status, created_at')
     .order('created_at', { ascending: false });
 
   if (r.error) {
     box.innerHTML =
-      '<tr><td colspan="5">Erreur : ' + esc(r.error.message) + '</td></tr>';
+      '<tr><td colspan="6">Erreur : ' + esc(r.error.message) + '</td></tr>';
     return;
   }
 
@@ -974,6 +984,7 @@ async function loadMembershipRequests() {
           <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
           <td>${esc(x.phone)}</td>
           <td>${esc(x.email || '—')}</td>
+          <td>${esc(x.commission?.name || '—')}</td>
           <td>${esc(x.status === 'pending' ? 'En attente' :
                      x.status === 'approved' ? 'Approuvée' : 'Refusée')}</td>
           <td>
@@ -990,8 +1001,42 @@ async function loadMembershipRequests() {
           </td>
         </tr>
       `).join('')
-    : '<tr><td colspan="5">Aucune demande pour le moment.</td></tr>';
+    : '<tr><td colspan="6">Aucune demande pour le moment.</td></tr>';
 }
+
+async function loadCommissions(){
+ if(!sb)return;
+ const r=await sb.from('commissions').select('id,name,description,is_active,responsible_member_id').order('name');
+ if(r.error){if($('publicCommissionGrid'))$('publicCommissionGrid').textContent='Commissions indisponibles.';if(isAdmin)msg('commissionMessage',r.error.message);return;}
+ const rows=r.data||[];
+ const opts=rows.filter(x=>x.is_active).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ if($('requestCommission'))$('requestCommission').innerHTML='<option value="">Choisir une commission</option>'+opts;
+ if($('memberCommission'))$('memberCommission').innerHTML='<option value="">Aucune commission</option>'+opts;
+ if($('publicCommissionGrid'))$('publicCommissionGrid').innerHTML=rows.filter(x=>x.is_active).map(x=>'<article class="card"><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||'Mission à préciser.')+'</p></article>').join('');
+ if(!isAdmin)return;
+ const mr=await sb.from('members').select('id,member_number,first_name,last_name').eq('status','active').order('first_name');
+ if(mr.error){msg('commissionMessage',mr.error.message);return;}
+ const members=mr.data||[];
+ $('commissionEditSelect').innerHTML=rows.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ $('commissionResponsible').innerHTML='<option value="">Aucun responsable</option>'+members.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.member_number)+' — '+esc(x.first_name)+' '+esc(x.last_name)+'</option>').join('');
+ $('commissionRows').innerHTML=rows.map(x=>{const m=members.find(y=>y.id===x.responsible_member_id);return '<tr><td>'+esc(x.name)+'</td><td>'+esc(x.description||'—')+'</td><td>'+esc(m?m.first_name+' '+m.last_name:'Non désigné')+'</td></tr>';}).join('');
+ loadCommissionEditor();
+}
+async function loadCommissionEditor(){
+ const id=$('commissionEditSelect').value;if(!id)return;
+ const r=await sb.from('commissions').select('description,responsible_member_id').eq('id',id).single();
+ if(r.error)return;
+ $('commissionDescription').value=r.data.description||'';
+ $('commissionResponsible').value=r.data.responsible_member_id||'';
+}
+async function saveCommission(e){
+ e.preventDefault();if(!sb||!isAdmin)return;
+ const id=$('commissionEditSelect').value;
+ const r=await sb.from('commissions').update({description:$('commissionDescription').value.trim(),responsible_member_id:$('commissionResponsible').value||null}).eq('id',id);
+ if(r.error){msg('commissionMessage','Erreur : '+r.error.message);return;}
+ msg('commissionMessage','Commission mise à jour.',true);await loadCommissions();
+}
+
 async function submitMembershipRequest(e) {
   e.preventDefault();
 
@@ -999,9 +1044,11 @@ async function submitMembershipRequest(e) {
   const last_name = $('requestLastName').value.trim();
   const phone = $('requestPhone').value.trim();
   const email = $('requestEmail').value.trim() || null;
+  const address = $('requestAddress').value.trim() || null;
+  const commission_id = $('requestCommission').value || null;
   const note = $('requestNote').value.trim() || null;
 
-  if (!first_name || !last_name || !phone) {
+  if (!first_name || !last_name || !phone || !commission_id) {
     msg('membershipRequestMessage', 'Remplis les champs obligatoires.');
     return;
   }
@@ -1020,6 +1067,8 @@ async function submitMembershipRequest(e) {
       last_name,
       phone,
       email,
+      address,
+      commission_id,
       note,
       status: 'pending'
     });
@@ -1049,7 +1098,7 @@ async function approveMembershipRequest(id) {
 
   const r = await sb
     .from('membership_requests')
-    .select('id, first_name, last_name, phone, email, status')
+    .select('id, first_name, last_name, phone, email, address, commission_id, status')
     .eq('id', id)
     .eq('status', 'pending')
     .single();
@@ -1066,7 +1115,9 @@ async function approveMembershipRequest(id) {
     first_name: x.first_name,
     last_name: x.last_name,
     phone: x.phone || null,
-    email: x.email || null
+    email: x.email || null,
+    address: x.address || null,
+    commission_id: x.commission_id || null
   }).select('id, member_number').single();
 
   if (created.error) {
