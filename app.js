@@ -144,7 +144,29 @@ function render(rows){
 }
 function renderAdminContents(rows){
   const box=$('adminContentRows');if(!box)return;
-  box.innerHTML=rows.length?rows.map(x=>'<article class="content-admin-row"><div><span class="tag">'+esc(contentTypeLabel(x.type))+(x.published?' · Publié':' · Brouillon')+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p></div><div class="content-admin-actions"><button type="button" class="table-btn" data-action="edit-content" data-id="'+esc(x.id)+'">Modifier</button><button type="button" class="table-btn danger-btn" data-action="delete-content" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<div class="loading">Aucun contenu enregistré.</div>';
+  box.innerHTML=rows.length?rows.map(x=>'<article class="content-admin-row"><div><span class="tag">'+esc(contentTypeLabel(x.type))+(x.published?' · Publié':' · Brouillon')+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p></div><div class="content-admin-actions"><button type="button" class="table-btn" data-content-edit="'+esc(x.id)+'">Modifier</button><button type="button" class="table-btn danger-btn" data-content-delete="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<div class="loading">Aucun contenu enregistré.</div>';
+  // Bind directly after rendering so edit/delete do not depend on a delegated click handler.
+  box.querySelectorAll('[data-content-edit]').forEach(button=>{
+    button.onclick=event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      startEditContent(button.dataset.contentEdit);
+    };
+  });
+  box.querySelectorAll('[data-content-delete]').forEach(button=>{
+    button.onclick=async event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      const id=button.dataset.contentDelete;
+      if(!isAdmin||!currentUser){alert("Connecte-toi avec le compte administrateur.");return;}
+      if(!confirm('Supprimer définitivement ce contenu ?'))return;
+      button.disabled=true;
+      const removed=await sb.from('contents').delete().eq('id',id).select('id').maybeSingle();
+      if(removed.error){alert('Suppression impossible : '+removed.error.message);button.disabled=false;return;}
+      if(!removed.data){alert("Aucun contenu supprimé. Vérifie les droits administrateur dans Supabase.");button.disabled=false;return;}
+      await load();
+    };
+  });
 }
 function resetContentForm(){
   $('editingContentId').value='';
