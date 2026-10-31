@@ -74,8 +74,9 @@
     <label for="requestPhone">Téléphone *</label>
     <input id="requestPhone" type="tel" required maxlength="30">
 
-    <label for="requestEmail">Adresse e-mail (facultatif)</label>
-    <input id="requestEmail" type="email" maxlength="150">
+    <label for="requestEmail">Adresse e-mail *</label>
+    <input id="requestEmail" type="email" required maxlength="150" autocomplete="email">
+    <small>Cette adresse servira à créer votre compte personnel après validation de votre adhésion.</small>
 
     <label for="requestCommission">Commission souhaitée *</label>
     <select id="requestCommission" required>
@@ -94,6 +95,7 @@
       placeholder="Informations complémentaires"></textarea>
 
     <button type="submit" class="primary">Envoyer ma demande</button>
+    <p class="form-help">Après l’envoi, l’administrateur étudiera votre demande. Si elle est acceptée, créez votre compte avec cette même adresse e-mail depuis le bouton « Connexion », puis « Créer un compte gratuit ». Confirmez votre adresse e-mail et reconnectez-vous pour ouvrir votre espace membre.</p>
     <p id="membershipRequestMessage" role="status"></p>
   </form>
 </section>
