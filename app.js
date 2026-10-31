@@ -3,8 +3,8 @@ const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
 function setAdminUI(){
-  const sections=['adminDashboard','admin','members','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
-  const navs=['dashboardNav','adminNav','membersNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
+  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
@@ -15,7 +15,7 @@ function setAdminUI(){
 }
 function showAdminSection(id){
   if(!isAdmin)return;
-  const allowed=['adminDashboard','admin','members','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard'];
   if(!allowed.includes(id))return;
   allowed.forEach(hide);
   show(id);
@@ -268,7 +268,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -321,6 +321,7 @@ async function setUser(u){
 
   if(isAdmin){
     await loadMembers();
+    await loadCommissions();
     await loadMembershipRequests();
     await loadContributions();
     await loadFinanceDashboard();
@@ -536,38 +537,45 @@ async function loadContributions(){
 
 async function addContribution(e){
   e.preventDefault();
-  if(!isAdmin)return;
+  if(!isAdmin||!currentUser)return;
 
   const memberId=$('contributionMember').value;
   const paymentMonth=contributionMonthDate();
   const amount=Number($('contributionAmount').value);
+  const method=$('contributionMethod').value;
+  const reference=$('contributionReference').value.trim()||null;
+  const note=$('contributionNote').value.trim()||null;
 
   if(!memberId||!paymentMonth||!amount||amount<=0){
     msg('contributionMessage','Sélectionne le membre, le mois et un montant valide.');
     return;
   }
 
-  const r=await sb.from('contributions').insert({
-    member_id:memberId,
-    amount,
-    payment_month:paymentMonth,
-    payment_method:$('contributionMethod').value,
-    status:'paid',
-    reference:$('contributionReference').value.trim()||null,
-    note:$('contributionNote').value.trim()||null
-  });
+  // Les paiements digitaux doivent rester en attente jusqu'à vérification.
+  const r=method==='especes'
+    ? await sb.from('contributions').insert({
+        member_id:memberId,amount,payment_month:paymentMonth,
+        payment_method:method,status:'paid',reference,note
+      })
+    : await sb.from('payment_transactions').insert({
+        member_id:memberId,amount,payment_month:paymentMonth,
+        payment_method:method,status:'pending',reference,note
+      });
 
   if(r.error){
     msg('contributionMessage','Erreur : '+r.error.message);
     return;
   }
 
-  msg('contributionMessage','Cotisation enregistrée avec succès.',true);
+  msg('contributionMessage',method==='especes'
+    ?'Cotisation en espèces enregistrée.'
+    :'Paiement numérique enregistré en attente de vérification dans le module Paiements.',true);
   const selectedMonth=$('contributionMonth').value;
   e.target.reset();
   $('contributionMonth').value=selectedMonth;
-  setTimeout(()=>msg('contributionMessage',''),2500);
   await loadContributions();
+  await loadPaymentTransactions();
+  await loadFinanceDashboard();
 }
 
 async function deleteContribution(id){
@@ -920,13 +928,8 @@ async function savePaymentTransaction(e){
   const payment_method=$("paymentMethod").value;
   const reference=$("paymentReference").value.trim()||null;
   const payment_month=$("paymentMonth").value+"-01";
-  const status=$("paymentStatus").value || "pending";
+  const status="pending";
   const note=$("paymentNote").value.trim()||null;
-
-  if(!["pending","confirmed","cancelled"].includes(status)){
-    alert("Statut de paiement invalide.");
-    return;
-  }
   if(!member_id||!amount||!payment_month){alert("Remplis les champs obligatoires.");return;}
 
   const r=await sb.from("payment_transactions").insert({
@@ -1032,11 +1035,60 @@ async function confirmPaymentTransaction(x) {
 
 
 async function cancelPaymentTransaction(id){
-  if(!confirm("Annuler cette transaction ?"))return;
-  const r=await sb.from("payment_transactions").update({status:"cancelled"}).eq("id",id);
+  if(!sb||!isAdmin||!confirm("Annuler cette transaction en attente ?"))return;
+  const r=await sb.from("payment_transactions").update({status:"cancelled"}).eq("id",id).eq("status","pending").select("id").maybeSingle();
   if(r.error){alert(r.error.message);return;}
+  if(!r.data){alert("Cette transaction n'est plus en attente. Actualise la liste.");}
   await loadPaymentTransactions();
 }
+
+async function loadCommissions(){
+  if(!sb||!isAdmin)return;
+  const [cr,mr]=await Promise.all([
+    sb.from('commissions').select('id,name,description,responsible_member_id,is_active').order('name'),
+    sb.from('members').select('id,member_number,first_name,last_name').order('first_name')
+  ]);
+  if(cr.error){msg('commissionMessage','Erreur : '+cr.error.message);return;}
+  if(mr.error){msg('commissionMessage','Erreur membres : '+mr.error.message);return;}
+  const members=mr.data||[];
+  const box=$('commissionRows');
+  box.innerHTML=(cr.data||[]).length?(cr.data||[]).map(c=>{
+    const options='<option value="">Aucun responsable</option>'+members.map(m=>
+      '<option value="'+esc(m.id)+'" '+(c.responsible_member_id===m.id?'selected':'')+'>'+esc(m.member_number)+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
+    ).join('');
+    return '<tr><td><strong>'+esc(c.name)+'</strong></td><td>'+esc(c.description||'—')+'</td><td><select data-commission-select="'+esc(c.id)+'">'+options+'</select></td><td>'+(c.is_active?'Active':'Inactive')+'</td><td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'">Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td></tr>';
+  }).join(''):'<tr><td colspan="5">Aucune commission enregistrée.</td></tr>';
+}
+async function saveCommission(e){
+  e.preventDefault();
+  if(!sb||!isAdmin)return;
+  const name=$('commissionName').value.trim();
+  const description=$('commissionDescription').value.trim();
+  if(!name){msg('commissionMessage','Le nom de la commission est obligatoire.');return;}
+  const r=await sb.from('commissions').insert({name,description,is_active:true});
+  if(r.error){msg('commissionMessage','Erreur : '+r.error.message);return;}
+  $('commissionForm').reset();
+  msg('commissionMessage','Commission ajoutée.',true);
+  await loadCommissions();
+}
+async function assignCommission(id){
+  if(!sb||!isAdmin)return;
+  const select=document.querySelector('[data-commission-select="'+CSS.escape(id)+'"]');
+  if(!select)return;
+  const r=await sb.from('commissions').update({responsible_member_id:select.value||null}).eq('id',id);
+  if(r.error){msg('commissionMessage','Affectation impossible : '+r.error.message);return;}
+  msg('commissionMessage','Responsable de commission mis à jour.',true);
+  await loadCommissions();
+}
+async function toggleCommission(id,active){
+  if(!sb||!isAdmin)return;
+  const next=!active;
+  if(!confirm((next?'Activer':'Désactiver')+' cette commission ?'))return;
+  const r=await sb.from('commissions').update({is_active:next}).eq('id',id);
+  if(r.error){msg('commissionMessage','Modification impossible : '+r.error.message);return;}
+  await loadCommissions();
+}
+
 async function loadMembershipRequests() {
   if (!sb || !isAdmin) return;
 
@@ -1288,6 +1340,8 @@ document.addEventListener('click', async function(e) {
       break;
     }
     case 'cancel-payment': cancelPaymentTransaction(id); break;
+    case 'assign-commission': assignCommission(id); break;
+    case 'toggle-commission': toggleCommission(id,button.dataset.active==='true'); break;
     case 'approve-request': approveMembershipRequest(id); break;
     case 'reject-request': rejectMembershipRequest(id); break;
   }
