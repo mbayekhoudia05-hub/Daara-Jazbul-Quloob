@@ -748,7 +748,7 @@ async function addMember(e){
  e.preventDefault();if(!isAdmin)return;if(editingMemberId)return updateExistingMember(e);let photoUrl=null;const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null}).select('id,member_number').single();
+ const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
@@ -799,6 +799,7 @@ function startEditMember(m){
  $('memberLastName').value=m.last_name||'';
  $('memberPhone').value=m.phone||'';
  $('memberEmail').value=m.email||'';
+ if($('memberCommission'))$('memberCommission').value=m.commission_id||'';
  $('memberPhoto').value='';
  if(m.photo_url){$('photoPreview').src=m.photo_url;show('photoPreviewWrap');$('photoPreviewName').textContent='Photo actuelle — choisir un nouveau fichier pour la remplacer.';}
  const btn=$('memberForm').querySelector('button.primary');btn.textContent='Enregistrer les modifications';
@@ -813,7 +814,7 @@ function cancelEditMember(){
 }
 async function editMember(id){
  if(!sb||!isAdmin)return;
- const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').eq('id',id).single();
+ const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id').eq('id',id).single();
  if(r.error){msg('memberMessage',r.error.message);return}
  startEditMember(r.data);
 }
@@ -822,7 +823,7 @@ async function updateExistingMember(e){
  const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null};
+ const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null};
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
@@ -1048,38 +1049,52 @@ async function loadCommissions(){
   if(!sb||!isAdmin)return;
   const box=$('commissionRows');
   if(!box)return;
-  box.innerHTML='<tr><td colspan="6">Chargement des commissions…</td></tr>';
+  box.innerHTML='<tr><td colspan="7">Chargement des commissions…</td></tr>';
   try{
     const cr=await sb.from('commissions')
       .select('id,name,description,responsible_member_id,successor_member_id,is_active')
       .order('name');
     if(cr.error){
-      box.innerHTML='<tr><td colspan="6">Erreur Supabase : '+esc(cr.error.message)+'</td></tr>';
+      box.innerHTML='<tr><td colspan="7">Erreur Supabase : '+esc(cr.error.message)+'</td></tr>';
       msg('commissionMessage','Chargement impossible : '+cr.error.message);
       return;
     }
     const mr=await sb.from('members')
-      .select('id,member_number,first_name,last_name,status')
+      .select('id,member_number,first_name,last_name,status,commission_id')
       .order('first_name');
     const members=mr.error?[]:(mr.data||[]);
     const rows=cr.data||[];
     const memberOptions=(selected)=>'<option value="">— Non désigné —</option>'+members.map(m=>
       '<option value="'+esc(m.id)+'" '+(selected===m.id?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
     ).join('');
+    const memberSelect=$('memberCommission');
+    if(memberSelect){
+      const current=memberSelect.value;
+      memberSelect.innerHTML='<option value="">Aucune commission (facultatif)</option>'+
+        rows.filter(c=>c.is_active).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+      if(current)memberSelect.value=current;
+    }
     box.innerHTML=rows.length?rows.map(c=>{
+      const roster=members.filter(m=>m.commission_id===c.id);
+      const rosterHtml=roster.length
+        ? '<ul class="commission-roster-list">'+roster.map(m=>'<li>'+esc(m.first_name)+' '+esc(m.last_name)+(m.status==='active'?'':' <span>(inactif)</span>')+'</li>').join('')+'</ul>'
+        : '<span class="muted">Aucun membre affecté pour le moment.</span>';
+      const president=members.find(m=>m.id===c.responsible_member_id);
+      const vice=members.find(m=>m.id===c.successor_member_id);
       return '<tr>'+
         '<td><strong>'+esc(c.name)+'</strong></td>'+
         '<td>'+esc(c.description||'—')+'</td>'+
-        '<td><select aria-label="Responsable de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select></td>'+
-        '<td><select aria-label="Successeur de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select></td>'+
+        '<td><label class="commission-role-label">Président</label><select aria-label="Président de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select>'+(president?'<small>'+esc(president.first_name)+' '+esc(president.last_name)+'</small>':'')+'</td>'+
+        '<td><label class="commission-role-label">Vice-président</label><select aria-label="Vice-président de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select>'+(vice?'<small>'+esc(vice.first_name)+' '+esc(vice.last_name)+'</small>':'')+'</td>'+
+        '<td>'+rosterHtml+'</td>'+
         '<td>'+(c.is_active?'Active':'Inactive')+'</td>'+
         '<td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td>'+
       '</tr>';
-    }).join(''):'<tr><td colspan="6">Aucune commission trouvée dans la base de données.</td></tr>';
-    if(mr.error)msg('commissionMessage','Les '+rows.length+' commissions sont affichées, mais les membres ne peuvent pas être chargés : '+mr.error.message);
-    else msg('commissionMessage',rows.length+' commission(s) chargée(s). Choisis un responsable et un successeur pour chaque commission.',true);
+    }).join(''):'<tr><td colspan="7">Aucune commission trouvée dans la base de données.</td></tr>';
+    if(mr.error)msg('commissionMessage','Les commissions sont affichées, mais les membres ne peuvent pas être chargés : '+mr.error.message);
+    else msg('commissionMessage',rows.length+' commission(s) chargée(s). Désigne un président, un vice-président et affecte les membres à leur commission.',true);
   }catch(err){
-    box.innerHTML='<tr><td colspan="6">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
+    box.innerHTML='<tr><td colspan="7">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
     msg('commissionMessage','Erreur pendant le chargement : '+(err?.message||String(err)));
   }
 }
@@ -1101,7 +1116,7 @@ async function assignCommission(id){
   const successor=document.querySelector('[data-commission-successor="'+CSS.escape(id)+'"]');
   if(!responsible||!successor)return;
   if(responsible.value&&successor.value&&responsible.value===successor.value){
-    msg('commissionMessage','Le responsable et son successeur doivent être deux membres différents.');
+    msg('commissionMessage','Le président et le vice-président doivent être deux membres différents.');
     return;
   }
   const r=await sb.from('commissions').update({
@@ -1109,7 +1124,7 @@ async function assignCommission(id){
     successor_member_id:successor.value||null
   }).eq('id',id);
   if(r.error){msg('commissionMessage','Enregistrement impossible : '+r.error.message);return;}
-  msg('commissionMessage','Responsable et successeur enregistrés.',true);
+  msg('commissionMessage','Président et vice-président enregistrés.',true);
   await loadCommissions();
 }
 async function toggleCommission(id,active){
