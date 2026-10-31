@@ -139,8 +139,8 @@ function renderAdminCharters(rows){
     return;
   }
   box.innerHTML=charters.map((x,index)=>{
-    const pdf=(x.file_url||'').match(/^https?:\\/\\//i)?x.file_url:'';
-    const external=(x.external_url||'').match(/^https?:\\/\\//i)?x.external_url:'';
+    const pdf=(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?x.file_url:'';
+    const external=(x.external_url||'').startsWith('https://')||(x.external_url||'').startsWith('http://')?x.external_url:'';
     const actions=[
       pdf?'<a class="pdf-link" href="'+esc(pdf)+'" target="_blank" rel="noopener">📖 Lire le PDF</a>':'',
       pdf?'<a class="pdf-download" href="'+esc(pdf)+'?download=Charte-'+(index+1)+'.pdf">⬇ Télécharger</a>':'',
