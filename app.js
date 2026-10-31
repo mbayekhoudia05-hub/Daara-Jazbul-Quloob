@@ -26,14 +26,21 @@ function showAdminSection(id){
   if(id==='commissions'||id==='members')void loadCommissions();
   if(id==='membershipRequests')void loadMembershipRequests();
 }
+async function updatePendingMembershipCount(){
+  if(!sb||!isAdmin)return;
+  const r=await sb.from('membership_requests').select('id',{count:'exact',head:true}).eq('status','pending');
+  if(r.error){console.warn('Comptage des demandes impossible :',r.error.message);return;}
+  const n=Number(r.count||0);
+  const d=$('dashPending');if(d)d.textContent=String(n);
+  const badge=$('membershipRequestBadge');
+  if(badge){badge.textContent=String(n);badge.classList.toggle('hidden',n===0);badge.setAttribute('aria-label',n+' demande(s) en attente');}
+}
 function updateAdminDashboard(){
   const copy=(from,to)=>{const a=$(from),b=$(to);if(a&&b)b.textContent=a.textContent};
   copy('memberCount','dashMembers');
   copy('contributionMonthTotal','dashContributions');
   copy('pendingPayments','dashPayments');
-  const pending=document.querySelectorAll('#membershipRequestRows tr');
-  const n=[...pending].filter(tr=>tr.textContent.includes('En attente')).length;
-  const d=$('dashPending');if(d)d.textContent=String(n);
+  void updatePendingMembershipCount();
 }
 document.addEventListener('click',e=>{
   const button=e.target.closest('[data-action="export-members"],[data-action="export-commissions"]');
@@ -1332,6 +1339,7 @@ async function loadMembershipRequests() {
   }
 
   const requests = r.data || [];
+  void updatePendingMembershipCount();
 
   box.innerHTML = requests.length
     ? requests.map(x => `
