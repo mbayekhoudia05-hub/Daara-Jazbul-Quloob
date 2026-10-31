@@ -1,5 +1,43 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js"></script></head><body>
-<header><a class="brand" href="#accueil"><img src="logo.jpeg"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a><nav><a href="#accueil">Accueil</a><a href="#contenus">Contenus</a><a href="#annonces">Annonces</a><a href="#members" id="membersNav" class="hidden">Membres</a><a href="#contributions" id="contributionsNav" class="hidden">💰 Cotisations</a><a href="#financeDashboard" id="financeNav" class="hidden">📊 Finances</a><a href="#unpaidMembers" id="unpaidNav" class="hidden">📅 Suivi paiements</a><a href="#paymentTransactions" id="paymentsNav" class="hidden">💳 Paiements</a><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></nav></header><a href="#membershipRequests" id="membershipRequestsNav" class="hidden">Demandes d’adhésion</a>
+<aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
+  <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
+  <div class="sidebar-caption">MENU PRINCIPAL</div>
+  <nav id="mainNavigation">
+    <a href="#accueil">⌂ <span>Accueil</span></a>
+    <a href="#contenus">▤ <span>Contenus</span></a>
+    <a href="#annonces">▣ <span>Annonces</span></a>
+    <a href="#members" id="membersNav" class="hidden">♙ <span>Membres</span></a>
+    <a href="#contributions" id="contributionsNav" class="hidden">₣ <span>Cotisations</span></a>
+    <a href="#financeDashboard" id="financeNav" class="hidden">▥ <span>Finances</span></a>
+    <a href="#unpaidMembers" id="unpaidNav" class="hidden">◷ <span>Suivi paiements</span></a>
+    <a href="#paymentTransactions" id="paymentsNav" class="hidden">▣ <span>Paiements</span></a>
+    <a href="#membershipRequests" id="membershipRequestsNav" class="hidden">✉ <span>Demandes d’adhésion</span></a>
+  </nav>
+  <div class="sidebar-account"><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></div>
+</aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+<header class="topbar">
+  <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Masquer le menu" aria-expanded="true">☰</button>
+  <div class="topbar-title"><strong>Daara Jazbul Qulub</strong><small>Plateforme du Dahira</small></div>
+</header>
+<script>
+(function(){
+  const body=document.body, toggle=document.getElementById('sidebarToggle');
+  const backdrop=document.getElementById('sidebarBackdrop');
+  const sidebar=document.getElementById('appSidebar');
+  if(!toggle||!sidebar||!backdrop)return;
+  function setOpen(open){
+    body.classList.toggle('sidebar-collapsed',!open);
+    body.classList.toggle('sidebar-mobile-open',open&&window.innerWidth<=800);
+    toggle.setAttribute('aria-expanded',String(open));
+    toggle.setAttribute('aria-label',open?'Masquer le menu':'Afficher le menu');
+  }
+  toggle.addEventListener('click',()=>setOpen(body.classList.contains('sidebar-collapsed')||!body.classList.contains('sidebar-mobile-open')));
+  backdrop.addEventListener('click',()=>setOpen(false));
+  sidebar.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=800)setOpen(false)}));
+  window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
+})();
+</script>
 <main><section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
 <section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
