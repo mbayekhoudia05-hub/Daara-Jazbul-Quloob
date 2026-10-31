@@ -298,6 +298,83 @@ function setDefaultContributionMonth(){
     el.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   }
 }
+
+let posterImages={logo:null,event:null,marabout:null};
+function posterLoadImage(file){
+ return new Promise((resolve,reject)=>{
+  if(!file){resolve(null);return}
+  if(!file.type.startsWith('image/')){reject(new Error('Veuillez choisir un fichier image.'));return}
+  if(file.size>8*1024*1024){reject(new Error('Chaque image doit faire moins de 8 Mo.'));return}
+  const reader=new FileReader();
+  reader.onload=()=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Cette image ne peut pas être lue.'));img.src=reader.result};
+  reader.onerror=()=>reject(new Error('Lecture du fichier impossible.'));
+  reader.readAsDataURL(file);
+ });
+}
+function posterCrop(ctx,img,x,y,w,h,radius=0){
+ if(!img)return;
+ ctx.save();
+ if(radius){ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.clip()}
+ const scale=Math.max(w/img.width,h/img.height),sw=w/scale,sh=h/scale,sx=(img.width-sw)/2,sy=(img.height-sh)/2;
+ ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);
+ ctx.restore();
+}
+function posterText(ctx,text,x,y,maxWidth,lineHeight,maxLines=3){
+ const words=String(text||'').trim().split(/\s+/);let line='',lines=[];
+ for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}
+ if(line)lines.push(line);
+ lines.slice(0,maxLines).forEach((v,i)=>ctx.fillText(v,x,y+i*lineHeight));
+ return Math.min(lines.length,maxLines);
+}
+function drawPoster(){
+ const canvas=$('posterCanvas');if(!canvas)return;
+ const ctx=canvas.getContext('2d'),W=1080,H=1350;
+ const green=ctx.createLinearGradient(0,0,W,H);green.addColorStop(0,'#063c25');green.addColorStop(.55,'#08723e');green.addColorStop(1,'#022d20');
+ ctx.fillStyle=green;ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='#d9b95c';ctx.lineWidth=12;ctx.strokeRect(28,28,W-56,H-56);
+ ctx.strokeStyle='rgba(231,203,119,.45)';ctx.lineWidth=2;ctx.strokeRect(48,48,W-96,H-96);
+ ctx.fillStyle='#e8cb78';ctx.textAlign='center';ctx.font='bold 30px Georgia';ctx.fillText('DAARA JAZBUL QULUB',W/2,105);
+ ctx.fillStyle='#fff';ctx.font='bold 58px Georgia';posterText(ctx,$('posterTitle')?.value||'VOTRE ÉVÉNEMENT',W/2,190,900,68,2);
+ ctx.fillStyle='#f0d98d';ctx.font='30px Arial';posterText(ctx,$('posterSubtitle')?.value||'Vous êtes cordialement invités',W/2,320,900,40,2);
+ if(posterImages.event){posterCrop(ctx,posterImages.event,100,400,880,450,28);ctx.strokeStyle='#e4c56b';ctx.lineWidth=7;ctx.strokeRect(100,400,880,450)}
+ else{ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.roundRect(100,400,880,450,28);ctx.fill();ctx.fillStyle='#d9c58d';ctx.font='34px Arial';ctx.fillText('PHOTO DE L’ÉVÉNEMENT',W/2,635)}
+ const py=890;ctx.fillStyle='#fff9e9';ctx.beginPath();ctx.roundRect(95,py,890,220,28);ctx.fill();
+ ctx.textAlign='left';ctx.fillStyle='#075331';ctx.font='bold 34px Arial';ctx.fillText('LIEU',145,py+58);
+ ctx.fillStyle='#183c2a';ctx.font='32px Arial';posterText(ctx,$('posterPlace')?.value||'Lieu à préciser',145,py+105,780,40,2);
+ ctx.fillStyle='#075331';ctx.font='bold 30px Arial';ctx.fillText('DATE',145,py+170);
+ ctx.fillStyle='#183c2a';ctx.font='29px Arial';
+ const dv=$('posterDate')?.value;let dt='Date à préciser';if(dv){const d=new Date(dv+'T12:00:00');dt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(d)}
+ ctx.fillText(dt,260,py+170);ctx.fillStyle='#075331';ctx.font='bold 30px Arial';ctx.fillText('HEURE',650,py+170);
+ ctx.fillStyle='#183c2a';ctx.font='29px Arial';ctx.fillText($('posterTime')?.value||'À préciser',790,py+170);
+ if(posterImages.marabout){ctx.save();ctx.beginPath();ctx.arc(220,1195,78,0,Math.PI*2);ctx.clip();posterCrop(ctx,posterImages.marabout,142,1117,156,156);ctx.restore();ctx.strokeStyle='#e6c66d';ctx.lineWidth=6;ctx.beginPath();ctx.arc(220,1195,82,0,Math.PI*2);ctx.stroke()}
+ if(posterImages.logo)posterCrop(ctx,posterImages.logo,850,1110,130,130,65);
+ else{ctx.fillStyle='#e6c66d';ctx.beginPath();ctx.arc(915,1175,65,0,Math.PI*2);ctx.fill();ctx.fillStyle='#075331';ctx.font='bold 24px Arial';ctx.textAlign='center';ctx.fillText('DJQ',915,1184)}
+ ctx.fillStyle='#f4dfa0';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText('ENSEMBLE DANS LA FOI ET LE PARTAGE',W/2,1300);ctx.textAlign='left';
+}
+function initPosterGenerator(){
+ const form=$('posterForm');if(!form)return;
+ const logo=new Image();logo.onload=()=>{if(!posterImages.logo){posterImages.logo=logo;drawPoster()}};logo.src='logo.jpeg';
+ ['posterTitle','posterSubtitle','posterPlace','posterDate','posterTime'].forEach(id=>$(id)?.addEventListener('input',drawPoster));
+ [['posterLogo','logo'],['posterEventPhoto','event'],['posterMaraboutPhoto','marabout']].forEach(([id,key])=>{
+  $(id)?.addEventListener('change',async e=>{
+   const file=e.target.files?.[0];if(!file){if(key==='logo')posterImages.logo=null;else posterImages[key]=null;drawPoster();return}
+   try{posterImages[key]=await posterLoadImage(file);$('posterMessage').textContent='Image ajoutée.';drawPoster()}
+   catch(err){e.target.value='';$('posterMessage').textContent=err.message}
+  });
+ });
+ $('posterDownloadBtn')?.addEventListener('click',()=>{
+  const title=($('posterTitle').value||'affiche-daara').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'affiche-daara';
+  try{const a=document.createElement('a');a.download=title+'.png';a.href=$('posterCanvas').toDataURL('image/png');a.click();$('posterMessage').textContent='Affiche téléchargée. Vous pouvez la partager.'}
+  catch(e){$('posterMessage').textContent='Impossible de télécharger l’affiche.'}
+ });
+ $('posterResetBtn')?.addEventListener('click',()=>{
+  form.reset();posterImages={logo:null,event:null,marabout:null};
+  const img=new Image();img.onload=()=>{posterImages.logo=img;drawPoster()};img.src='logo.jpeg';
+  $('posterMessage').textContent='Formulaire réinitialisé.';drawPoster();
+ });
+ drawPoster();
+}
+
 async function init(){
  const c=window.DJQ_CONFIG;
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
