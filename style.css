@@ -163,3 +163,7 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .charter-full-text{margin:18px 0;padding:22px 24px;border:1px solid #dce7df;border-left:4px solid #075b35;border-radius:12px;background:#fbfdfb;color:#26352b;font:inherit;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;}
 #charterText{min-height:320px;line-height:1.65;font-family:inherit;}
 @media(max-width:600px){.charter-full-text{padding:15px;font-size:14px;line-height:1.75}}
+
+
+/* Compteur des demandes d'adhésion en attente */
+.request-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#b42318;color:#fff;font-size:12px;font-weight:700;line-height:1;}
