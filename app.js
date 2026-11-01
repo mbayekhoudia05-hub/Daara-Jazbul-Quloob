@@ -1015,9 +1015,32 @@ function printContributionReceipt(x){
 
 
 async function loadMembers(){
- if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name)').order('created_at',{ascending:false});
- if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.commissions?.name||'Non affecté')}</td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="${esc(x.status||'active')}" data-id="${esc(x.id)}">${x.status==='active'?'Désactiver':'Réactiver'}</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="${esc(x.id)}">Supprimer</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ if(!sb||!isAdmin)return;
+ const box=$('memberRows');
+ if(!box)return;
+ box.innerHTML='<tr><td colspan="7">Chargement des membres…</td></tr>';
+ try{
+  // Charger les membres sans jointure : une relation PostgREST défectueuse ne doit pas masquer toute la liste.
+  const r=await sb.from('members')
+   .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,created_at')
+   .order('created_at',{ascending:false});
+  if(r.error){
+   box.innerHTML='<tr><td colspan="7">Erreur de chargement des membres : '+esc(r.error.message)+'</td></tr>';
+   msg('memberMessage','Chargement impossible : '+r.error.message);
+   return;
+  }
+  const rows=r.data||[];
+  let commissionNames={};
+  const cr=await sb.from('commissions').select('id,name');
+  if(!cr.error)for(const c of cr.data||[])commissionNames[c.id]=c.name;
+  $('totalMemberCount').textContent=String(rows.length);
+  $('memberCount').textContent=String(rows.filter(x=>x.status==='active').length);
+  box.innerHTML=rows.length?rows.map(x=>'<tr><td><strong>'+esc(x.member_number)+'</strong></td><td><div class="member-mini"><img src="'+esc(x.photo_url||'logo.jpeg')+'" alt=""><span>'+esc(x.first_name)+' '+esc(x.last_name)+'</span></div></td><td>'+esc(commissionNames[x.commission_id]||'Non affecté')+'</td><td>'+esc(x.phone||'—')+'</td><td>'+esc(x.membership_date||'—')+'</td><td><span class="status '+(x.status==='active'?'active':'inactive')+'">'+(x.status==='active'?'Actif':'Inactif')+'</span></td><td><button class="table-btn" data-action="edit-member" data-id="'+esc(x.id)+'">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="'+esc(x.id)+'">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="'+esc(x.status||'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'Désactiver':'Réactiver')+'</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="'+esc(x.id)+'">Supprimer</button></td></tr>').join(''):'<tr><td colspan="7">Aucun membre enregistré dans la base.</td></tr>';
+  msg('memberMessage',rows.length+' membre(s) chargé(s).'+(cr.error?' Les commissions n’ont pas pu être récupérées : '+cr.error.message:''),!cr.error);
+ }catch(err){
+  box.innerHTML='<tr><td colspan="7">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
+  msg('memberMessage','Erreur pendant le chargement : '+(err?.message||String(err)));
+ }
 }
 
 async function toggleMemberStatus(id,nextStatus){
