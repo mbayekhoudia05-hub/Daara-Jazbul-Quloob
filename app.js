@@ -38,6 +38,7 @@ async function updatePendingMembershipCount(){
 function updateAdminDashboard(){
   const copy=(from,to)=>{const a=$(from),b=$(to);if(a&&b)b.textContent=a.textContent};
   copy('memberCount','dashMembers');
+  copy('totalMemberCount','dashTotalMembers');
   copy('contributionMonthTotal','dashContributions');
   copy('pendingPayments','dashPayments');
   void updatePendingMembershipCount();
