@@ -411,7 +411,7 @@ if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
 }
- const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);sb.auth.onAuthStateChange((_e,session)=>{setTimeout(()=>{void setUser(session?.user||null)},0)});load();await handlePublicMember();
+ sb.auth.onAuthStateChange((event,session)=>{if(event!=='SIGNED_IN'&&event!=='SIGNED_OUT')return;setTimeout(()=>{void setUser(session?.user||null)},0)});const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);load();await handlePublicMember();
 }
 async function setUser(u){
   currentUser=u;
@@ -470,10 +470,14 @@ async function setUser(u){
     show('membershipFormSection');
     return;
   }
-  if(mr.data && mr.data.status==='active'){
+  if(mr.data && mr.data.status==='active' && !isAdmin){
     currentMemberRecord=mr.data;
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
+  }else if(isAdmin){
+    currentMemberRecord=mr.data?.status==='active'?mr.data:null;
+    hide('memberDashboard');
+    hide('membershipFormSection');
   }else{
     currentMemberRecord=null;
     hide('memberDashboard');
@@ -489,7 +493,6 @@ async function setUser(u){
     await loadUnpaidTracker();
     await initPaymentTransactions();
     await load();
-    showAdminSection('adminDashboard');
     updateAdminDashboard();
   }
 }
