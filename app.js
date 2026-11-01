@@ -1015,9 +1015,9 @@ function printContributionReceipt(x){
 
 
 async function loadMembers(){
- if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url').order('created_at',{ascending:false});
+ if(!sb||!isAdmin)return;const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,commissions(name)').order('created_at',{ascending:false});
  if(r.error){msg('memberMessage',r.error.message);return}const rows=r.data||[];$('totalMemberCount').textContent=rows.length;$('memberCount').textContent=rows.filter(x=>x.status==='active').length;
- $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="${esc(x.status||'active')}" data-id="${esc(x.id)}">${x.status==='active'?'Désactiver':'Réactiver'}</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="${esc(x.id)}">Supprimer</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
+ $('memberRows').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc(x.member_number)}</strong></td><td><div class="member-mini"><img src="${esc(x.photo_url||'logo.jpeg')}" alt=""><span>${esc(x.first_name)} ${esc(x.last_name)}</span></div></td><td>${esc(x.commissions?.name||'Non affecté')}</td><td>${esc(x.phone||'—')}</td><td>${esc(x.membership_date||'—')}</td><td><span class="status ${x.status==='active'?'active':'inactive'}">${x.status==='active'?'Actif':'Inactif'}</span></td><td><button class="table-btn" data-action="edit-member" data-id="${esc(x.id)}">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="${esc(x.id)}">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="${esc(x.status||'active')}" data-id="${esc(x.id)}">${x.status==='active'?'Désactiver':'Réactiver'}</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="${esc(x.id)}">Supprimer</button></td></tr>`).join(''):'<tr><td colspan="6">Aucun membre.</td></tr>';
 }
 
 async function toggleMemberStatus(id,nextStatus){
@@ -1046,7 +1046,7 @@ async function addMember(e){
  const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
- msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();
+ msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();await loadCommissions();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
 async function showMyMemberCard(){
@@ -1147,7 +1147,7 @@ async function updateExistingMember(e){
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
- msg('memberMessage','Membre '+r.data.member_number+' modifié avec succès.',true);cancelEditMember();await loadMembers();
+ msg('memberMessage','Membre '+r.data.member_number+' modifié avec succès.',true);cancelEditMember();await loadMembers();await loadCommissions();
 }
 
 
@@ -1665,6 +1665,7 @@ async function approveMembershipRequest(id) {
   alert("Demande validée. Numéro du membre : " + created.data.member_number + ". Le candidat doit maintenant créer son compte avec l’adresse e-mail "+x.email+" via « Connexion » puis « Créer un compte gratuit », confirmer son e-mail et se connecter.");
 
   await loadMembers();
+  await loadCommissions();
   await loadMembershipRequests();
 }
 
