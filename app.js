@@ -150,7 +150,7 @@ function renderAdminCharters(rows){
     const pdf=(x.file_url||'').startsWith('https://')||(x.file_url||'').startsWith('http://')?x.file_url:'';
     const external=(x.external_url||'').startsWith('https://')||(x.external_url||'').startsWith('http://')?x.external_url:'';
     const actions=[
-      pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇ Télécharger le PDF original</a>':'',
+      pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Quloob-Cellule-Dakar.pdf">⬇ Télécharger le PDF original</a>':'',
       external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien complémentaire</a>':''
     ].filter(Boolean).join(' ');
     return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
@@ -160,7 +160,7 @@ function renderAdminCharters(rows){
 function contentCard(x){
   const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢',information:'ℹ️',charte:'📜'}[x.type]||'📄';
   const external=(x.external_url||'').match(/^https?:\/\//i)?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir le lien →</a>':'';
-  const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-download" href="'+esc(x.file_url)+(x.file_url.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇️ Télécharger le PDF original</a>':'';
+  const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-download" href="'+esc(x.file_url)+(x.file_url.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Quloob-Cellule-Dakar.pdf">⬇️ Télécharger le PDF original</a>':'';
   const charterText=x.type==='charte'&&x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'';
   return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+charterText+pdf+external+'</article>';
 }
@@ -334,7 +334,7 @@ function drawPoster(){
  ctx.fillStyle=green;ctx.fillRect(0,0,W,H);
  ctx.strokeStyle='#d9b95c';ctx.lineWidth=12;ctx.strokeRect(28,28,W-56,H-56);
  ctx.strokeStyle='rgba(231,203,119,.45)';ctx.lineWidth=2;ctx.strokeRect(48,48,W-96,H-96);
- ctx.fillStyle='#e8cb78';ctx.textAlign='center';ctx.font='bold 30px Georgia';ctx.fillText('DAARA JAZBUL QULUB',W/2,105);
+ ctx.fillStyle='#e8cb78';ctx.textAlign='center';ctx.font='bold 30px Georgia';ctx.fillText('DAARA JAZBUL QULOOB – CELLULE DAKAR',W/2,105);
  ctx.fillStyle='#fff';ctx.font='bold 58px Georgia';posterText(ctx,$('posterTitle')?.value||'VOTRE ÉVÉNEMENT',W/2,190,900,68,2);
  ctx.fillStyle='#f0d98d';ctx.font='30px Arial';posterText(ctx,$('posterSubtitle')?.value||'Vous êtes cordialement invités',W/2,320,900,40,2);
  if(posterImages.event){posterCrop(ctx,posterImages.event,100,400,880,450,28);ctx.strokeStyle='#e4c56b';ctx.lineWidth=7;ctx.strokeRect(100,400,880,450)}
@@ -920,7 +920,7 @@ async function exportFinanceCSV(){
   const blob=new Blob(["\ufeff"+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='cotisations_daara_jazbul_qulub.csv';
+  a.download='cotisations_daara_jazbul_quloob_cellule_dakar.csv';
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -961,7 +961,7 @@ async function exportMembersCSV(){
     m.status==='active'?'Actif':'Inactif',m.membership_date,
     commissionById.get(m.commission_id)||'Aucune'
   ]);
-  downloadAdminCSV('membres_daara_jazbul_qulub.csv',
+  downloadAdminCSV('membres_daara_jazbul_quloob_cellule_dakar.csv',
     ['N° membre','Prénom','Nom','Téléphone','E-mail','Statut','Date adhésion','Commission'],rows);
   alert('Export des membres terminé : '+rows.length+' ligne(s).');
 }
@@ -981,7 +981,7 @@ async function exportCommissionsCSV(){
     memberById.get(c.responsible_member_id)||'Non désigné',
     memberById.get(c.successor_member_id)||'Non désigné'
   ]);
-  downloadAdminCSV('commissions_daara_jazbul_qulub.csv',
+  downloadAdminCSV('commissions_daara_jazbul_quloob_cellule_dakar.csv',
     ['Commission','Description','Statut','Président','Vice-président'],rows);
   alert('Export des commissions terminé : '+rows.length+' ligne(s).');
 }
@@ -997,7 +997,7 @@ function printContributionReceipt(x){
   .amount{font-size:25px;font-weight:700;color:#075c2d;margin:22px 0}
   .footer{margin-top:28px;font-size:12px;color:#666;text-align:center}
   </style></head><body><div class="receipt">
-  <h1>Daara Jazbul Qulub</h1><div class="sub">Reçu de cotisation</div>
+  <h1>Daara Jazbul Quloob – Cellule Dakar</h1><div class="sub">Reçu de cotisation</div>
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
   <div class="line"><b>Membre</b><span>${esc(member.trim())}</span></div>
   <div class="line"><b>Mois</b><span>${esc(contributionMonthLabel(x.payment_month))}</span></div>
