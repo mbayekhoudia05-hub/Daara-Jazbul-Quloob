@@ -564,7 +564,7 @@ async function loadConnectedMemberDashboard(member){
     .order('payment_month',{ascending:false});
 
   if(cr.error){
-    $('myContributionRows').innerHTML='<tr><td colspan="5">Impossible de charger vos cotisations : '+esc(cr.error.message)+'</td></tr>';
+    $('myContributionRows').innerHTML='<tr><td colspan="6">Impossible de charger vos cotisations : '+esc(cr.error.message)+'</td></tr>';
   }else{
     const rows=cr.data||[];
     const paid=rows.filter(x=>x.status==='paid');
@@ -582,7 +582,7 @@ async function loadConnectedMemberDashboard(member){
         <td>${x.status==='paid'?'Payé':'En attente'}</td>
         <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
       </tr>
-    `).join(''):'<tr><td colspan="5">Aucune cotisation enregistrée.</td></tr>';
+    `).join(''):'<tr><td colspan="6">Aucune cotisation enregistrée.</td></tr>';
   }
 
   // Transactions personnelles
@@ -592,7 +592,7 @@ async function loadConnectedMemberDashboard(member){
     .order('created_at',{ascending:false});
 
   if(pr.error){
-    $('myPaymentRows').innerHTML='<tr><td colspan="4">Erreur de chargement.</td></tr>';
+    $('myPaymentRows').innerHTML='<tr><td colspan="5">Erreur de chargement.</td></tr>';
   }else{
     const rows=pr.data||[];
     $('myPaymentRows').innerHTML=rows.length?rows.map(x=>`
@@ -603,7 +603,7 @@ async function loadConnectedMemberDashboard(member){
         <td>${esc(x.reference||'—')}</td>
         <td>${esc(x.status==='confirmed'?'Confirmé':x.status==='cancelled'?'Annulé':'En attente')}</td>
       </tr>
-    `).join(''):'<tr><td colspan="4">Aucune transaction.</td></tr>';
+    `).join(''):'<tr><td colspan="5">Aucune transaction.</td></tr>';
   }
 
   // Signalements personnels
@@ -1023,6 +1023,7 @@ function printContributionReceipt(x){
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
   <div class="line"><b>Membre</b><span>${esc(member.trim())}</span></div>
   <div class="line"><b>Mois</b><span>${esc(contributionMonthLabel(x.payment_month))}</span></div>
+  <div class="line"><b>Catégorie</b><span>${esc(contributionCategoryLabel(x.category))}</span></div>
   <div class="line"><b>Mode</b><span>${esc(contributionMethodLabel(x.payment_method))}</span></div>
   <div class="line"><b>Référence</b><span>${esc(x.reference||'—')}</span></div>
   <div class="amount">Montant : ${esc(formatMoney(x.amount))}</div>
@@ -1221,7 +1222,7 @@ async function viewMemberContributions(member){
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
     <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
     <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button></td>
-  </tr>`).join('') : '<tr><td colspan="5">Aucune cotisation enregistrée pour ce membre.</td></tr>';
+  </tr>`).join('') : '<tr><td colspan="6">Aucune cotisation enregistrée pour ce membre.</td></tr>';
 
   show('memberFinanceModal');
 }
@@ -1347,7 +1348,7 @@ async function loadPaymentTransactions(){
         <button class="table-btn danger-btn" data-action="cancel-payment" data-id="${esc(x.id)}">❌ Annuler</button>`:""}
       </td>
     </tr>`;
-  }).join(""):'<tr><td colspan="8">Aucune transaction.</td></tr>';
+  }).join(""):'<tr><td colspan="9">Aucune transaction.</td></tr>';
 }
 
 
