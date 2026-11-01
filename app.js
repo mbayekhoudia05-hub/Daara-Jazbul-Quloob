@@ -92,6 +92,9 @@ function contributionMethodLabel(v){
     orange_money:'Orange Money'
   }[v]||v||'—';
 }
+function contributionCategoryLabel(v){
+  return ({mensualite:'Mensualité',tombe_dahira:'Tombe Dahira',chasse:'Chasse',divers:'Divers'})[v]||'Mensualité';
+}
 
 async function auth(e){
   e.preventDefault();
@@ -402,7 +405,8 @@ if($('financeMonthFilter')){
    $('financeMonthFilter').value='';
    $('financeMemberFilter').onchange=loadFinanceDashboard;
    $('financeMonthFilter').onchange=loadFinanceDashboard;
-   $('financeResetBtn').onclick=()=>{ $('financeMemberFilter').value=''; $('financeMonthFilter').value=''; loadFinanceDashboard(); };
+   $('financeCategoryFilter').onchange=loadFinanceDashboard;
+   $('financeResetBtn').onclick=()=>{ $('financeMemberFilter').value=''; $('financeMonthFilter').value=''; $('financeCategoryFilter').value=''; loadFinanceDashboard(); };
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
@@ -555,7 +559,7 @@ async function loadConnectedMemberDashboard(member){
 
   // Cotisations personnelles
   const cr=await sb.from('contributions')
-    .select('id,amount,payment_month,payment_method,status,paid_at,created_at')
+    .select('id,amount,payment_month,payment_method,category,status,paid_at,created_at')
     .eq('member_id',member.id)
     .order('payment_month',{ascending:false});
 
@@ -572,6 +576,7 @@ async function loadConnectedMemberDashboard(member){
     $('myContributionRows').innerHTML=rows.length?rows.map(x=>`
       <tr>
         <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+        <td>${esc(contributionCategoryLabel(x.category))}</td>
         <td>${esc(formatMoney(x.amount))}</td>
         <td>${esc(contributionMethodLabel(x.payment_method))}</td>
         <td>${x.status==='paid'?'Payé':'En attente'}</td>
@@ -582,7 +587,7 @@ async function loadConnectedMemberDashboard(member){
 
   // Transactions personnelles
   const pr=await sb.from('payment_transactions')
-    .select('amount,payment_method,reference,payment_month,status,created_at')
+    .select('amount,payment_method,category,reference,payment_month,status,created_at')
     .eq('member_id',member.id)
     .order('created_at',{ascending:false});
 
@@ -593,6 +598,7 @@ async function loadConnectedMemberDashboard(member){
     $('myPaymentRows').innerHTML=rows.length?rows.map(x=>`
       <tr>
         <td>${esc(formatMoney(x.amount))}</td>
+        <td>${esc(contributionCategoryLabel(x.category))}</td>
         <td>${esc(x.payment_method==='wave'?'Wave':'Orange Money')}</td>
         <td>${esc(x.reference||'—')}</td>
         <td>${esc(x.status==='confirmed'?'Confirmé':x.status==='cancelled'?'Annulé':'En attente')}</td>
@@ -721,7 +727,7 @@ async function loadContributions(){
   await loadContributionMembers();
 
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
 
   if(r.error){
@@ -748,6 +754,7 @@ async function loadContributions(){
     ? rows.map(x=>`<tr>
         <td><strong>${esc(x.members?.member_number||'—')}</strong><br>${esc((x.members?.first_name||'')+' '+(x.members?.last_name||''))}</td>
         <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+        <td>${esc(contributionCategoryLabel(x.category))}</td>
         <td><strong>${esc(formatMoney(x.amount))}</strong></td>
         <td>${esc(contributionMethodLabel(x.payment_method))}</td>
         <td>${esc(x.reference||'—')}</td>
@@ -757,7 +764,7 @@ async function loadContributions(){
           <button class="table-btn danger-btn" data-action="delete-contribution" data-id="${esc(x.id)}">Supprimer</button>
         </td>
       </tr>`).join('')
-    : '<tr><td colspan="7">Aucune cotisation enregistrée.</td></tr>';
+    : '<tr><td colspan="8">Aucune cotisation enregistrée.</td></tr>';
 }
 
 async function addContribution(e){
@@ -768,6 +775,7 @@ async function addContribution(e){
   const paymentMonth=contributionMonthDate();
   const amount=Number($('contributionAmount').value);
   const method=$('contributionMethod').value;
+  const category=$('contributionCategory').value;
   const reference=$('contributionReference').value.trim()||null;
   const note=$('contributionNote').value.trim()||null;
 
@@ -780,11 +788,11 @@ async function addContribution(e){
   const r=method==='especes'
     ? await sb.from('contributions').insert({
         member_id:memberId,amount,payment_month:paymentMonth,
-        payment_method:method,status:'paid',reference,note
+        payment_method:method,category,status:'paid',reference,note
       })
     : await sb.from('payment_transactions').insert({
         member_id:memberId,amount,payment_month:paymentMonth,
-        payment_method:method,status:'pending',reference,note
+        payment_method:method,category,status:'pending',reference,note
       });
 
   if(r.error){
@@ -841,7 +849,7 @@ async function loadFinanceDashboard(){
   if(!sb||!isAdmin)return;
 
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .eq('status','paid')
     .order('paid_at',{ascending:false});
 
@@ -859,6 +867,11 @@ async function loadFinanceDashboard(){
   $('financeMonth').textContent=formatMoney(monthRows.reduce((s,x)=>s+Number(x.amount||0),0));
   $('financeWave').textContent=formatMoney(wave);
   $('financeOrange').textContent=formatMoney(orange);
+  ['mensualite','tombe_dahira','chasse','divers'].forEach(category=>{
+    const amount=rows.filter(x=>x.category===category).reduce((sum,x)=>sum+Number(x.amount||0),0);
+    const target=$('financeCategory_'+category);
+    if(target)target.textContent=formatMoney(amount);
+  });
 
   const membersR=await sb.from('members')
     .select('id,member_number,first_name,last_name')
@@ -874,44 +887,50 @@ async function loadFinanceDashboard(){
 async function renderFinanceRows(rows){
   const memberId=$('financeMemberFilter')?.value||'';
   const month=$('financeMonthFilter')?.value||'';
+  const category=$('financeCategoryFilter')?.value||'';
 
   const filtered=rows.filter(x=>{
     const okMember=!memberId || x.member_id===memberId;
     const okMonth=!month || String(x.payment_month||'').startsWith(month);
-    return okMember && okMonth;
+    const okCategory=!category || x.category===category;
+    return okMember && okMonth && okCategory;
   });
 
   $('financeRows').innerHTML=filtered.length ? filtered.map(x=>`<tr>
     <td><strong>${esc(x.members?.member_number||'—')}</strong><br>${esc((x.members?.first_name||'')+' '+(x.members?.last_name||''))}</td>
     <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+    <td>${esc(contributionCategoryLabel(x.category))}</td>
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
     <td>${esc(new Date(x.paid_at).toLocaleDateString('fr-FR'))}</td>
     <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Imprimer</button></td>
-  </tr>`).join('') : '<tr><td colspan="6">Aucune cotisation pour ces critères.</td></tr>';
+  </tr>`).join('') : '<tr><td colspan="7">Aucune cotisation pour ces critères.</td></tr>';
 }
 
 async function exportFinanceCSV(){
   if(!sb||!isAdmin)return;
   const r=await sb.from('contributions')
-    .select('member_id,amount,payment_month,payment_method,status,reference,paid_at,members(member_number,first_name,last_name)')
+    .select('member_id,amount,payment_month,payment_method,category,status,reference,paid_at,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
   if(r.error){alert(r.error.message);return;}
 
   const rows=r.data||[];
   const memberId=$('financeMemberFilter')?.value||'';
   const month=$('financeMonthFilter')?.value||'';
+  const category=$('financeCategoryFilter')?.value||'';
   const filtered=rows.filter(x=>
     (!memberId||x.member_id===memberId) &&
-    (!month||String(x.payment_month||'').startsWith(month))
+    (!month||String(x.payment_month||'').startsWith(month)) &&
+    (!category||x.category===category)
   );
 
   const lines=[
-    ['N° membre','Nom','Mois','Montant FCFA','Mode','Statut','Référence','Date'].map(csvCell).join(';'),
+    ['N° membre','Nom','Mois','Catégorie','Montant FCFA','Mode','Statut','Référence','Date'].map(csvCell).join(';'),
     ...filtered.map(x=>[
       x.members?.member_number||'',
       `${x.members?.first_name||''} ${x.members?.last_name||''}`.trim(),
       x.payment_month||'',
+      contributionCategoryLabel(x.category),
       Number(x.amount||0),
       contributionMethodLabel(x.payment_method),
       x.status||'',
@@ -1181,7 +1200,7 @@ async function updateExistingMember(e){
 async function viewMemberContributions(member){
   if(!sb||!isAdmin)return;
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .eq('member_id',member.id)
     .eq('status','paid')
     .order('payment_month',{ascending:false});
@@ -1197,6 +1216,7 @@ async function viewMemberContributions(member){
 
   $('memberFinanceRows').innerHTML=rows.length ? rows.map(x=>`<tr>
     <td>${esc(contributionMonthLabel(x.payment_month))}</td>
+    <td>${esc(contributionCategoryLabel(x.category))}</td>
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
     <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
@@ -1276,6 +1296,7 @@ async function savePaymentTransaction(e){
   const member_id=$("paymentMember").value;
   const amount=Number($("paymentAmount").value);
   const payment_method=$("paymentMethod").value;
+  const category=$("paymentCategory").value;
   const reference=$("paymentReference").value.trim()||null;
   const payment_month=$("paymentMonth").value+"-01";
   const status="pending";
@@ -1283,7 +1304,7 @@ async function savePaymentTransaction(e){
   if(!member_id||!amount||!payment_month){alert("Remplis les champs obligatoires.");return;}
 
   const r=await sb.from("payment_transactions").insert({
-    member_id,amount,payment_method,reference,payment_month,status,note
+    member_id,amount,payment_method,category,reference,payment_month,status,note
   });
   if(r.error){alert(r.error.message);return;}
 
@@ -1297,7 +1318,7 @@ async function savePaymentTransaction(e){
 
 async function loadPaymentTransactions(){
   const r=await sb.from("payment_transactions")
-    .select("id,member_id,amount,payment_method,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
+    .select("id,member_id,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
   if(r.error){alert(r.error.message);return;}
   const rows=r.data||[];
@@ -1317,6 +1338,7 @@ async function loadPaymentTransactions(){
     return `<tr>
       <td><strong>${esc(x.members?.member_number||"")}</strong><br>${esc((x.members?.first_name||"")+" "+(x.members?.last_name||""))}</td>
       <td>${esc(formatMoney(x.amount))}</td><td>${method}</td>
+      <td>${esc(contributionCategoryLabel(x.category))}</td>
       <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
       <td>${status}</td>
       <td>${esc(x.confirmed_at?new Date(x.confirmed_at).toLocaleDateString("fr-FR"):new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
