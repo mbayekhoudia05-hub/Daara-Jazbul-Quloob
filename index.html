@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css?v=20261031-member-commissions-list"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261101-admin-nav-stable"></script></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daara Jazbul Qulub</title><link rel="stylesheet" href="style.css?v=20261031-member-commissions-list"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261101-finance-categories"></script></head><body>
 <aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
   <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
   <div class="sidebar-caption">MENU PRINCIPAL</div>
@@ -203,6 +203,14 @@
       <label>Mois
         <input id="contributionMonth" type="month" required>
       </label>
+      <label>Catégorie de cotisation
+        <select id="contributionCategory" required>
+          <option value="mensualite">Mensualité</option>
+          <option value="tombe_dahira">Tombe Dahira</option>
+          <option value="chasse">Chasse</option>
+          <option value="divers">Divers</option>
+        </select>
+      </label>
     </div>
     <div class="form-row">
       <label>Montant (FCFA)
@@ -234,6 +242,7 @@
         <tr>
           <th>Membre</th>
           <th>Mois</th>
+          <th>Catégorie</th>
           <th>Montant</th>
           <th>Mode</th>
           <th>Référence</th>
@@ -276,6 +285,14 @@
         <label>Référence
           <input id="paymentReference" placeholder="Référence de transaction">
         </label>
+        <label>Catégorie de cotisation
+          <select id="paymentCategory" required>
+            <option value="mensualite">Mensualité</option>
+            <option value="tombe_dahira">Tombe Dahira</option>
+            <option value="chasse">Chasse</option>
+            <option value="divers">Divers</option>
+          </select>
+        </label>
       </div>
 
       <div class="payment-instructions">
@@ -302,7 +319,7 @@
   </div>
 
   <div class="member-table-wrap">
-    <table><thead><tr><th>Membre</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Mois</th><th>Statut</th><th>Date</th></tr></thead>
+    <table><thead><tr><th>Membre</th><th>Montant</th><th>Mode</th><th>Catégorie</th><th>Référence</th><th>Mois</th><th>Statut</th><th>Date</th></tr></thead>
     <tbody id="paymentTransactionRows"><tr><td colspan="7">Aucune transaction.</td></tr></tbody></table>
   </div>
 </section>
@@ -335,6 +352,10 @@
     <div class="stat"><strong id="financeMonth">0 FCFA</strong><span>Encaissé ce mois</span></div>
     <div class="stat"><strong id="financeWave">0 FCFA</strong><span>Via Wave</span></div>
     <div class="stat"><strong id="financeOrange">0 FCFA</strong><span>Via Orange Money</span></div>
+    <div class="stat"><strong id="financeCategory_mensualite">0 FCFA</strong><span>Mensualité</span></div>
+    <div class="stat"><strong id="financeCategory_tombe_dahira">0 FCFA</strong><span>Tombe Dahira</span></div>
+    <div class="stat"><strong id="financeCategory_chasse">0 FCFA</strong><span>Chasse</span></div>
+    <div class="stat"><strong id="financeCategory_divers">0 FCFA</strong><span>Divers</span></div>
   </div>
 
   <div class="member-form">
@@ -347,6 +368,15 @@
       </label>
       <label>Mois
         <input id="financeMonthFilter" type="month">
+      </label>
+      <label>Catégorie
+        <select id="financeCategoryFilter">
+          <option value="">Toutes les catégories</option>
+          <option value="mensualite">Mensualité</option>
+          <option value="tombe_dahira">Tombe Dahira</option>
+          <option value="chasse">Chasse</option>
+          <option value="divers">Divers</option>
+        </select>
       </label>
     </div>
     <div class="button-row">
@@ -361,6 +391,7 @@
         <tr>
           <th>Membre</th>
           <th>Mois</th>
+          <th>Catégorie</th>
           <th>Montant</th>
           <th>Mode</th>
           <th>Date</th>
@@ -414,7 +445,7 @@
     <h3>💰 Mes cotisations</h3>
     <div class="member-table-wrap">
       <table>
-        <thead><tr><th>Mois</th><th>Montant</th><th>Mode</th><th>Statut</th><th>Date</th></tr></thead>
+        <thead><tr><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Mode</th><th>Statut</th><th>Date</th></tr></thead>
         <tbody id="myContributionRows"><tr><td colspan="5">Chargement…</td></tr></tbody>
       </table>
     </div>
@@ -424,7 +455,7 @@
     <h3>💳 Mes transactions</h3>
     <div class="member-table-wrap">
       <table>
-        <thead><tr><th>Montant</th><th>Mode</th><th>Référence</th><th>Statut</th></tr></thead>
+        <thead><tr><th>Montant</th><th>Catégorie</th><th>Mode</th><th>Référence</th><th>Statut</th></tr></thead>
         <tbody id="myPaymentRows"><tr><td colspan="4">Chargement…</td></tr></tbody>
       </table>
     </div>
@@ -466,7 +497,7 @@
     </div>
     <div class="member-table-wrap">
       <table>
-        <thead><tr><th>Mois</th><th>Montant</th><th>Mode</th><th>Date</th><th>Reçu</th></tr></thead>
+        <thead><tr><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Mode</th><th>Date</th><th>Reçu</th></tr></thead>
         <tbody id="memberFinanceRows"></tbody>
       </table>
     </div>
