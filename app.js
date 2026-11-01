@@ -1452,8 +1452,9 @@ async function assignCommission(id){
   const r=await sb.from('commissions').update({
     responsible_member_id:responsible.value||null,
     successor_member_id:successor.value||null
-  }).eq('id',id);
+  }).eq('id',id).select('id,responsible_member_id,successor_member_id').maybeSingle();
   if(r.error){msg('commissionMessage','Enregistrement impossible : '+r.error.message);return;}
+  if(!r.data){msg('commissionMessage','Aucune modification enregistrée. Vérifie les droits administrateur sur cette commission.');return;}
   msg('commissionMessage','Président et vice-président enregistrés.',true);
   await loadCommissions();
 }
@@ -1705,6 +1706,14 @@ async function rejectMembershipRequest(id) {
 
 
 
+
+// Enregistrer automatiquement le président ou le vice-président dès que le choix change.
+document.addEventListener('change', function(e) {
+  const field=e.target;
+  if(!isAdmin||!field||!field.matches('[data-commission-responsible],[data-commission-successor]'))return;
+  const id=field.dataset.commissionResponsible||field.dataset.commissionSuccessor;
+  if(id)void assignCommission(id);
+});
 
 // Actions de tableaux : aucun JavaScript utilisateur n'est injecté dans les attributs HTML.
 document.addEventListener('click', async function(e) {
