@@ -391,6 +391,10 @@ async function init(){
  $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
+ ['contributionSearch','contributionHistoryMonth','contributionHistoryCategory','contributionHistoryStatus'].forEach(id=>{
+   const input=$(id);
+   if(input) input.addEventListener(input.tagName==='INPUT'&&input.type==='search'?'input':'change',()=>renderContributionRows(window.__contributionRows||[]));
+ });
  const contributionMonthInput=$('contributionMonth');
 if(contributionMonthInput){
   const d=new Date();
@@ -739,6 +743,7 @@ async function loadContributions(){
   }
 
   const rows=r.data||[];
+  window.__contributionRows=rows;
   const now=new Date();
   const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const monthRows=rows.filter(x=>String(x.payment_month||'').startsWith(ym) && x.status==='paid');
@@ -753,6 +758,20 @@ async function loadContributions(){
   const activeCount=(membersR.data||[]).filter(x=>x.status==='active').length;
   $('contributionUnpaidCount').textContent=Math.max(activeCount-paidIds.size,0);
 
+  renderContributionRows(rows);
+}
+function renderContributionRows(sourceRows){
+  const search=($('contributionSearch')?.value||'').toLowerCase().trim();
+  const month=$('contributionHistoryMonth')?.value||'';
+  const category=$('contributionHistoryCategory')?.value||'';
+  const status=$('contributionHistoryStatus')?.value||'';
+  const rows=(sourceRows||[]).filter(x=>{
+    const name=((x.members?.member_number||'')+' '+(x.members?.first_name||'')+' '+(x.members?.last_name||'')).toLowerCase();
+    return (!search||name.includes(search))
+      &&(!month||String(x.payment_month||'').startsWith(month))
+      &&(!category||x.category===category)
+      &&(!status||x.status===status);
+  });
   $('contributionRows').innerHTML=rows.length
     ? rows.map(x=>`<tr>
         <td><strong>${esc(x.members?.member_number||'—')}</strong><br>${esc((x.members?.first_name||'')+' '+(x.members?.last_name||''))}</td>
@@ -761,13 +780,14 @@ async function loadContributions(){
         <td><strong>${esc(formatMoney(x.amount))}</strong></td>
         <td>${esc(contributionMethodLabel(x.payment_method))}</td>
         <td>${esc(x.reference||'—')}</td>
-        <td>${esc(new Date(x.paid_at).toLocaleDateString('fr-FR'))}</td>
+        <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
         <td>
           <button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button>
           <button class="table-btn danger-btn" data-action="delete-contribution" data-id="${esc(x.id)}">Supprimer</button>
         </td>
       </tr>`).join('')
-    : '<tr><td colspan="8">Aucune cotisation enregistrée.</td></tr>';
+    : '<tr><td colspan="8">Aucune cotisation pour ces critères.</td></tr>';
+}
 }
 
 async function addContribution(e){
