@@ -775,3 +775,34 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
   #contributions .contribution-stats,#financeDashboard .contribution-stats{grid-template-columns:1fr}
   #unpaidMembers .stats{grid-template-columns:1fr}
 }
+
+
+/* DJQ — finitions esthétiques légères, sans modifier la structure ni les fonctions */
+::selection{background:#dcecdf;color:#063d27}
+button,a,input,select,textarea{ -webkit-tap-highlight-color:transparent }
+button,a{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(216,182,83,.72);outline-offset:3px}
+.primary:active,.secondary:active,.table-btn:active{transform:translateY(1px)}
+.app-sidebar nav a{position:relative}
+.app-sidebar nav a:not(.active):hover{transform:translateX(2px)}
+.sidebar-toggle:hover{background:#eaf4ed;border-color:#b9d5c2}
+.topbar-title strong{letter-spacing:.15px}
+.section .head h2{ text-wrap:balance }
+.section .head p{max-width:680px;margin-left:auto;margin-right:auto}
+#dahiraCharters .head p,#contributions .head p,#financeDashboard .head p,#unpaidMembers .head p{margin-left:0;margin-right:0}
+.card a{text-underline-offset:3px}
+.card a:hover{text-decoration-thickness:2px}
+.section form button[type="submit"],.poster-controls button{min-height:44px}
+.section form small,.form-help{line-height:1.6}
+.member-table-wrap tbody tr{transition:background-color .15s ease}
+.member-table-wrap th{font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.status,.status-pill,.tag{letter-spacing:.1px}
+.request-count{box-shadow:0 0 0 2px #075b35}
+@media(max-width:600px){
+  .section .head h2{line-height:1.2}
+  .section form{gap:13px}
+  .primary,.secondary{max-width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  button,a,input,select,textarea,.member-table-wrap tbody tr{transition:none!important}
+}
