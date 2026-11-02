@@ -544,3 +544,29 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 #memberCard .member-card .card-bottom:before{display:none!important}
 /* Impression dédiée : l'application ne participe plus à l'impression de la carte. */
 @media print{@page{size:A4 portrait;margin:10mm}html,body{margin:0!important;padding:0!important;background:#fff!important}}
+/* Organisation claire des commissions en fiches responsives */
+.commissions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:1200px;margin:26px auto 0;align-items:start}
+.commission-card{min-width:0;background:#fff;border:1px solid #e0e9e2;border-radius:18px;padding:22px;box-shadow:0 12px 30px rgba(8,55,33,.07)}
+.commission-card.is-inactive{opacity:.78;background:#f8faf8}
+.commission-card-heading{display:flex;align-items:center;gap:13px;margin-bottom:18px}
+.commission-index{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:#eaf4ed;color:#075b35;font-weight:900}
+.commission-card-heading h3{margin:0;color:#063d27;font-size:19px;line-height:1.25}
+.commission-status{display:inline-block;margin-top:5px;color:#8b5555;font-size:11px;font-weight:800}
+.commission-status.is-active{color:#08733a}
+.commission-description-label{display:block;margin:0 0 6px;color:#284b38;font-size:12px;font-weight:800}
+.commission-card textarea{width:100%;min-height:76px;resize:vertical;padding:11px;border:1px solid #d7e2d9;border-radius:10px;font:inherit;font-size:13px}
+.commission-leadership{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:15px 0}
+.commission-leadership label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#284b38}
+.commission-leadership select{width:100%;min-width:0;padding:9px;border:1px solid #d7e2d9;border-radius:9px;font-size:12px}
+.commission-roster-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;padding-top:14px;border-top:1px solid #edf1ed;font-size:13px}
+.commission-roster-heading strong{color:#063d27}
+.commission-roster-heading span{color:#68796f;font-size:11px}
+.commission-roster-list{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.commission-roster-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:9px;background:#f4f8f5;font-size:12px}
+.commission-roster-list li span{overflow-wrap:anywhere}
+.commission-roster-list li small{flex:0 0 auto;color:#68796f;font-size:10px}
+.commission-empty,.commission-error{padding:14px;border-radius:10px;background:#f5f8f6;color:#68796f;font-size:13px}
+.commission-card-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;padding-top:13px;border-top:1px solid #edf1ed}
+.commission-card-actions .table-btn{font-size:11px}
+@media(max-width:850px){.commissions-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.commission-card{padding:16px}.commission-leadership{grid-template-columns:1fr}.commission-roster-list{grid-template-columns:1fr}.commission-roster-heading{align-items:flex-start;flex-direction:column}}
