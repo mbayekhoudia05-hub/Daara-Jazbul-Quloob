@@ -920,3 +920,40 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:390px){
   #financeDashboard .contribution-stats{grid-template-columns:1fr}
 }
+
+
+/* Correctif d'espacement horizontal — Cotisations et Finances */
+#contributions .contribution-stats,
+#financeDashboard .contribution-stats,
+#contributions .form-row,
+#financeDashboard .form-row,
+#financeDashboard .stats,
+#contributions .stats {
+  column-gap:22px !important;
+  row-gap:18px !important;
+}
+#contributions .contribution-stats > *,
+#financeDashboard .contribution-stats > *,
+#contributions .form-row > *,
+#financeDashboard .form-row > *,
+#financeDashboard .stats > *,
+#contributions .stats > * {
+  min-width:0;
+}
+#contributions .contribution-stats .stat,
+#financeDashboard .contribution-stats .stat,
+#financeDashboard .stats .stat,
+#contributions .stats .stat {
+  margin:0;
+}
+@media(max-width:700px){
+  #contributions .contribution-stats,
+  #financeDashboard .contribution-stats,
+  #contributions .form-row,
+  #financeDashboard .form-row,
+  #financeDashboard .stats,
+  #contributions .stats {
+    column-gap:14px !important;
+    row-gap:14px !important;
+  }
+}
