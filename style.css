@@ -570,3 +570,13 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .commission-card-actions .table-btn{font-size:11px}
 @media(max-width:850px){.commissions-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.commission-card{padding:16px}.commission-leadership{grid-template-columns:1fr}.commission-roster-list{grid-template-columns:1fr}.commission-roster-heading{align-items:flex-start;flex-direction:column}}
+
+
+/* Chartes : lecture sur toute la largeur disponible */
+#dahiraChartersGrid{display:grid;grid-template-columns:minmax(0,1fr);width:100%;max-width:none;gap:22px}
+#dahiraChartersGrid>.card{width:100%;max-width:none;box-sizing:border-box}
+.admin-charter-card{width:100%;max-width:none;box-sizing:border-box}
+.member-charter{width:100%;max-width:none;box-sizing:border-box}
+.charter-full-text{width:100%;max-width:none;box-sizing:border-box}
+.charter-pdf-viewer{width:100%;height:min(82vh,1000px);min-height:600px;display:block;box-sizing:border-box}
+@media(max-width:600px){.charter-pdf-viewer{height:75vh;min-height:480px}}
