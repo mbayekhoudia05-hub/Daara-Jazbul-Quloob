@@ -341,3 +341,54 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
  .verify-organization strong{font-size:13px}
  .verify-organization span{font-size:10px}
 }
+
+
+/* Agrandissement du portrait du marabout pour qu'il soit bien visible */
+.member-card .card-top{
+  padding-left:116px!important;
+  padding-right:112px!important;
+  min-height:108px!important;
+}
+.member-card .card-top:before{
+  width:98px!important;height:98px!important;
+  left:4px!important;top:2px!important;
+  border-width:4px!important;
+  background-size:cover!important;
+  background-position:center 32%!important;
+}
+.member-card .card-top img{
+  width:82px!important;height:82px!important;
+}
+.verify-organization{
+  min-height:108px!important;
+  padding-left:112px!important;padding-right:112px!important;
+}
+.verify-organization:before{
+  width:94px!important;height:94px!important;
+  left:4px!important;top:4px!important;
+  border-width:4px!important;
+  background-size:cover!important;
+  background-position:center 32%!important;
+}
+.verify-organization:after{
+  width:82px!important;height:82px!important;
+  right:4px!important;top:4px!important;
+}
+@media(max-width:700px){
+  .member-card .card-top{
+    padding-left:82px!important;padding-right:62px!important;min-height:82px!important;
+  }
+  .member-card .card-top:before{
+    width:72px!important;height:72px!important;left:2px!important;top:2px!important;
+  }
+  .member-card .card-top img{width:52px!important;height:52px!important}
+  .verify-organization{
+    min-height:82px!important;padding-left:80px!important;padding-right:58px!important;
+  }
+  .verify-organization:before{
+    width:68px!important;height:68px!important;left:2px!important;top:4px!important;
+  }
+  .verify-organization:after{
+    width:50px!important;height:50px!important;right:2px!important;top:4px!important;
+  }
+}
