@@ -580,3 +580,40 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .charter-full-text{width:100%;max-width:none;box-sizing:border-box}
 .charter-pdf-viewer{width:100%;height:min(82vh,1000px);min-height:600px;display:block;box-sizing:border-box}
 @media(max-width:600px){.charter-pdf-viewer{height:75vh;min-height:480px}}
+
+
+
+/* Charte : section réellement élargie à toute la zone disponible */
+#dahiraCharters{
+  width:calc(100% + var(--sidebar-width, 0px));
+  max-width:none;
+  margin-left:calc(-1 * var(--sidebar-width, 0px));
+  padding:clamp(34px,4vw,58px) clamp(16px,3.5vw,56px);
+  box-sizing:border-box;
+}
+body.sidebar-collapsed #dahiraCharters{
+  width:calc(100% + var(--sidebar-mini, 0px));
+  margin-left:calc(-1 * var(--sidebar-mini, 0px));
+}
+#dahiraCharters .head{max-width:none;width:100%}
+#dahiraChartersGrid{
+  width:100%;
+  max-width:none;
+  grid-template-columns:minmax(0,1fr);
+}
+#dahiraChartersGrid>.card{
+  width:100%;
+  max-width:none;
+  min-width:0;
+  padding:clamp(18px,2.4vw,34px);
+  box-sizing:border-box;
+}
+#dahiraChartersGrid .charter-full-text,
+#dahiraChartersGrid .charter-pdf-viewer{width:100%;max-width:none}
+@media(max-width:800px){
+  #dahiraCharters{
+    width:100%;
+    margin-left:0;
+    padding:38px 16px;
+  }
+}
