@@ -1515,13 +1515,12 @@ async function loadCommissions(){
   if(!sb||!isAdmin)return;
   const box=$('commissionRows');
   if(!box)return;
-  box.innerHTML='<tr><td colspan="7">Chargement des commissions…</td></tr>';
+  box.innerHTML='<div class="loading">Chargement des commissions…</div>';
   try{
     const cr=await sb.from('commissions')
-      .select('id,name,description,responsible_member_id,successor_member_id,is_active')
-      .order('name');
+      .select('id,name,description,responsible_member_id,successor_member_id,is_active');
     if(cr.error){
-      box.innerHTML='<tr><td colspan="7">Erreur Supabase : '+esc(cr.error.message)+'</td></tr>';
+      box.innerHTML='<div class="commission-error">Erreur Supabase : '+esc(cr.error.message)+'</div>';
       msg('commissionMessage','Chargement impossible : '+cr.error.message);
       return;
     }
@@ -1529,7 +1528,12 @@ async function loadCommissions(){
       .select('id,member_number,first_name,last_name,status,commission_id')
       .order('first_name');
     const members=mr.error?[]:(mr.data||[]);
-    const rows=cr.data||[];
+    const preferredOrder=['Audiovisuelle','Communication','Culturelle','Finance','Organisation','Relations externes','Relations extérieures et internationales','Santé'];
+    const rows=(cr.data||[]).sort((a,b)=>{
+      const ai=preferredOrder.indexOf(a.name),bi=preferredOrder.indexOf(b.name);
+      if(ai<0&&bi<0)return a.name.localeCompare(b.name,'fr');
+      if(ai<0)return 1;if(bi<0)return -1;return ai-bi;
+    });
     const memberOptions=(selected)=>'<option value="">— Non désigné —</option>'+members.map(m=>
       '<option value="'+esc(m.id)+'" '+(selected===m.id?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>'
     ).join('');
@@ -1540,27 +1544,28 @@ async function loadCommissions(){
         rows.filter(c=>c.is_active).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
       if(current)memberSelect.value=current;
     }
-    box.innerHTML=rows.length?rows.map(c=>{
+    box.innerHTML=rows.length?rows.map((c,index)=>{
       const roster=members.filter(m=>m.commission_id===c.id);
-      const rosterHtml=roster.length
-        ? '<ul class="commission-roster-list">'+roster.map(m=>'<li>'+esc(m.first_name)+' '+esc(m.last_name)+(m.status==='active'?'':' <span>(inactif)</span>')+'</li>').join('')+'</ul>'
-        : '<span class="muted">Aucun membre affecté pour le moment.</span>';
+      const activeRoster=roster.filter(m=>m.status==='active');
+      const inactiveRoster=roster.length-activeRoster.length;
       const president=members.find(m=>m.id===c.responsible_member_id);
       const vice=members.find(m=>m.id===c.successor_member_id);
-      return '<tr>'+
-        '<td><strong>'+esc(c.name)+'</strong></td>'+
-        '<td><textarea rows="3" maxlength="1000" aria-label="Description de '+esc(c.name)+'" data-commission-description="'+esc(c.id)+'" placeholder="Décris la mission et les activités de cette commission">'+esc(c.description||'')+'</textarea><button type="button" class="table-btn" data-action="update-commission-description" data-id="'+esc(c.id)+'">Enregistrer la description</button></td>'+
-        '<td><label class="commission-role-label">Président</label><select aria-label="Président de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select>'+(president?'<small>'+esc(president.first_name)+' '+esc(president.last_name)+'</small>':'')+'</td>'+
-        '<td><label class="commission-role-label">Vice-président</label><select aria-label="Vice-président de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select>'+(vice?'<small>'+esc(vice.first_name)+' '+esc(vice.last_name)+'</small>':'')+'</td>'+
-        '<td>'+rosterHtml+'</td>'+
-        '<td>'+(c.is_active?'Active':'Inactive')+'</td>'+
-        '<td><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer</button> <button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></td>'+
-      '</tr>';
-    }).join(''):'<tr><td colspan="7">Aucune commission trouvée dans la base de données.</td></tr>';
+      const rosterHtml=roster.length
+        ? '<ul class="commission-roster-list">'+roster.map(m=>'<li><span>'+esc(m.first_name)+' '+esc(m.last_name)+'</span><small>'+esc(m.member_number||'')+(m.status==='active'?'':' · Inactif')+'</small></li>').join('')+'</ul>'
+        : '<p class="commission-empty">Aucun membre affecté pour le moment.</p>';
+      return '<article class="commission-card '+(c.is_active?'':'is-inactive')+'">'+
+        '<div class="commission-card-heading"><span class="commission-index">'+String(index+1).padStart(2,'0')+'</span><div><h3>'+esc(c.name)+'</h3><span class="commission-status '+(c.is_active?'is-active':'')+'">'+(c.is_active?'Commission active':'Commission inactive')+'</span></div></div>'+
+        '<label class="commission-description-label">Mission et responsabilités</label>'+
+        '<textarea rows="3" maxlength="1000" aria-label="Description de '+esc(c.name)+'" data-commission-description="'+esc(c.id)+'" placeholder="Décris la mission et les activités de cette commission">'+esc(c.description||'')+'</textarea>'+
+        '<div class="commission-leadership"><label>Président<select aria-label="Président de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select></label><label>Vice-président<select aria-label="Vice-président de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select></label></div>'+
+        '<div class="commission-roster-heading"><strong>Membres affectés</strong><span>'+activeRoster.length+' actif(s)'+(inactiveRoster?' · '+inactiveRoster+' inactif(s)':'')+'</span></div>'+rosterHtml+
+        '<div class="commission-card-actions"><button type="button" class="table-btn" data-action="update-commission-description" data-id="'+esc(c.id)+'">Enregistrer la mission</button><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer les responsables</button><button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></div>'+
+      '</article>';
+    }).join(''):'<div class="commission-empty">Aucune commission trouvée dans la base de données.</div>';
     if(mr.error)msg('commissionMessage','Les commissions sont affichées, mais les membres ne peuvent pas être chargés : '+mr.error.message);
-    else msg('commissionMessage',rows.length+' commission(s) chargée(s). Désigne un président, un vice-président et affecte les membres à leur commission.',true);
+    else msg('commissionMessage',rows.length+' commission(s) affichée(s), classées par ordre de fonctionnement. Les affectations existantes sont conservées.',true);
   }catch(err){
-    box.innerHTML='<tr><td colspan="7">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
+    box.innerHTML='<div class="commission-error">Erreur inattendue : '+esc(err?.message||String(err))+'</div>';
     msg('commissionMessage','Erreur pendant le chargement : '+(err?.message||String(err)));
   }
 }
