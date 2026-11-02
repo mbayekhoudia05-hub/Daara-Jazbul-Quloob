@@ -625,3 +625,153 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .contribution-filters input,.contribution-filters select{width:100%;min-width:0;box-sizing:border-box}
 @media(max-width:900px){.contribution-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.contribution-filters{grid-template-columns:1fr}.history-heading button{width:100%}.contribution-history{padding:14px}}
+
+
+/* Organisation harmonisée des espaces Cotisations, Finances et Suivi des paiements */
+#contributions,
+#financeDashboard,
+#unpaidMembers{
+  width:100%;
+  max-width:1600px;
+  margin:0 auto;
+  padding:clamp(28px,4vw,58px) clamp(18px,4vw,56px);
+}
+#contributions .head,
+#financeDashboard .head,
+#unpaidMembers .head{
+  max-width:1000px;
+  margin:0 auto 30px;
+  padding:clamp(20px,3vw,32px);
+  text-align:left;
+  background:linear-gradient(135deg,#ffffff,#f1f7f2);
+  border:1px solid var(--djq-line,#e3eae4);
+  border-radius:18px;
+  box-shadow:0 10px 28px rgba(8,55,33,.06);
+}
+#contributions .head h2,
+#financeDashboard .head h2,
+#unpaidMembers .head h2{
+  margin:7px 0 8px;
+  font-size:clamp(25px,3vw,34px);
+  line-height:1.25;
+}
+#contributions .head p,
+#financeDashboard .head p,
+#unpaidMembers .head p{margin:0;color:var(--djq-muted,#68796f)}
+#contributions .contribution-stats,
+#financeDashboard .contribution-stats,
+#unpaidMembers .contribution-stats{
+  width:100%;
+  max-width:1320px;
+  margin:0 auto 30px;
+  gap:16px;
+}
+#contributions .stat,
+#financeDashboard .stat,
+#unpaidMembers .stat{
+  min-width:0;
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:7px;
+  border-radius:16px;
+  padding:clamp(16px,2vw,24px);
+  text-align:left;
+}
+#contributions .stat strong,
+#financeDashboard .stat strong,
+#unpaidMembers .stat strong{
+  font-size:clamp(23px,2.5vw,32px);
+  line-height:1.2;
+  overflow-wrap:anywhere;
+}
+#contributions .stat span,
+#financeDashboard .stat span,
+#unpaidMembers .stat span{font-size:13px;line-height:1.45}
+#contributions #contributionForm,
+#financeDashboard .member-form,
+#unpaidMembers .member-form{
+  width:100%;
+  max-width:1320px;
+  margin:0 auto 28px;
+  padding:clamp(18px,2.5vw,30px);
+  border:1px solid var(--djq-line,#e3eae4);
+  border-radius:18px;
+  box-shadow:0 8px 26px rgba(8,55,33,.055);
+  gap:18px;
+}
+#contributions #contributionForm h3,
+#financeDashboard .member-form h3{margin:0 0 4px;font-size:21px}
+#contributions .form-row,
+#financeDashboard .form-row,
+#unpaidMembers .form-row{align-items:start;gap:16px}
+#contributions .contribution-history{
+  width:100%;
+  max-width:1320px;
+  margin:0 auto;
+  padding:clamp(16px,2.5vw,30px);
+  border-radius:18px;
+}
+#contributions .history-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:22px;
+}
+#contributions .history-heading h3{margin:0 0 5px;font-size:22px}
+#contributions .history-heading p{margin:0;color:var(--djq-muted,#68796f)}
+#contributions .contribution-filters{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+  margin-bottom:22px;
+}
+#financeDashboard .member-table-wrap,
+#unpaidMembers .member-table-wrap,
+#contributions .member-table-wrap{
+  width:100%;
+  max-width:1320px;
+  margin:0 auto;
+  overflow:auto;
+  border-radius:16px;
+  box-shadow:0 8px 26px rgba(8,55,33,.055);
+}
+#financeDashboard .member-table-wrap table,
+#unpaidMembers .member-table-wrap table,
+#contributions .member-table-wrap table{width:100%;border-collapse:separate;border-spacing:0}
+#financeDashboard .member-table-wrap th,
+#unpaidMembers .member-table-wrap th,
+#contributions .member-table-wrap th{position:sticky;top:0;z-index:1;white-space:nowrap}
+#financeDashboard .member-table-wrap td,
+#unpaidMembers .member-table-wrap td,
+#contributions .member-table-wrap td{vertical-align:middle}
+#financeDashboard .member-table-wrap tbody tr:nth-child(even),
+#unpaidMembers .member-table-wrap tbody tr:nth-child(even),
+#contributions .member-table-wrap tbody tr:nth-child(even){background:#f8fbf8}
+#financeDashboard .member-table-wrap tbody tr:hover,
+#unpaidMembers .member-table-wrap tbody tr:hover,
+#contributions .member-table-wrap tbody tr:hover{background:#edf6ef}
+#financeDashboard .member-table-wrap{margin-top:28px}
+#unpaidMembers .member-table-wrap{margin-top:24px}
+#unpaidMembers .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:1000px){
+  #contributions .contribution-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #financeDashboard .contribution-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  #contributions,#financeDashboard,#unpaidMembers{padding:24px 14px}
+  #contributions .head,#financeDashboard .head,#unpaidMembers .head{padding:20px;margin-bottom:22px}
+  #contributions .contribution-stats,#financeDashboard .contribution-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #unpaidMembers .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  #contributions .stat,#financeDashboard .stat,#unpaidMembers .stat{min-height:96px;padding:13px}
+  #contributions .history-heading{align-items:stretch;flex-direction:column}
+  #contributions .history-heading button{width:100%}
+  #contributions .contribution-filters{grid-template-columns:1fr}
+  #contributions #contributionForm,#financeDashboard .member-form,#unpaidMembers .member-form{padding:18px}
+  #unpaidMembers .stat strong{font-size:22px}
+}
+@media(max-width:420px){
+  #contributions .contribution-stats,#financeDashboard .contribution-stats{grid-template-columns:1fr}
+  #unpaidMembers .stats{grid-template-columns:1fr}
+}
