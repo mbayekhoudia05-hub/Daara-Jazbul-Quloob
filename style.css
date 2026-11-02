@@ -352,3 +352,70 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
  .verify-organization:before{left:0}.verify-organization:after{right:0}
  .verify-organization strong{font-size:13px}.verify-organization span{font-size:9px}
 }
+
+
+/* Portrait et logo en grand format 204x204 — photo entiere sans recadrage */
+.member-card .card-top{
+  min-height:224px!important;
+  padding:12px 224px 16px!important;
+  box-sizing:border-box!important;
+}
+.member-card .card-top:before{
+  width:204px!important;height:204px!important;
+  left:4px!important;top:4px!important;
+  background-size:contain!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  background-color:#fff!important;
+  border-radius:50%!important;
+}
+.member-card .card-top img{
+  width:204px!important;height:204px!important;
+  right:4px!important;top:4px!important;
+  object-fit:contain!important;
+  padding:8px!important;
+  box-sizing:border-box!important;
+  background:#fff!important;
+}
+.member-card .card-top strong{line-height:1.15!important}
+.verify-organization{
+  min-height:224px!important;
+  padding:12px 224px!important;
+  box-sizing:border-box!important;
+}
+.verify-organization:before{
+  width:204px!important;height:204px!important;
+  left:4px!important;top:4px!important;
+  background-size:contain!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  background-color:#fff!important;
+  border-radius:50%!important;
+}
+.verify-organization:after{
+  width:204px!important;height:204px!important;
+  right:4px!important;top:4px!important;
+  background-size:contain!important;
+  padding:8px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:760px){
+  .member-card .card-top{
+    min-height:112px!important;padding:6px 104px 10px!important;
+  }
+  .member-card .card-top:before{
+    width:96px!important;height:96px!important;left:2px!important;top:4px!important;
+  }
+  .member-card .card-top img{
+    width:96px!important;height:96px!important;right:2px!important;top:4px!important;
+  }
+  .member-card .card-top strong{font-size:14px!important}
+  .verify-organization{
+    min-height:112px!important;padding:6px 104px!important;
+  }
+  .verify-organization:before,.verify-organization:after{
+    width:96px!important;height:96px!important;top:6px!important;
+  }
+  .verify-organization:before{left:2px!important}
+  .verify-organization:after{right:2px!important}
+}
