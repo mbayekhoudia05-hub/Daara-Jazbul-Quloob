@@ -1164,21 +1164,34 @@ async function handlePublicMember(){
 
 let currentCardMember=null;
 function memberCardPrintMarkup(m){
+ const template=document.querySelector('#printCard');
+ if(!template)throw new Error('Modèle de carte introuvable.');
+ const card=template.cloneNode(true);
+ card.removeAttribute('id');
+ card.classList.add('print-card-copy');
  const commission=m.commissions?.name||'Aucune commission';
  const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
- const host=document.createElement('div');
- new QRCode(host,{text:location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});
- const canvas=host.querySelector('canvas'),img=host.querySelector('img'),qr=canvas?canvas.toDataURL('image/png'):(img?.src||'');
- return '<article class="print-member-card"><header class="print-card-top"><img src="logo.jpeg" alt=""><div><strong>DAHIRA JAZBUL QULOUB</strong><small>CELLULE DAKAR · CARTE DE MEMBRE</small></div></header><div class="print-card-body"><img class="print-card-photo" src="'+esc(m.photo_url||'logo.jpeg')+'" alt=""><div class="print-card-info"><h3>'+esc((m.first_name+' '+m.last_name).trim())+'</h3><p><b>N° membre :</b> '+esc(m.member_number)+'</p><p><b>Téléphone :</b> '+esc(m.phone||'Non renseigné')+'</p><p><b>Commission :</b> '+esc(commission)+'</p><p><b>Fonction :</b> '+esc(role)+'</p><p><b>Mission :</b> '+esc(m.commissions?.description||'—')+'</p><p><b>Adhésion :</b> '+esc(m.membership_date||'—')+'</p><p><b>Statut :</b> '+(m.status==='active'?'Actif':'Inactif')+'</p></div><img class="print-card-qr" src="'+qr+'" alt="QR code"></div><footer class="print-card-bottom">DAHIRA JAZBUL QULOUB — CELLULE DAKAR</footer></article>';
+ card.querySelector('.card-top img').src='logo.jpeg';
+ card.querySelector('.card-photo').src=m.photo_url||'logo.jpeg';
+ card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
+ const values=[m.member_number,m.phone||'Non renseigné',commission,role,m.commissions?.description||'—',m.membership_date||'—',m.status==='active'?'Actif':'Inactif'];
+ card.querySelectorAll('.card-info p span').forEach((node,i)=>{if(values[i]!==undefined)node.textContent=values[i];});
+ const qr=card.querySelector('.qrcode');
+ qr.innerHTML='';
+ new QRCode(qr,{text:location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});
+ return card.outerHTML;
 }
 function openMemberCardsPrint(members,title){
  if(!members.length){alert('Aucun membre actif à imprimer.');return;}
  const w=window.open('','_blank','width=1000,height=800');
  if(!w){alert('Autorise les fenêtres pop-up pour imprimer les cartes.');return;}
- const cards=members.map(memberCardPrintMarkup).join('');
- w.document.open();
- w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff;color:#17351f}.print-grid{display:grid;grid-template-columns:repeat(3,206.93px);grid-auto-rows:297.64px;gap:8mm;justify-content:center;align-content:start}.print-member-card{width:206.93px;height:297.64px;overflow:hidden;padding:8px;border:1px solid #075c2d;border-radius:7px;background:#fff;color:#17351f;display:flex;flex-direction:column;gap:5px;break-inside:avoid;page-break-inside:avoid}.print-card-top{height:48px;min-height:48px;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:2px solid #d8b653;background:#075c2d;color:#fff;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-card-top>img{position:absolute;left:1px;top:3px;width:40px;height:40px;border-radius:50%;object-fit:cover}.print-card-top strong,.print-card-top small{display:block}.print-card-top strong{font-size:8px;line-height:1.15}.print-card-top small{font-size:6px;line-height:1.1}.print-card-body{flex:1;min-height:0;display:grid;grid-template-columns:55px 1fr;grid-template-rows:auto 1fr auto;gap:4px 6px;padding:2px 0;overflow:hidden}.print-card-photo{grid-column:1;grid-row:1;width:52px;height:64px;object-fit:cover;border:2px solid #e1c255;border-radius:5px}.print-card-info{grid-column:2;grid-row:1/span 2;overflow:hidden}.print-card-info h3{font-size:10px;line-height:1.15;margin:0 0 4px;padding-bottom:3px;border-bottom:1px solid #dce8df;color:#075c2d;overflow-wrap:anywhere}.print-card-info p{font-size:6.5px;line-height:1.15;margin:1px 0;padding:2px;overflow-wrap:anywhere}.print-card-qr{grid-column:1/-1;grid-row:3;width:52px;height:52px;justify-self:center;align-self:center;background:#fff;padding:3px}.print-card-bottom{height:22px;min-height:22px;border-top:1px solid #d8b653;background:#eaf4ed;color:#075c2d;padding:5px 3px;text-align:center;font-size:6px;line-height:1.2;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}@media print{.print-member-card{break-inside:avoid;page-break-inside:avoid}.print-member-card:nth-child(9n){break-after:page;page-break-after:always}.print-member-card:last-child{break-after:auto!important;page-break-after:auto!important}}@media screen{body{padding:18px;background:#eee}.print-grid{background:#fff;padding:10mm;min-height:100vh}.print-member-card{box-shadow:0 2px 10px #0002}}</style></head><body><main class="print-grid">'+cards+'</main><script>window.addEventListener("load",()=>{const imgs=[...document.images];Promise.all(imgs.map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=i.onerror=r}))).then(()=>setTimeout(()=>window.print(),300))});window.addEventListener("afterprint",()=>window.close());</script></body></html>');
- w.document.close();
+ try{
+  const cards=members.map(memberCardPrintMarkup).map(card=>'<section class="print-sheet">'+card+'</section>').join('');
+  const stylesheet=new URL('style.css?v=20261102-print-same-design',location.href).href;
+  w.document.open();
+  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><link rel="stylesheet" href="'+stylesheet+'"><style>@page{size:A4 landscape;margin:10mm}html,body{margin:0!important;padding:0!important;background:#fff!important}.print-sheet{width:100%;min-height:180mm;display:flex;align-items:center;justify-content:center;break-after:page;page-break-after:always}.print-sheet:last-child{break-after:auto;page-break-after:auto}.print-sheet .member-card{width:720px!important;max-width:720px!important;min-height:0!important;margin:0 auto!important;box-shadow:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;break-inside:avoid;page-break-inside:avoid}.print-sheet .card-top,.print-sheet .card-body,.print-sheet .card-bottom,.print-sheet .card-photo,.print-sheet .qrcode{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@media screen{body{padding:18px!important;background:#eee!important}.print-sheet{background:#fff;margin:0 auto 18px;min-height:180mm}.print-sheet .member-card{box-shadow:0 8px 24px #0002!important}}</style></head><body>'+cards+'<script>window.addEventListener("load",()=>{const imgs=[...document.images];Promise.all(imgs.map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=i.onerror=r}))).then(()=>setTimeout(()=>window.print(),500))});window.addEventListener("afterprint",()=>window.close());<\/script></body></html>');
+  w.document.close();
+ }catch(error){w.close();alert('Impossible de préparer l’impression : '+(error?.message||String(error)));}
 }
 async function printAllMemberCards(){
  if(!isAdmin||!sb)return;
