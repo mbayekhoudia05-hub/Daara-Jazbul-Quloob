@@ -285,3 +285,18 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
   #memberCard .head,.card-actions,.topbar,.app-sidebar{display:none!important}
   .member-card{width:100%;max-width:none;min-height:0;box-shadow:none!important;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+
+/* Correction selon le modèle imprimé : photo du membre dans le cadre carré vert */
+.member-card .card-photo{
+  width:112px;height:142px;justify-self:center;align-self:center;
+  box-sizing:border-box;object-fit:cover;border-radius:0;
+  background:linear-gradient(145deg,#087642,#06472d);
+  border:7px solid #087642;outline:2px dashed #315b43;outline-offset:3px;
+  box-shadow:none;
+}
+@media(max-width:700px){
+  .member-card .card-photo{
+    width:76px;height:98px;border-width:5px;outline-offset:2px;
+  }
+}
