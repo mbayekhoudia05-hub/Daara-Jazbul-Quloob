@@ -180,3 +180,108 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .poster-preview-card canvas{display:block;width:min(100%,540px);height:auto;margin:14px auto 0;border-radius:10px;box-shadow:0 8px 28px #102d1d2b;background:#063c25}
 #posterMessage{min-height:20px;color:#075c2d}
 @media(max-width:850px){.poster-maker-grid{grid-template-columns:1fr}.poster-preview-card{position:static}}
+
+
+/* DJQ MEMBER CARD — design inspired by the supplied green-and-white physical card */
+#memberCard .head{margin-bottom:18px}
+.member-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  width:min(100%,940px);min-height:420px;margin:0 auto;
+  box-sizing:border-box;padding:24px 28px 20px;
+  color:#153a29;background:linear-gradient(110deg,#fff 0%,#fff 72%,#f0f7f1 100%);
+  border:2px solid #0b7041;border-radius:8px;
+  box-shadow:0 16px 38px rgba(6,61,39,.2);
+}
+.member-card:before{
+  content:"";position:absolute;z-index:-1;left:-70px;bottom:-125px;
+  width:310px;height:260px;border-radius:50% 50% 0 0;
+  background:linear-gradient(145deg,#0a7945,#06472d);
+  transform:rotate(-15deg);
+}
+.member-card:after{
+  content:"";position:absolute;z-index:-1;right:-78px;top:-105px;
+  width:250px;height:230px;border-radius:50%;
+  background:linear-gradient(145deg,#dcefe1,#7ebc91);
+  border:1px solid rgba(7,91,53,.25);
+}
+.member-card .card-top{
+  position:relative;min-height:72px;display:flex;align-items:center;
+  justify-content:center;gap:14px;padding:0 125px 14px 10px;
+  border-bottom:0;text-align:center;color:#075b35;
+}
+.member-card .card-top img{
+  position:absolute;right:4px;top:0;width:92px;height:92px;
+  object-fit:contain;border-radius:50%;padding:4px;
+  background:#fff;border:3px solid #d8b653;
+}
+.member-card .card-top strong{
+  display:block;font-size:clamp(19px,3vw,29px);line-height:1.1;
+  letter-spacing:.5px;font-weight:900;
+}
+.member-card .card-top small{
+  display:inline-block;margin-top:7px;padding:4px 12px;
+  border:1px solid #8eb49b;color:#075b35;background:#f8fcf8;
+  font-size:12px;font-weight:800;letter-spacing:.3px;
+}
+.member-card .card-body{
+  display:grid;grid-template-columns:142px minmax(0,1fr) 104px;
+  gap:18px;align-items:center;padding:14px 0 18px;
+}
+.member-card .card-photo{
+  width:116px;height:116px;justify-self:center;align-self:start;
+  border-radius:50%;object-fit:cover;background:#fff;
+  border:4px solid #e2f0e5;outline:2px solid #238452;
+  box-shadow:0 4px 12px #063d2724;
+}
+.member-card .card-info{min-width:0;overflow-wrap:anywhere}
+.member-card .card-info h3{
+  margin:0 0 12px;padding:0 0 7px;border-bottom:3px dashed #173f2b;
+  color:#14271d;font-size:clamp(21px,3vw,29px);line-height:1.2;
+  text-transform:uppercase;
+}
+.member-card .card-info p{
+  margin:5px 0;padding:4px 8px;border-bottom:1px solid #dbe8de;
+  color:#273b30;font-size:13px;line-height:1.35;
+}
+.member-card .card-info p b{color:#075b35}
+.member-card .qrcode{
+  width:96px;height:96px;box-sizing:border-box;justify-self:center;
+  align-self:end;padding:6px;background:#fff;border:2px solid #0b7041;
+  border-radius:5px;
+}
+.member-card .qrcode img{width:100%;height:100%;object-fit:contain}
+.member-card .card-bottom{
+  position:relative;margin-top:0;padding:10px 12px 10px 155px;
+  border-top:0;background:linear-gradient(90deg,#087642,#0b8a4e);
+  color:#fff;font-size:12px;font-weight:900;letter-spacing:1px;
+  text-align:center;opacity:1;
+}
+.member-card .card-bottom:before{
+  content:"TAKKU LIGUEYAL CHEIKHOUL XADIM";
+  position:absolute;left:0;top:0;bottom:0;width:145px;
+  display:flex;align-items:center;justify-content:center;
+  background:#075b35;color:#f0d98d;border-right:3px dashed #e1c255;
+  font-size:9px;letter-spacing:.2px;
+}
+.card-actions{margin-top:16px}
+@media(max-width:700px){
+  .member-card{padding:16px 14px 14px;min-height:0}
+  .member-card .card-top{padding:0 78px 12px 0;min-height:64px}
+  .member-card .card-top img{width:62px;height:62px;right:0}
+  .member-card .card-top strong{font-size:18px}
+  .member-card .card-top small{font-size:10px;padding:3px 6px}
+  .member-card .card-body{grid-template-columns:86px minmax(0,1fr);gap:12px;padding:12px 0}
+  .member-card .card-photo{width:76px;height:76px}
+  .member-card .card-info h3{font-size:19px}
+  .member-card .card-info p{font-size:12px;padding:3px 5px}
+  .member-card .qrcode{grid-column:1/-1;width:86px;height:86px;justify-self:center}
+  .member-card .card-bottom{padding:9px 8px;text-align:center;font-size:10px;letter-spacing:.4px}
+  .member-card .card-bottom:before{display:none}
+}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  body{padding-left:0!important;background:#fff!important}
+  #memberCard{padding:0!important}
+  #memberCard .head,.card-actions,.topbar,.app-sidebar{display:none!important}
+  .member-card{width:100%;max-width:none;min-height:0;box-shadow:none!important;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
