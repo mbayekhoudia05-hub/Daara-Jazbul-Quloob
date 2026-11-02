@@ -200,24 +200,25 @@
     <p id="contributionMessage"></p>
   </form>
 
-  <div class="member-table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Membre</th>
-          <th>Mois</th>
-          <th>Catégorie</th>
-          <th>Montant</th>
-          <th>Mode</th>
-          <th>Référence</th>
-          <th>Date</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="contributionRows">
-        <tr><td colspan="7">Aucune cotisation enregistrée.</td></tr>
-      </tbody>
-    </table>
+  <div class="contribution-history">
+    <div class="history-heading">
+      <div><h3>Historique des cotisations</h3><p>Recherche les versements par membre, mois, catégorie ou statut.</p></div>
+      <button type="button" class="secondary" id="contributionFiltersReset">Réinitialiser les filtres</button>
+    </div>
+    <div class="contribution-filters">
+      <label>Rechercher un membre<input id="contributionSearch" type="search" placeholder="Nom ou numéro de membre"></label>
+      <label>Mois<input id="contributionHistoryMonth" type="month"></label>
+      <label>Catégorie<select id="contributionHistoryCategory">
+        <option value="">Toutes les catégories</option><option value="mensualite">Mensualité</option><option value="tombe_dahira">Tombe Dahira</option><option value="chasse">Chasse</option><option value="divers">Divers</option>
+      </select></label>
+      <label>Statut<select id="contributionHistoryStatus"><option value="">Tous les statuts</option><option value="paid">Payé</option><option value="pending">En attente</option></select></label>
+    </div>
+    <div class="member-table-wrap">
+      <table>
+        <thead><tr><th>Membre</th><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="contributionRows"><tr><td colspan="8">Chargement des cotisations…</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </section>
 
