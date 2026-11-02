@@ -395,6 +395,10 @@ async function init(){
    const input=$(id);
    if(input) input.addEventListener(input.tagName==='INPUT'&&input.type==='search'?'input':'change',()=>renderContributionRows(window.__contributionRows||[]));
  });
+ $('contributionFiltersReset')?.addEventListener('click',()=>{
+   ['contributionSearch','contributionHistoryMonth','contributionHistoryCategory','contributionHistoryStatus'].forEach(id=>{if($(id))$(id).value='';});
+   renderContributionRows(window.__contributionRows||[]);
+ });
  const contributionMonthInput=$('contributionMonth');
 if(contributionMonthInput){
   const d=new Date();
@@ -787,7 +791,6 @@ function renderContributionRows(sourceRows){
         </td>
       </tr>`).join('')
     : '<tr><td colspan="8">Aucune cotisation pour ces critères.</td></tr>';
-}
 }
 
 async function addContribution(e){
