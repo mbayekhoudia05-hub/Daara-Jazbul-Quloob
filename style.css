@@ -957,3 +957,39 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     row-gap:14px !important;
   }
 }
+
+/* Correction ciblée : séparation des champs Membre, Mois et Catégorie */
+#contributions #contributionForm > .form-row:first-of-type{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  column-gap:30px !important;
+  row-gap:22px !important;
+  width:100%;
+}
+#contributions #contributionForm > .form-row{
+  width:100%;
+  min-width:0;
+}
+#contributions #contributionForm > .form-row > label{
+  min-width:0;
+  width:100%;
+}
+#contributions #contributionForm > .form-row > label > input,
+#contributions #contributionForm > .form-row > label > select{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+@media(max-width:900px){
+  #contributions #contributionForm > .form-row:first-of-type{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    column-gap:22px !important;
+  }
+}
+@media(max-width:560px){
+  #contributions #contributionForm > .form-row:first-of-type{
+    grid-template-columns:minmax(0,1fr) !important;
+    row-gap:16px !important;
+  }
+}
