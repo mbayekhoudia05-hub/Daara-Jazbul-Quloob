@@ -610,3 +610,18 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 @media(max-width:800px){
   #dahiraCharters{width:100%;padding:28px 12px}
 }
+
+
+/* Gestion des cotisations : hiérarchie visuelle et filtres */
+#contributions .head{margin-bottom:22px}
+#contributions .contribution-stats{margin:0 auto 24px}
+#contributions #contributionForm{margin:0 auto 28px;max-width:1120px}
+#contributions #contributionForm h3{margin-top:0}
+.contribution-history{margin-top:26px;padding:clamp(16px,2vw,26px);background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8e3);border-radius:16px;box-shadow:0 5px 18px rgba(15,45,25,.05)}
+.history-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.history-heading h3{margin:0 0 5px}.history-heading p{margin:0;color:var(--muted,#657268);font-size:.92rem}
+.contribution-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.contribution-filters label{display:flex;flex-direction:column;gap:6px;min-width:0;font-weight:600;font-size:.9rem}
+.contribution-filters input,.contribution-filters select{width:100%;min-width:0;box-sizing:border-box}
+@media(max-width:900px){.contribution-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.contribution-filters{grid-template-columns:1fr}.history-heading button{width:100%}.contribution-history{padding:14px}}
