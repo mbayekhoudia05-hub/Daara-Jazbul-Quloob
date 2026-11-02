@@ -583,37 +583,30 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 
 
 
-/* Charte : section réellement élargie à toute la zone disponible */
+/* Charte : largeur maîtrisée, sans débordement sous la barre latérale */
 #dahiraCharters{
-  width:calc(100% + var(--sidebar-width, 0px));
-  max-width:none;
-  margin-left:calc(-1 * var(--sidebar-width, 0px));
-  padding:clamp(34px,4vw,58px) clamp(16px,3.5vw,56px);
+  width:94%;
+  max-width:1180px;
+  margin-left:auto;
+  margin-right:auto;
+  padding:clamp(26px,3vw,42px) clamp(16px,2.5vw,32px);
   box-sizing:border-box;
 }
-body.sidebar-collapsed #dahiraCharters{
-  width:calc(100% + var(--sidebar-mini, 0px));
-  margin-left:calc(-1 * var(--sidebar-mini, 0px));
-}
-#dahiraCharters .head{max-width:none;width:100%}
+#dahiraCharters .head{max-width:100%;width:100%}
 #dahiraChartersGrid{
   width:100%;
-  max-width:none;
+  max-width:100%;
   grid-template-columns:minmax(0,1fr);
 }
 #dahiraChartersGrid>.card{
   width:100%;
-  max-width:none;
+  max-width:100%;
   min-width:0;
-  padding:clamp(18px,2.4vw,34px);
+  padding:clamp(16px,2vw,28px);
   box-sizing:border-box;
 }
 #dahiraChartersGrid .charter-full-text,
-#dahiraChartersGrid .charter-pdf-viewer{width:100%;max-width:none}
+#dahiraChartersGrid .charter-pdf-viewer{width:100%;max-width:100%}
 @media(max-width:800px){
-  #dahiraCharters{
-    width:100%;
-    margin-left:0;
-    padding:38px 16px;
-  }
+  #dahiraCharters{width:100%;padding:28px 12px}
 }
