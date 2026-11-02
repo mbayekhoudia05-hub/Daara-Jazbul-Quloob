@@ -806,3 +806,117 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion:reduce){
   button,a,input,select,textarea,.member-table-wrap tbody tr{transition:none!important}
 }
+
+
+/* Finitions ciblées : Cotisations, Finances et Suivi des cotisations */
+#contributions .head,
+#financeDashboard .head,
+#unpaidMembers .head{
+  position:relative;
+  overflow:hidden;
+  border-left:4px solid var(--djq-gold,#d8b653);
+  background:linear-gradient(115deg,#fff 0%,#f4f8f4 72%,#edf5ef 100%);
+}
+#contributions .head:after,
+#financeDashboard .head:after,
+#unpaidMembers .head:after{
+  content:"";
+  position:absolute;
+  width:130px;height:130px;
+  right:-42px;top:-55px;
+  border:1px solid rgba(216,182,83,.25);
+  border-radius:50%;
+  box-shadow:0 0 0 18px rgba(216,182,83,.055),0 0 0 38px rgba(216,182,83,.035);
+  pointer-events:none;
+}
+#contributions .stat,
+#financeDashboard .stat,
+#unpaidMembers .stat{
+  position:relative;
+  overflow:hidden;
+  border-top:3px solid #b9d4c1;
+  background:linear-gradient(155deg,#fff 0%,#f7faf7 100%);
+  box-shadow:0 8px 22px rgba(8,55,33,.055);
+}
+#contributions .stat:nth-child(1),
+#financeDashboard .stat:nth-child(1),
+#unpaidMembers .stat:nth-child(1){border-top-color:#0b8150}
+#contributions .stat:nth-child(2),
+#financeDashboard .stat:nth-child(2),
+#unpaidMembers .stat:nth-child(2){border-top-color:#d8b653}
+#contributions .stat:nth-child(3),
+#financeDashboard .stat:nth-child(3),
+#unpaidMembers .stat:nth-child(3){border-top-color:#7b9eb2}
+#contributions .stat:nth-child(4),
+#financeDashboard .stat:nth-child(4){border-top-color:#bd8a63}
+#contributions .stat strong,
+#financeDashboard .stat strong,
+#unpaidMembers .stat strong{letter-spacing:-.6px}
+#contributions #contributionForm,
+#financeDashboard>.member-form,
+#unpaidMembers>.member-form{
+  position:relative;
+  background:linear-gradient(145deg,#fff,#fbfdfb);
+}
+#contributions #contributionForm h3,
+#financeDashboard>.member-form h3{
+  display:flex;align-items:center;gap:9px;
+  padding-bottom:13px;
+  border-bottom:1px solid #edf1ed;
+  color:var(--djq-deep,#063d27);
+}
+#contributions #contributionForm h3:before{
+  content:"＋";display:grid;place-items:center;
+  width:30px;height:30px;border-radius:9px;
+  background:#eaf4ed;color:#075b35;font-size:20px;
+}
+#contributions .contribution-filters label,
+#financeDashboard>.member-form label,
+#unpaidMembers>.member-form label{color:#365343}
+#contributions .contribution-filters input,
+#contributions .contribution-filters select,
+#financeDashboard>.member-form input,
+#financeDashboard>.member-form select,
+#unpaidMembers>.member-form input{
+  min-height:44px;border-radius:10px;background:#fcfefc;
+}
+#contributions .contribution-history{
+  border:1px solid #dfe9e1;
+  background:linear-gradient(180deg,#fff,#fcfdfc);
+}
+#contributions .history-heading h3{color:var(--djq-deep,#063d27)}
+#contributions .member-table-wrap,
+#financeDashboard>.member-table-wrap,
+#unpaidMembers>.member-table-wrap{
+  border:1px solid #e0e9e2;
+  box-shadow:0 9px 24px rgba(8,55,33,.06);
+}
+#contributions .member-table-wrap th,
+#financeDashboard .member-table-wrap th,
+#unpaidMembers .member-table-wrap th{
+  padding-top:15px;padding-bottom:15px;
+  background:linear-gradient(100deg,#06472d,#087044);
+}
+#contributions .member-table-wrap td,
+#financeDashboard .member-table-wrap td,
+#unpaidMembers .member-table-wrap td{padding-top:13px;padding-bottom:13px}
+#financeDashboard .contribution-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+#financeDashboard .member-form .button-row{justify-content:flex-end;padding-top:4px}
+#financeDashboard .member-form .button-row button{min-width:145px}
+#unpaidMembers>.member-form{max-width:900px!important;margin-bottom:22px}
+#unpaidMembers .stats{max-width:900px;margin-top:0;margin-bottom:25px}
+#unpaidMembers .stat{text-align:center;align-items:center}
+#unpaidMembers .stat strong{font-variant-numeric:tabular-nums}
+#unpaidMembers .member-table-wrap{margin-top:0}
+@media(max-width:1000px){
+  #financeDashboard .contribution-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  #financeDashboard .contribution-stats{grid-template-columns:1fr 1fr}
+  #financeDashboard .member-form .button-row{justify-content:stretch}
+  #financeDashboard .member-form .button-row button{flex:1;min-width:0}
+  #unpaidMembers .stats{grid-template-columns:1fr}
+}
+@media(max-width:390px){
+  #financeDashboard .contribution-stats{grid-template-columns:1fr}
+}
