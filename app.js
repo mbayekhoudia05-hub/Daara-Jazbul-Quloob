@@ -156,7 +156,7 @@ function renderAdminCharters(rows){
       pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇ Télécharger le PDF original</a>':'',
       external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien complémentaire</a>':''
     ].filter(Boolean).join(' ');
-    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
+    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+(pdf?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#view=FitH" loading="lazy"></iframe>':'')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
   }).join('');
 }
 
@@ -165,7 +165,8 @@ function contentCard(x){
   const external=(x.external_url||'').match(/^https?:\/\//i)?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir le lien →</a>':'';
   const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-download" href="'+esc(x.file_url)+(x.file_url.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇️ Télécharger le PDF original</a>':'';
   const charterText=x.type==='charte'&&x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'';
-  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+charterText+pdf+external+'</article>';
+  const charterPdf=x.type==='charte'&&(x.file_url||'').match(/^https?:\/\//i)?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(x.file_url)+'#view=FitH" loading="lazy"></iframe>':'';
+  return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+charterText+charterPdf+pdf+external+'</article>';
 }
 function contentTypeLabel(type){
   return ({khasside:'Khassaïde',audio:'Audio',video:'Vidéo',cours:'Cours',annonce:'Annonce',information:'Information du Dahira',charte:'Charte du Dahira'})[type]||type;
@@ -661,6 +662,7 @@ async function loadConnectedMemberDashboard(member){
           <h4>📜 ${esc(x.title)}</h4>
           <p>${esc(x.description||'')}</p>
           ${x.charter_text?`<div class="charter-full-text" aria-label="Texte intégral du règlement">${esc(x.charter_text)}</div>`:''}
+          ${pdfUrl?`<iframe class="charter-pdf-viewer" title="Lecture de ${esc(x.title)}" src="${esc(pdfUrl)}#view=FitH" loading="lazy"></iframe>`:''}
           ${url?`<p><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien complémentaire ↗</a></p>`:''}
           ${pdfUrl?`<div class="charter-pdf-actions">
             <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF original</a>
