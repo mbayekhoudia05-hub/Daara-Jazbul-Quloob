@@ -1779,7 +1779,7 @@ async function submitMembershipRequest(e) {
     msg('membershipRequestMessage', 'Une erreur est survenue. Réessaie plus tard.');
   } finally {
     button.disabled = false;
-    button.textContent = 'Envoyer la demande';
+    button.textContent = 'Envoyer ma demande';
   }
 }
 async function approveMembershipRequest(id) {
