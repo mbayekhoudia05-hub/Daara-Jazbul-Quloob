@@ -1736,31 +1736,50 @@ async function submitMembershipRequest(e) {
 
   const button = e.target.querySelector('button[type="submit"]');
   button.disabled = true;
+  button.textContent = 'Vérification…';
 
   try {
-    const r = await sb.from('membership_requests').insert({
-      first_name,
-      last_name,
-      phone,
-      email,
-      note,
-      commission_id,
-      status: 'pending'
+    const r = await sb.rpc('submit_membership_request', {
+      p_first_name: first_name,
+      p_last_name: last_name,
+      p_phone: phone,
+      p_email: email,
+      p_note: note,
+      p_commission_id: commission_id
     });
 
     if (r.error) {
-      msg('membershipRequestMessage', 'Erreur : ' + r.error.message);
+      console.error('Soumission de demande impossible :', r.error);
+      msg('membershipRequestMessage', 'La demande n’a pas pu être vérifiée ou envoyée. Réessaie plus tard ou contacte l’administration.');
       return;
     }
 
-    msg(
-      'membershipRequestMessage',
-      'Demande envoyée avec succès. Elle sera examinée par l’administrateur.',
-      true
-    );
-    e.target.reset();
+    switch (r.data) {
+      case 'already_pending':
+        msg('membershipRequestMessage', 'Tu as déjà envoyé une demande d’adhésion avec cet e-mail ou ce numéro. Merci de patienter pendant son traitement par l’administration.');
+        break;
+      case 'already_member':
+        msg('membershipRequestMessage', 'Tu es déjà membre de la Daara Jazbul Quluub – Cellule Dakar. Tu n’as pas besoin de faire une nouvelle demande.', true);
+        break;
+      case 'invalid_commission':
+        msg('membershipRequestMessage', 'La commission choisie n’est plus disponible. Actualise la page et choisis une commission active.');
+        break;
+      case 'invalid':
+        msg('membershipRequestMessage', 'Vérifie les informations saisies puis réessaie.');
+        break;
+      case 'submitted':
+        msg('membershipRequestMessage', 'Demande envoyée avec succès. Elle sera examinée par l’administrateur.', true);
+        e.target.reset();
+        break;
+      default:
+        msg('membershipRequestMessage', 'Réponse inattendue. Contacte l’administration si le problème persiste.');
+    }
+  } catch (err) {
+    console.error('Erreur inattendue lors de la demande :', err);
+    msg('membershipRequestMessage', 'Une erreur est survenue. Réessaie plus tard.');
   } finally {
     button.disabled = false;
+    button.textContent = 'Envoyer la demande';
   }
 }
 async function approveMembershipRequest(id) {
