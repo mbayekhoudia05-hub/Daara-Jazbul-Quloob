@@ -1295,3 +1295,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     box-shadow:0 1px 3px rgba(0,0,0,.18)!important;
   }
 }
+
+
+/* Logo de la carte : fond blanc ajuste a l'image, sans pastille ni contour decoratif. */
+.member-card .card-top > img.card-emblem {
+  background-color:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  object-fit:contain!important;
+}
+@media screen {
+  #memberCard .member-card .card-top > img.card-emblem {
+    background-color:#fff!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    padding:0!important;
+  }
+}
