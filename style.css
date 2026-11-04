@@ -1458,3 +1458,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     padding:0!important;
   }
 }
+
+
+/* PHOTO DU MEMBRE — cadre sobre et élégant, à l'écran comme à l'impression */
+.member-card .card-photo-frame{
+  border:2px solid #d8b653!important;
+  border-radius:10px!important;
+  outline:0!important;
+  outline-offset:0!important;
+  background:#fff!important;
+  box-shadow:0 3px 10px rgba(6,59,32,.16)!important;
+  overflow:hidden!important;
+}
+.member-card .card-photo-frame .card-photo{
+  border:0!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
