@@ -1315,3 +1315,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     padding:0!important;
   }
 }
+
+
+/* Suppression de l'ovale sombre autour du logo : aucun contour, halo ou ombre. */
+.member-card .card-top > img.card-emblem,
+#memberCard .member-card .card-top > img.card-emblem,
+#memberCard .print-sheet .card-top > img.card-emblem {
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  background:#fff!important;
+  padding:0!important;
+}
