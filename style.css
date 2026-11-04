@@ -1356,3 +1356,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   box-shadow:none!important;
   padding:0!important;
 }
+
+
+/* APERCU A L'ECRAN : appliquer le meme recadrage du logo que sur la feuille d'impression. */
+@media screen {
+  #memberCard #printCard .card-top > img.card-emblem {
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    aspect-ratio:1!important;
+    object-fit:cover!important;
+    object-position:50% 58%!important;
+    clip-path:circle(49% at 50% 50%)!important;
+    border:0!important;
+    border-radius:50%!important;
+    outline:0!important;
+    box-shadow:none!important;
+    padding:0!important;
+    background:transparent!important;
+    mix-blend-mode:normal!important;
+    transform:none!important;
+  }
+}
