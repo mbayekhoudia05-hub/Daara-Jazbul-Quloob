@@ -1443,3 +1443,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   }
 }
 
+
+
+/* IMPRESSION : retirer uniquement le liseré blanc ajouté autour du logo. */
+@media print {
+  .member-card .card-top > img.card-emblem,
+  #memberCard .member-card .card-top > img.card-emblem,
+  #memberCard .print-sheet .card-top > img.card-emblem,
+  #memberCard #printCard .card-top > img.card-emblem {
+    border:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    filter:none!important;
+    padding:0!important;
+  }
+}
