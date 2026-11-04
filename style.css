@@ -993,3 +993,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     row-gap:16px !important;
   }
 }
+
+/* Carte membre — modèle graphique vert et blanc, format proportionnel conservé */
+.member-card{position:relative;isolation:isolate;aspect-ratio:863/1241;width:min(720px,100%);height:auto;min-height:0;padding:0!important;overflow:hidden;border-radius:0!important;background:#fafffc!important;color:#075b35!important;box-shadow:0 12px 30px #063b2030!important;display:flex;flex-direction:column;gap:0!important}
+.member-card:before{content:"";position:absolute;z-index:-1;left:-14%;top:-15%;width:128%;height:49%;background:radial-gradient(ellipse at 50% 0%,#168b4f 0%,#08703b 67%,#075b35 100%);border-bottom:5px solid #0b7844;border-radius:0 0 50% 50%/0 0 24% 24%;box-shadow:0 7px 0 #5ab884}
+.member-card:after{content:"";position:absolute;z-index:-1;inset:42% 0 0;background:linear-gradient(135deg,#ffffff 0%,#f8fffb 100%)}
+.member-card .card-top{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;flex:0 0 35%;height:35%;gap:8px;border:0;padding:14px 5% 0;background:transparent;text-align:center}
+.member-card .card-heading{width:92%;display:flex;flex-direction:column;align-items:center;gap:4px}
+.member-card .card-heading strong{font-family:Georgia,'Times New Roman',serif;font-size:clamp(22px,5vw,46px);font-weight:500;line-height:1.05;letter-spacing:1px;color:#fff;text-shadow:0 1px 1px #004b25}
+.member-card .card-heading small{font-family:Arial,sans-serif;font-size:clamp(9px,1.8vw,17px);font-weight:800;line-height:1.15;color:#fff;padding:3px 6px;border:1px solid #ffffff30;background:#086b3a}
+.member-card .card-top img{position:relative;top:auto;right:auto;width:24%;height:auto;aspect-ratio:1;max-width:150px;min-width:0;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 0 0 2px #075b35;margin-top:1px}
+.member-card .card-body{position:relative;display:grid;grid-template-columns:27% minmax(0,1fr);gap:4%;align-items:start;flex:1 1 auto;min-height:0;padding:3% 4% 12%}
+.member-card .card-photo-frame{position:relative;grid-column:1;width:100%;aspect-ratio:.72;border:4px dashed #075b35;border-radius:8px;background:#a8d4b7;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-top:8px}
+.member-card .card-photo{width:100%;height:100%;object-fit:cover;border:0;border-radius:0;background:#a8d4b7}
+.member-card .card-photo-frame:has(.card-photo[src="logo.jpeg"]) .card-photo{opacity:0}
+.member-card .card-photo-placeholder{display:block;position:absolute;color:#fff;font-size:clamp(12px,2vw,24px);font-weight:800;pointer-events:none}
+.member-card .card-info{grid-column:2;min-width:0;padding:0;color:#075b35;text-align:left}
+.member-card .card-info h3{font-size:clamp(18px,4vw,42px);line-height:1.05;font-weight:900;color:#050505;border-bottom:3px dashed #111;padding:0 0 4px;margin:0 0 7px;overflow-wrap:anywhere}
+.member-card .card-info p{font-size:clamp(10px,1.8vw,20px);line-height:1.35;font-weight:700;margin:5px 0;overflow-wrap:anywhere}
+.member-card .card-info p b{font-weight:500;text-decoration:underline;text-decoration-color:#aaa;text-underline-offset:2px}
+.member-card .qrcode{display:none!important}
+.member-card .card-bottom{position:absolute;left:4%;right:4%;bottom:3%;height:auto;min-height:0;background:#076333;color:#fff;border:0;padding:10px 5px;text-align:center;font-size:clamp(10px,1.8vw,21px);line-height:1.2;font-weight:900;letter-spacing:0;opacity:1}
+.member-card .card-bottom:after{content:"";display:block;border-bottom:2px solid #fff;margin:2px 4% 0}
+@media(max-width:600px){.member-card .card-body{grid-template-columns:27% minmax(0,1fr);text-align:left;padding-bottom:15%}.member-card .card-info{text-align:left}.member-card .card-info h3{font-size:clamp(14px,4vw,24px)}.member-card .card-info p{font-size:clamp(8px,2.3vw,12px)}.member-card .card-top{flex-basis:35%;height:35%}.member-card .card-heading strong{font-size:clamp(17px,5vw,28px)}.member-card .card-heading small{font-size:clamp(8px,2vw,11px)}}
