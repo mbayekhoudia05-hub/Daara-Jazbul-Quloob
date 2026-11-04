@@ -1503,3 +1503,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     print-color-adjust:exact!important;
   }
 }
+
+
+/* LOGO — suppression des cercles et bordures autour du visuel */
+.brand img,
+.app-sidebar .brand img,
+.hero-logo,
+.member-card .card-top img {
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
