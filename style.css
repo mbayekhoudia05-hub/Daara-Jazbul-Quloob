@@ -1110,6 +1110,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:600px){.member-card .card-top{flex-basis:37%!important;height:37%!important}.member-card .card-body{grid-template-columns:27% minmax(0,1fr)!important}}
 
 
-/* Suppression définitive de toute photo parasite ronde dans l’en-tête de la carte. Le logo officiel centré reste affiché. */
-.member-card .card-top > img:not(.card-emblem){display:none!important}
-.member-card .card-top > img.card-emblem{display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;margin:2px auto 0!important}
+/* Suppression définitive du logo/photo rond dans l’en-tête de la carte membre. */
+.member-card .card-top > img{display:none!important}
+.member-card .card-top .card-emblem{display:none!important}
