@@ -1227,7 +1227,7 @@ function openMemberCardsPrint(members,title){
  if(!w){alert('Autorise les fenêtres pop-up pour imprimer les cartes.');return;}
  try{
   const cards=members.map(memberCardPrintMarkup).map(card=>'<section class="print-sheet">'+card+'</section>').join('');
-  const stylesheet=new URL('style.css?v=20261102-print-layout-audit',location.href).href;
+  const stylesheet=new URL('style.css?v=20261104-card-arc-v3',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
 @page{size:A4 portrait;margin:10mm}
