@@ -1152,14 +1152,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 
-/* QR code : taille legerement reduite et remontee pour degager la bande verte inferieure. */
+/* QR code : remonte davantage pour rester entierement au-dessus de la bande verte. */
 .member-card .qrcode {
-  width: 50px !important;
-  height: 50px !important;
-  min-width: 50px !important;
-  min-height: 50px !important;
-  margin: 0 0 0 !important;
-  transform: translateY(-6px) !important;
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  margin: 0 !important;
+  transform: translateY(-18px) !important;
   padding: 2px !important;
 }
 .member-card .qrcode img,
