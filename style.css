@@ -1090,3 +1090,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .member-card .qrcode{grid-column:1!important;grid-row:2!important}
  .member-card .card-info{grid-column:2!important;grid-row:1 / span 2!important}
 }
+
+/* DJQ CARTE — demi-cercle supérieur, logo centré et aucune photo ronde parasite */
+.member-card{position:relative!important;isolation:isolate!important;overflow:hidden!important;background:#fbfcf8!important}
+.member-card:before{content:""!important;position:absolute!important;z-index:0!important;left:-20%!important;top:-1%!important;width:140%!important;height:43%!important;background:linear-gradient(145deg,#087e48 0%,#006236 55%,#075b35 100%)!important;border:0!important;border-bottom:5px solid #0a7543!important;border-radius:0 0 50% 50% / 0 0 100% 100%!important;box-shadow:0 6px 0 #fff,0 10px 0 #58b77d,0 14px 0 #fff,0 18px 0 #0b8150!important}
+.member-card:after{content:""!important;position:absolute!important;z-index:0!important;left:0!important;right:0!important;top:36%!important;bottom:0!important;background:linear-gradient(135deg,#fff 0%,#fbfcf8 100%)!important}
+.member-card .card-top{position:relative!important;z-index:3!important;display:flex!important;flex:0 0 37%!important;height:37%!important;min-height:37%!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;padding:12px 5% 0!important;background:transparent!important;overflow:visible!important}
+.member-card .card-heading{position:relative!important;z-index:2!important;width:92%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important}
+.member-card .card-heading strong{font-size:clamp(21px,4.8vw,43px)!important;line-height:1.05!important;color:#fff!important;letter-spacing:1.2px!important}
+.member-card .card-heading small{background:transparent!important;border:1px solid #b8d49c!important;color:#fff!important;padding:3px 8px!important;line-height:1.15!important}
+.member-card .card-top img.card-emblem{display:block!important;position:relative!important;z-index:4!important;inset:auto!important;flex:0 0 auto!important;width:18%!important;max-width:104px!important;min-width:0!important;height:auto!important;aspect-ratio:1!important;object-fit:contain!important;margin:2px auto 0!important;padding:2px!important;border:2px solid #fff!important;border-radius:50%!important;background:#fff!important;box-shadow:0 3px 9px rgba(0,0,0,.24)!important}
+.member-card .card-body{position:relative!important;z-index:2!important;display:grid!important;grid-template-columns:27% minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto!important;gap:3.5%!important;align-items:start!important;flex:1 1 auto!important;min-height:0!important;padding:3% 4% 12%!important;background:transparent!important}
+.member-card .card-photo-frame{position:relative!important;z-index:2!important;grid-column:1!important;grid-row:1!important;aspect-ratio:.72!important;border:4px dashed #075b35!important;border-radius:7px!important;background:#a8d4b7!important;overflow:hidden!important}
+.member-card .card-photo{width:100%!important;height:100%!important;object-fit:cover!important;border:0!important;border-radius:0!important;background:#a8d4b7!important}
+.member-card .card-photo-placeholder{display:none!important}
+.member-card .card-info{position:relative!important;z-index:2!important;grid-column:2!important;grid-row:1 / span 2!important;min-width:0!important;color:#075b35!important}
+.member-card .qrcode{position:relative!important;z-index:2!important;display:flex!important;grid-column:1!important;grid-row:2!important;justify-self:center!important;align-self:start!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;margin:9px 0 0!important;padding:3px!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
+.member-card .card-bottom{position:absolute!important;z-index:4!important;left:4%!important;right:4%!important;bottom:3%!important;background:#076333!important;color:#fff!important;text-align:center!important}
+@media(max-width:600px){.member-card .card-top{flex-basis:37%!important;height:37%!important}.member-card .card-body{grid-template-columns:27% minmax(0,1fr)!important}}
