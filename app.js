@@ -1142,11 +1142,12 @@ async function showMyMemberCard(){
  }
  showMemberCard({...member,commissions:commission});
 }
+function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.commissions?.name||'Aucune commission';
  const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=m.commissions?.description||'—';$('cardDate').textContent=m.membership_date||'—';$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=m.commissions?.description||'—';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'logo.jpeg';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1199,7 +1200,7 @@ function memberCardPrintMarkup(m){
  card.querySelector('.card-top img').src='logo.jpeg';
  card.querySelector('.card-photo').src=m.photo_url||'logo.jpeg';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
- const values=[m.member_number,m.phone||'Non renseigné',commission,role,m.commissions?.description||'—',m.membership_date||'—',m.status==='active'?'Actif':'Inactif'];
+ const values=[m.member_number,m.phone||'Non renseigné',commission,role,m.commissions?.description||'—',formatMemberCardDate(m.membership_date),m.status==='active'?'ACTIF':'INACTIF'];
  card.querySelectorAll('.card-info p span').forEach((node,i)=>{if(values[i]!==undefined)node.textContent=values[i];});
  const qr=card.querySelector('.qrcode');
  qr.innerHTML='';
@@ -1251,6 +1252,29 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
 #memberCard .print-sheet .card-bottom{display:block!important;position:relative!important;flex:0 0 22px!important;width:100%!important;height:22px!important;min-height:22px!important;margin:0!important;padding:5px 3px!important;overflow:hidden!important;text-align:center!important;font-size:6px!important;line-height:1.2!important;letter-spacing:.2px!important;overflow-wrap:anywhere!important}
 #memberCard .print-sheet .member-card,#memberCard .print-sheet .member-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
 @media screen{body{padding:18px!important;background:#eee!important}.print-sheet{height:277mm!important;margin:0 auto 18px!important;background:#fff!important}.print-sheet .member-card{box-shadow:0 8px 24px #0002!important}}
+
+/* Carte membre modèle vert/blanc — conserver le format historique */
+#memberCard .print-sheet .member-card{position:relative!important;isolation:isolate!important;display:flex!important;flex:0 0 206.93px!important;flex-direction:column!important;gap:0!important;width:206.93px!important;height:297.64px!important;min-width:206.93px!important;min-height:297.64px!important;max-width:206.93px!important;max-height:297.64px!important;margin:0 auto!important;padding:0!important;overflow:hidden!important;border-radius:0!important;background:#fafffc!important;color:#075b35!important;box-shadow:none!important}
+#memberCard .print-sheet .member-card:before{content:""!important;position:absolute!important;z-index:-1!important;left:-14%!important;top:-15%!important;width:128%!important;height:49%!important;background:radial-gradient(ellipse at 50% 0%,#168b4f 0%,#08703b 67%,#075b35 100%)!important;border-bottom:5px solid #0b7844!important;border-radius:0 0 50% 50%/0 0 24% 24%!important;box-shadow:0 7px 0 #5ab884!important}
+#memberCard .print-sheet .member-card:after{content:""!important;position:absolute!important;z-index:-1!important;inset:42% 0 0!important;background:linear-gradient(135deg,#fff 0%,#f8fffb 100%)!important}
+#memberCard .print-sheet .card-top{position:relative!important;display:flex!important;flex-direction:column!important;flex:0 0 35%!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;width:100%!important;height:35%!important;min-height:0!important;padding:9px 5% 0!important;border:0!important;text-align:center!important;background:transparent!important}
+#memberCard .print-sheet .card-heading{width:92%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:2px!important}
+#memberCard .print-sheet .card-heading strong{font-family:Georgia,'Times New Roman',serif!important;font-size:23px!important;font-weight:500!important;line-height:1.05!important;letter-spacing:.5px!important;color:#fff!important}
+#memberCard .print-sheet .card-heading small{font-family:Arial,sans-serif!important;font-size:7.8px!important;font-weight:800!important;line-height:1.15!important;color:#fff!important;padding:2px 4px!important;border:1px solid #ffffff30!important;background:#086b3a!important}
+#memberCard .print-sheet .card-top img{position:relative!important;top:auto!important;right:auto!important;width:24%!important;height:auto!important;aspect-ratio:1!important;min-width:0!important;max-width:50px!important;min-height:0!important;object-fit:cover!important;border-radius:50%!important;border:2px solid #fff!important;box-shadow:0 0 0 1px #075b35!important;margin-top:1px!important;padding:0!important}
+#memberCard .print-sheet .card-body{position:relative!important;display:grid!important;flex:1 1 auto!important;grid-template-columns:27% minmax(0,1fr)!important;grid-template-rows:1fr!important;gap:4%!important;align-items:start!important;width:100%!important;min-height:0!important;padding:3% 4% 12%!important;overflow:hidden!important}
+#memberCard .print-sheet .card-photo-frame{position:relative!important;grid-column:1!important;grid-row:1!important;width:100%!important;aspect-ratio:.72!important;border:3px dashed #075b35!important;border-radius:5px!important;background:#a8d4b7!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;margin-top:5px!important}
+#memberCard .print-sheet .card-photo{width:100%!important;height:100%!important;object-fit:cover!important;border:0!important;border-radius:0!important;background:#a8d4b7!important}
+#memberCard .print-sheet .card-photo-frame:has(.card-photo[src="logo.jpeg"]) .card-photo{opacity:0!important}
+#memberCard .print-sheet .card-photo-placeholder{display:block!important;position:absolute!important;color:#fff!important;font-size:12px!important;font-weight:800!important;pointer-events:none!important}
+#memberCard .print-sheet .card-photo-frame:not(:has(.card-photo[src="logo.jpeg"])) .card-photo-placeholder{display:none!important}
+#memberCard .print-sheet .card-info{grid-column:2!important;grid-row:1!important;min-width:0!important;padding:0!important;color:#075b35!important;text-align:left!important}
+#memberCard .print-sheet .card-info h3{font-size:10.5px!important;line-height:1.05!important;font-weight:900!important;color:#050505!important;border-bottom:2px dashed #111!important;padding:0 0 3px!important;margin:0 0 5px!important}
+#memberCard .print-sheet .card-info p{font-size:6.1px!important;line-height:1.35!important;font-weight:700!important;margin:3px 0!important;padding:0!important;color:#075b35!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#memberCard .print-sheet .card-info p b{font-weight:500!important;text-decoration:underline!important;text-decoration-color:#aaa!important;text-underline-offset:1px!important}
+#memberCard .print-sheet .qrcode{display:none!important}
+#memberCard .print-sheet .card-bottom{position:absolute!important;left:4%!important;right:4%!important;bottom:3%!important;flex:0 0 auto!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:7px 3px!important;overflow:hidden!important;background:#076333!important;color:#fff!important;border:0!important;text-align:center!important;font-size:7px!important;line-height:1.2!important;font-weight:900!important;opacity:1!important}
+#memberCard .print-sheet .card-bottom:after{content:""!important;display:block!important;border-bottom:1px solid #fff!important;margin:2px 4% 0!important}
 </style></head><body><main id="memberCard">${cards}</main><script>
 window.addEventListener('load',()=>{const imgs=[...document.images];Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>setTimeout(()=>window.print(),700))});
 window.addEventListener('afterprint',()=>window.close());
