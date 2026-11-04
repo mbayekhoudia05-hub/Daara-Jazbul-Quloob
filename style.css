@@ -1402,3 +1402,43 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     transform:none!important;
   }
 }
+
+
+/* LOGO : supprimer le fond noir du JPEG aussi a l'impression.
+   Le fichier source est vertical : le medaillon occupe environ 72% de sa hauteur,
+   avec son centre a 59%. On conserve donc le medaillon entier dans un cercle.
+   Regle commune ecran/impression pour eviter le rectangle noir a l'impression. */
+.member-card .card-top > img.card-emblem,
+#memberCard #printCard .card-top > img.card-emblem {
+  object-fit:contain!important;
+  object-position:50% 50%!important;
+  clip-path:circle(36% at 50% 59%)!important;
+  -webkit-clip-path:circle(36% at 50% 59%)!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  background:transparent!important;
+  mix-blend-mode:normal!important;
+  transform:none!important;
+}
+@media print {
+  .member-card .card-top > img.card-emblem,
+  #memberCard #printCard .card-top > img.card-emblem {
+    object-fit:contain!important;
+    object-position:50% 50%!important;
+    clip-path:circle(36% at 50% 59%)!important;
+    -webkit-clip-path:circle(36% at 50% 59%)!important;
+    border:0!important;
+    border-radius:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    padding:0!important;
+    background:transparent!important;
+    mix-blend-mode:normal!important;
+    transform:none!important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+}
