@@ -1108,3 +1108,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .member-card .qrcode{position:relative!important;z-index:2!important;display:flex!important;grid-column:1!important;grid-row:2!important;justify-self:center!important;align-self:start!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;margin:9px 0 0!important;padding:3px!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
 .member-card .card-bottom{position:absolute!important;z-index:4!important;left:4%!important;right:4%!important;bottom:3%!important;background:#076333!important;color:#fff!important;text-align:center!important}
 @media(max-width:600px){.member-card .card-top{flex-basis:37%!important;height:37%!important}.member-card .card-body{grid-template-columns:27% minmax(0,1fr)!important}}
+
+
+/* Suppression définitive de toute photo parasite ronde dans l’en-tête de la carte. Le logo officiel centré reste affiché. */
+.member-card .card-top > img:not(.card-emblem){display:none!important}
+.member-card .card-top > img.card-emblem{display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;margin:2px auto 0!important}
