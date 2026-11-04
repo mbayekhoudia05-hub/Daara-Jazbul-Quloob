@@ -1329,3 +1329,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   background:#fff!important;
   padding:0!important;
 }
+
+
+/* Logo carte : neutraliser le fond noir JPEG autour du médaillon sans toucher au dessin. */
+#memberCard .member-card .card-top > img.card-emblem,
+#memberCard .print-sheet .card-top > img.card-emblem {
+  mix-blend-mode:screen!important;
+  background:#fff!important;
+}
