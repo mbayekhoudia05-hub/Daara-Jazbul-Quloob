@@ -1150,3 +1150,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     max-width: 68px !important;
   }
 }
+
+
+/* QR code : taille legerement reduite et remontee pour degager la bande verte inferieure. */
+.member-card .qrcode {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  min-height: 50px !important;
+  margin: 0 0 0 !important;
+  transform: translateY(-6px) !important;
+  padding: 2px !important;
+}
+.member-card .qrcode img,
+.member-card .qrcode canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
