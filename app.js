@@ -1044,7 +1044,32 @@ function printContributionReceipt(x){
   .line{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:10px 0}
   .amount{font-size:25px;font-weight:700;color:#075c2d;margin:22px 0}
   .footer{margin-top:28px;font-size:12px;color:#666;text-align:center}
-  </style></head><body><div class="receipt">
+  
+/* Logo d'impression : pastille noire réduite et strictement circulaire. */
+#memberCard .print-sheet .card-top img.card-emblem{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 34px!important;
+  width:34px!important;
+  min-width:34px!important;
+  max-width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  aspect-ratio:1/1!important;
+  object-fit:cover!important;
+  object-position:50% 58%!important;
+  clip-path:circle(50% at 50% 50%)!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  margin:2px auto 0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+</style></head><body><div class="receipt">
   <h1>Daara Jazbul Qulub</h1><div class="sub">Reçu de cotisation</div>
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
   <div class="line"><b>Membre</b><span>${esc(member.trim())}</span></div>
