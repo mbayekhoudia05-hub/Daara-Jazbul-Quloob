@@ -1442,3 +1442,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     print-color-adjust:exact;
   }
 }
+
+
+/* Liseré blanc circulaire autour du médaillon : visible à l'écran et à l'impression. */
+.member-card .card-top > img.card-emblem,
+#memberCard #printCard .card-top > img.card-emblem {
+  filter:drop-shadow(0 0 1px #fff)
+         drop-shadow(0 0 2px #fff)!important;
+}
+@media print {
+  .member-card .card-top > img.card-emblem,
+  #memberCard #printCard .card-top > img.card-emblem {
+    filter:drop-shadow(0 0 1px #fff)
+           drop-shadow(0 0 2px #fff)!important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+}
