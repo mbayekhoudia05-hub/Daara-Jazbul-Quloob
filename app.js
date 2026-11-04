@@ -1251,7 +1251,8 @@ function openMemberCardsPrint(members,title){
  const w=window.open('','_blank','width=900,height=1000');
  if(!w){alert('Autorise les fenêtres pop-up pour imprimer les cartes.');return;}
  try{
-  const cards=members.map(memberCardPrintMarkup).map(card=>'<section class="print-sheet">'+card+'</section>').join('');
+  const cardMarkup=members.map(memberCardPrintMarkup);
+   const cards=Array.from({length:Math.ceil(cardMarkup.length/9)},(_,page)=>'<section class="print-sheet">'+cardMarkup.slice(page*9,(page+1)*9).join('')+'</section>').join('');
   const stylesheet=new URL('style.css?v=20261104-remove-round-photo',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
@@ -1277,6 +1278,10 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
 #memberCard .print-sheet .card-bottom{display:block!important;position:relative!important;flex:0 0 22px!important;width:100%!important;height:22px!important;min-height:22px!important;margin:0!important;padding:5px 3px!important;overflow:hidden!important;text-align:center!important;font-size:6px!important;line-height:1.2!important;letter-spacing:.2px!important;overflow-wrap:anywhere!important}
 #memberCard .print-sheet .member-card,#memberCard .print-sheet .member-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
 @media screen{body{padding:18px!important;background:#eee!important}.print-sheet{height:277mm!important;margin:0 auto 18px!important;background:#fff!important}.print-sheet .member-card{box-shadow:0 8px 24px #0002!important}}
+/* Impression groupée : jusqu'à 9 cartes par feuille A4, puis feuille suivante. */
+.print-sheet{display:grid!important;grid-template-columns:repeat(3,206.93px)!important;grid-auto-rows:297.64px!important;align-content:center!important;justify-content:center!important;gap:4mm!important;width:100%!important;height:277mm!important;min-height:277mm!important;break-after:page!important;page-break-after:always!important}
+.print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}
+@media screen{.print-sheet{display:grid!important;grid-template-columns:repeat(3,206.93px)!important;grid-auto-rows:297.64px!important;align-content:center!important;justify-content:center!important;gap:4mm!important}}
 
 /* Carte membre modèle vert/blanc — conserver le format historique */
 #memberCard .print-sheet .member-card{position:relative!important;isolation:isolate!important;display:flex!important;flex:0 0 206.93px!important;flex-direction:column!important;gap:0!important;width:206.93px!important;height:297.64px!important;min-width:206.93px!important;min-height:297.64px!important;max-width:206.93px!important;max-height:297.64px!important;margin:0 auto!important;padding:0!important;overflow:hidden!important;border-radius:0!important;background:#fafffc!important;color:#075b35!important;box-shadow:none!important}
