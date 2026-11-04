@@ -1476,3 +1476,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   background:#fff!important;
   box-shadow:none!important;
 }
+
+
+/* PRIORITÉ ABSOLUE — neutraliser les anciens cadres verts de la photo membre */
+#memberCard .member-card .card-photo-frame,
+#printCard .member-card .card-photo-frame,
+.member-card .card-photo-frame{
+  border:2px solid #d8b653!important;
+  outline:0!important;
+  outline-offset:0!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  box-shadow:0 3px 10px rgba(6,59,32,.16)!important;
+}
+#memberCard .member-card .card-photo-frame .card-photo,
+#printCard .member-card .card-photo-frame .card-photo,
+.member-card .card-photo-frame .card-photo{
+  border:0!important;
+  outline:0!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
