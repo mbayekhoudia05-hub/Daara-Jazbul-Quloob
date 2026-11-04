@@ -1379,3 +1379,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     transform:none!important;
   }
 }
+
+
+/* Aperçu écran : fond du logo réduit en cercle régulier. */
+@media screen {
+  #memberCard #printCard .card-top > img.card-emblem {
+    width:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    height:30px!important;
+    min-height:30px!important;
+    max-height:30px!important;
+    aspect-ratio:1/1!important;
+    object-fit:cover!important;
+    object-position:50% 58%!important;
+    clip-path:circle(50% at 50% 50%)!important;
+    border-radius:50%!important;
+    overflow:hidden!important;
+    padding:0!important;
+    border:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+}
