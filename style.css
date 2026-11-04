@@ -1459,3 +1459,47 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     print-color-adjust:exact;
   }
 }
+
+
+/* Liseré blanc circulaire réel : calque indépendant du JPEG et du clip-path.
+   Ainsi, le cercle blanc reste visible même lorsque le fond noir est masqué. */
+.member-card .card-top {
+  position:relative!important;
+}
+.member-card .card-top::after {
+  content:""!important;
+  position:absolute!important;
+  z-index:6!important;
+  pointer-events:none!important;
+  top:4px!important;
+  right:4px!important;
+  width:104px!important;
+  height:104px!important;
+  box-sizing:border-box!important;
+  border:3px solid #fff!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+@media screen {
+  #memberCard #printCard .card-top::after {
+    top:5px!important;
+    right:5px!important;
+    width:30px!important;
+    height:30px!important;
+    border-width:2px!important;
+  }
+}
+@media print {
+  .member-card .card-top::after {
+    top:4px!important;
+    right:4px!important;
+    width:104px!important;
+    height:104px!important;
+    border:3px solid #fff!important;
+    border-radius:50%!important;
+    display:block!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+}
