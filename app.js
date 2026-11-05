@@ -1362,6 +1362,27 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
 #memberCard .print-sheet .qrcode{position:absolute!important;left:8.2%!important;top:64%!important;display:flex!important;width:36px!important;height:36px!important;min-width:36px!important;max-width:36px!important;min-height:36px!important;max-height:36px!important;margin:0!important;padding:2px!important;overflow:hidden!important;align-items:center!important;justify-content:center!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
 #memberCard .print-sheet .qrcode img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important}
 #memberCard .print-sheet .card-top,#memberCard .print-sheet .card-body,#memberCard .print-sheet .card-bottom{display:none!important}
+
+/* CORRECTION FINALE PHOTO : masquer le cadre NATAL sur chaque carte imprimée */
+#memberCard .print-sheet .member-card{position:relative!important;isolation:isolate!important}
+#memberCard .print-sheet .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;z-index:0!important}
+#memberCard .print-sheet .card-photo-cleanup{
+ position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:23.1%!important;
+ display:block!important;margin:0!important;padding:0!important;background:#fff!important;border:0!important;outline:0!important;
+ border-radius:0!important;box-shadow:none!important;z-index:4!important;pointer-events:none!important;
+}
+#memberCard .print-sheet .card-photo-frame{
+ position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:23.1%!important;
+ display:block!important;margin:0!important;padding:0!important;box-sizing:border-box!important;overflow:hidden!important;
+ background:transparent!important;border:0!important;outline:0!important;border-radius:0!important;box-shadow:none!important;z-index:5!important;
+}
+#memberCard .print-sheet .card-photo-frame .card-photo{
+ display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ margin:0!important;padding:0!important;object-fit:cover!important;object-position:center!important;
+ border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;
+}
+#memberCard .print-sheet .card-info,#memberCard .print-sheet .qrcode{z-index:6!important}
+
 </style></head><body><main id="memberCard">${cards}</main><script>
 window.addEventListener('load',()=>{const imgs=[...document.images];Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>setTimeout(()=>window.print(),700))});
 window.addEventListener('afterprint',()=>window.close());
