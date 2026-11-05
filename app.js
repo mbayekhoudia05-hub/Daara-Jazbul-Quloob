@@ -1253,7 +1253,7 @@ function openMemberCardsPrint(members,title){
  try{
   const cardMarkup=members.map(memberCardPrintMarkup);
    const cards=Array.from({length:Math.ceil(cardMarkup.length/9)},(_,page)=>'<section class="print-sheet">'+cardMarkup.slice(page*9,(page+1)*9).join('')+'</section>').join('');
-  const stylesheet=new URL('style.css?v=20261105-natal-cleanup-v6',location.href).href;
+  const stylesheet=new URL('style.css?v=20261105-photo-height-v7',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
 @page{size:A4 portrait;margin:10mm}
@@ -1367,12 +1367,12 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
 #memberCard .print-sheet .member-card{position:relative!important;isolation:isolate!important}
 #memberCard .print-sheet .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;z-index:0!important}
 #memberCard .print-sheet .card-photo-cleanup{
- position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:25.8%!important;
+ position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:28.7%!important;
  display:block!important;margin:0!important;padding:0!important;background:#fff!important;border:0!important;outline:0!important;
  border-radius:0!important;box-shadow:none!important;z-index:4!important;pointer-events:none!important;
 }
 #memberCard .print-sheet .card-photo-frame{
- position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:23.1%!important;
+ position:absolute!important;left:3.25%!important;top:38.45%!important;width:26.1%!important;height:26%!important;
  display:block!important;margin:0!important;padding:0!important;box-sizing:border-box!important;overflow:hidden!important;
  background:transparent!important;border:0!important;outline:0!important;border-radius:0!important;box-shadow:none!important;z-index:5!important;
 }
