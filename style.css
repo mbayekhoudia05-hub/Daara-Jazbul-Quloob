@@ -1685,3 +1685,32 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   #printCard .card-photo-cleanup,
   #printCard .card-photo-frame { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
 }
+
+
+/* CORRECTION FINALE CARTE MEMBRE — zone photo sans cadre ni libellé NATAL */
+.member-card{position:relative!important;isolation:isolate!important}
+.member-card .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;z-index:0!important}
+.member-card .card-photo-cleanup{
+  position:absolute!important;left:3.25%!important;top:38.45%!important;
+  width:26.1%!important;height:23.1%!important;margin:0!important;padding:0!important;
+  background:#fff!important;border:0!important;outline:0!important;border-radius:0!important;
+  box-shadow:none!important;z-index:4!important;display:block!important;pointer-events:none!important;
+}
+.member-card .card-photo-frame{
+  position:absolute!important;left:3.25%!important;top:38.45%!important;
+  width:26.1%!important;height:23.1%!important;margin:0!important;padding:0!important;
+  box-sizing:border-box!important;overflow:hidden!important;background:transparent!important;
+  border:0!important;outline:0!important;border-radius:0!important;box-shadow:none!important;z-index:5!important;
+}
+.member-card .card-photo-frame .card-photo{
+  display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;object-fit:cover!important;object-position:center!important;
+  border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;transform:none!important;
+}
+.member-card .card-info,.member-card .qrcode{z-index:6!important}
+@media print{
+  .member-card .card-photo-cleanup,.member-card .card-photo-frame{
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+  }
+}
