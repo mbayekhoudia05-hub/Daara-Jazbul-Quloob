@@ -1610,3 +1610,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   background:transparent!important;
   box-shadow:none!important;
 }
+
+
+/* Nettoyage du visuel importé : masque uniquement l'ancien cadre pointillé « NATAL ».
+   Le fond original reste intact; la photo du membre est superposée au-dessus. */
+#memberCard .card-photo-cleanup,
+#printCard .card-photo-cleanup,
+.member-card .card-photo-cleanup {
+  position:absolute!important; left:2.5%!important; top:40%!important;
+  width:26.8%!important; height:24.1%!important; margin:0!important; padding:0!important;
+  background:#fbfcf8!important; border:0!important; outline:0!important;
+  box-shadow:none!important; z-index:1!important; pointer-events:none!important;
+}
+#memberCard .card-photo-frame,
+#printCard .card-photo-frame,
+.member-card .card-photo-frame {z-index:2!important}
+#memberCard .card-info,#printCard .card-info,.member-card .card-info,
+#memberCard .qrcode,#printCard .qrcode,.member-card .qrcode {z-index:2!important}
+#memberCard .print-sheet .card-photo-cleanup {
+  left:2.5%!important; top:40%!important; width:26.8%!important; height:24.1%!important;
+  background:#fbfcf8!important; z-index:1!important;
+}
+#memberCard .print-sheet .card-photo-frame {z-index:2!important}
