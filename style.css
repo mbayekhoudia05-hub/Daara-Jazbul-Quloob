@@ -1514,3 +1514,33 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 #memberCard .qrcode{position:absolute!important;left:8.2%!important;top:64%!important;display:flex!important;width:18%!important;max-width:64px!important;aspect-ratio:1!important;height:auto!important;min-width:0!important;min-height:0!important;margin:0!important;padding:2px!important;overflow:hidden!important;align-items:center!important;justify-content:center!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
 #memberCard .qrcode img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important}
 #memberCard .card-top,#memberCard .card-body,#memberCard .card-bottom{display:none!important}
+
+
+/* Correction photo membre sur la plateforme : alignement et cadre vert */
+#memberCard .card-photo-frame,
+#printCard .card-photo-frame,
+.member-card .card-photo-frame{
+  box-sizing:border-box!important;
+  border:2px solid #087642!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+#memberCard .card-photo-frame .card-photo,
+#printCard .card-photo-frame .card-photo,
+.member-card .card-photo-frame .card-photo{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
