@@ -1632,3 +1632,56 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   background:#fbfcf8!important; z-index:1!important;
 }
 #memberCard .print-sheet .card-photo-frame {z-index:2!important}
+
+
+/* FIX DEFINITIF : supprimer le cadre imprimé NATAL sans toucher au fichier image */
+#memberCard .card-photo-cleanup,
+#printCard .card-photo-cleanup,
+.member-card .card-photo-cleanup {
+  position:absolute!important;
+  left:3.1%!important;
+  top:38.6%!important;
+  width:26.0%!important;
+  height:23.0%!important;
+  margin:0!important;
+  padding:0!important;
+  background:#fbfcf8!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  z-index:5!important;
+  pointer-events:none!important;
+}
+#memberCard .card-photo-frame,
+#printCard .card-photo-frame,
+.member-card .card-photo-frame {
+  position:absolute!important;
+  left:3.1%!important;
+  top:38.6%!important;
+  width:26.0%!important;
+  height:23.0%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  z-index:6!important;
+}
+#memberCard .card-photo-frame .card-photo,
+#printCard .card-photo-frame .card-photo,
+.member-card .card-photo-frame .card-photo {
+  display:block!important;width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;object-fit:cover!important;
+  object-position:center!important;transform:none!important;
+  margin:0!important;padding:0!important;border:0!important;outline:0!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+#memberCard .card-photo-cleanup {pointer-events:none!important}
+@media print {
+  #memberCard .card-photo-cleanup,
+  #memberCard .card-photo-frame,
+  #printCard .card-photo-cleanup,
+  #printCard .card-photo-frame { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+}
