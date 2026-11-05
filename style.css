@@ -1692,7 +1692,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .member-card .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;z-index:0!important}
 .member-card .card-photo-cleanup{
   position:absolute!important;left:3.25%!important;top:38.45%!important;
-  width:26.1%!important;height:24.3%!important;margin:0!important;padding:0!important;
+  width:26.1%!important;height:23.1%!important;margin:0!important;padding:0!important;
   background:#fff!important;border:0!important;outline:0!important;border-radius:0!important;
   box-shadow:none!important;z-index:4!important;display:block!important;pointer-events:none!important;
 }
