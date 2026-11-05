@@ -1501,7 +1501,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 
 /* Carte membre : fond vierge officiel utilisé tel quel, informations superposées. */
-#memberCard .member-card{position:relative!important;isolation:isolate!important;display:block!important;width:min(720px,100%)!important;height:auto!important;aspect-ratio:863/1241!important;min-height:0!important;margin:0 auto!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:0 12px 30px #063b2030!important}
+#memberCard .member-card{position:relative!important;isolation:isolate!important;display:block!important;width:min(720px,100%)!important;height:auto!important;aspect-ratio:2/3!important;min-height:0!important;margin:0 auto!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:0 12px 30px #063b2030!important}
 #memberCard .member-card:before,#memberCard .member-card:after{display:none!important;content:none!important}
 #memberCard .card-background{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:fill!important;margin:0!important;padding:0!important;border:0!important}
 #memberCard .card-photo-frame{position:absolute!important;left:5.2%!important;top:40.1%!important;width:22.5%!important;height:20.1%!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
