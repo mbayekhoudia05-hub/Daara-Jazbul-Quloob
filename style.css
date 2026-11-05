@@ -1566,3 +1566,47 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   transform:scale(1.12)!important;
   transform-origin:50% 50%!important;
 }
+
+
+/* Ajustement réel de la photo sur le fond importé :
+   la zone photo du visuel occupe environ x=3.8%, y=39%, l=25.5%, h=22%.
+   On recouvre entièrement l'ancien cadre imprimé pour éviter les bandes visibles. */
+#memberCard #printCard .card-photo-frame,
+#memberCard .card-photo-frame,
+#printCard .card-photo-frame,
+.member-card .card-photo-frame{
+  position:absolute!important;
+  left:3.7%!important;
+  top:38.8%!important;
+  width:25.6%!important;
+  height:22.1%!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:1.5px solid #087642!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#memberCard #printCard .card-photo-frame .card-photo,
+#memberCard .card-photo-frame .card-photo,
+#printCard .card-photo-frame .card-photo,
+.member-card .card-photo-frame .card-photo{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:50% 50%!important;
+  transform:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
