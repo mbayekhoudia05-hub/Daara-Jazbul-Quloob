@@ -1253,7 +1253,7 @@ function openMemberCardsPrint(members,title){
  try{
   const cardMarkup=members.map(memberCardPrintMarkup);
    const cards=Array.from({length:Math.ceil(cardMarkup.length/9)},(_,page)=>'<section class="print-sheet">'+cardMarkup.slice(page*9,(page+1)*9).join('')+'</section>').join('');
-  const stylesheet=new URL('style.css?v=20261105-photo-height-v7',location.href).href;
+  const stylesheet=new URL('style.css?v=20261105-qr-bottom-center-v8',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
 @page{size:A4 portrait;margin:10mm}
@@ -1382,6 +1382,21 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
  border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;
 }
 #memberCard .print-sheet .card-info,#memberCard .print-sheet .qrcode{z-index:6!important}
+
+
+#memberCard .print-sheet .qrcode{
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:14%!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+ max-width:46px!important;max-height:46px!important;margin:0!important;padding:2px!important;
+ transform:translateX(-50%)!important;z-index:7!important;box-sizing:border-box!important;
+ background:#fff!important;border:1px solid #075b35!important;border-radius:3px!important;overflow:hidden!important;
+}
+#memberCard .print-sheet .qrcode img,
+#memberCard .print-sheet .qrcode canvas{
+ display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ object-fit:contain!important;image-rendering:pixelated!important;
+}
 
 </style></head><body><main id="memberCard">${cards}</main><script>
 window.addEventListener('load',()=>{const imgs=[...document.images];Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>setTimeout(()=>window.print(),700))});
