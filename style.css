@@ -1544,3 +1544,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   background:transparent!important;
   box-shadow:none!important;
 }
+
+
+/* RECADRAGE FINAL PHOTO MEMBRE : zoom léger pour couvrir toute l'ouverture
+   de la carte importée, sans modifier le fond ni les autres éléments. */
+#memberCard .card-photo-frame,
+#printCard .card-photo-frame,
+.member-card .card-photo-frame {
+  overflow:hidden!important;
+  border:2px solid #087642!important;
+  box-sizing:border-box!important;
+}
+#memberCard .card-photo-frame .card-photo,
+#printCard .card-photo-frame .card-photo,
+.member-card .card-photo-frame .card-photo {
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:50% 50%!important;
+  transform:scale(1.12)!important;
+  transform-origin:50% 50%!important;
+}
