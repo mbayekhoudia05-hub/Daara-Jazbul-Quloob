@@ -1744,8 +1744,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 /* QR CODE : format reduit et position legerement plus basse. */
 .member-card .qrcode{
   left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
-  width:33px!important;height:33px!important;min-width:33px!important;min-height:33px!important;
-  max-width:33px!important;max-height:33px!important;margin:0!important;padding:2px!important;
+  width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;
+  max-width:26px!important;max-height:26px!important;margin:0!important;padding:2px!important;
   transform:translateX(-50%)!important;z-index:7!important;
 }
 .member-card .qrcode img,.member-card .qrcode canvas{
