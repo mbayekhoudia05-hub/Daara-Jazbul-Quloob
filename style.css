@@ -1714,3 +1714,28 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
   }
 }
+
+
+/* QR CODE : centre en bas de la carte, avec une marge de securite avant la bande verte. */
+.member-card .qrcode{
+  position:absolute!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:14%!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:2px!important;
+  transform:translateX(-50%)!important;
+  z-index:7!important;
+}
+.member-card .qrcode img,
+.member-card .qrcode canvas{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+}
