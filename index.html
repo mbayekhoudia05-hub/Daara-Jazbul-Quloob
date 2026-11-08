@@ -12,12 +12,14 @@
     <a href="#adminDashboard" id="dashboardNav" class="hidden" data-admin-target="adminDashboard">▦ <span>Tableau de bord</span></a>
     <a href="#members" id="membersNav" class="hidden" data-admin-target="members">♙ <span>Membres</span></a>
     <a href="#commissions" id="commissionsNav" class="hidden" data-admin-target="commissions">♧ <span>Commissions</span></a>
-    <a href="#financeDashboard" id="financeNav" class="hidden" data-admin-target="financeDashboard">▥ <span>Finance</span></a>
-    <div class="finance-subnav">
-      <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
-      <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi des paiements</span></a>
-      <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
-      <a href="#financeWavePayment" id="financeWaveNav" class="hidden" data-admin-target="financeDashboard">🌊 <span>Paiement Wave</span></a>
+    <div class="finance-nav-group">
+      <a href="#financeDashboard" id="financeNav" class="hidden finance-main-link" data-admin-target="financeDashboard">▥ <span>Finance</span></a>
+      <div class="finance-subnav">
+        <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
+        <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi des paiements</span></a>
+        <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
+        <a href="#financeWavePayment" id="financeWaveNav" class="hidden" data-admin-target="financeDashboard">🌊 <span>Paiement Wave</span></a>
+      </div>
     </div>
     <a href="#posters" id="postersNav" class="hidden" data-admin-target="posters">🎨 <span>Générateur d’affiches</span></a>
     <a href="#membershipRequests" id="membershipRequestsNav" class="hidden" data-admin-target="membershipRequests">✉ <span>Demandes d’adhésion</span> <b id="membershipRequestBadge" class="request-count hidden">0</b></a>
@@ -246,7 +248,10 @@
   <div id="financeWavePayment" class="member-form finance-wave-panel">
     <h3>🌊 Paiement Wave du Dahira</h3>
     <p>Numéro Wave/Tigo : <strong>761 263 937</strong></p>
-    <p>Le QR code original sera affiché ici dès que son image source aura été jointe à nouveau. En attendant, le lien direct reste disponible :</p>
+    <p>Scanne ce QR code Wave officiel avec ton téléphone ou clique sur le lien pour ouvrir directement le paiement.</p>
+    <a class="wave-original-image-link" href="Screenshot_20261108_103243_Wave.jpg" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir le QR Wave original en grand">
+      <img class="wave-original-qr" src="Screenshot_20261108_103243_Wave.jpg" alt="QR code original Wave du Dahira">
+    </a>
     <a id="adminWavePayLink" class="primary public-wave-link" href="https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p" target="_blank" rel="noopener noreferrer">Ouvrir Wave et payer</a>
     <small>Les transferts doivent être vérifiés par l’administration avant confirmation sur la plateforme.</small>
   </div>
@@ -494,7 +499,9 @@
         <h3>🌊 Paiement Wave</h3>
         <p><strong>Numéro Wave/Tigo du Dahira :</strong> 761 263 937</p>
         <p>Scanne ce QR code avec Wave ou ouvre directement le lien de paiement.</p>
-        <div id="memberWaveQr" style="display:flex;justify-content:center;padding:14px;background:#fff;border-radius:12px;max-width:210px;margin:12px auto;"></div>
+        <a class="wave-original-image-link member-wave-image-link" href="Screenshot_20261108_103243_Wave.jpg" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir le QR Wave original en grand">
+          <img class="wave-original-qr" src="Screenshot_20261108_103243_Wave.jpg" alt="QR code original Wave du Dahira">
+        </a>
         <p style="text-align:center"><a id="memberWavePayLink" href="https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p" target="_blank" rel="noopener noreferrer" class="primary" style="display:inline-block;text-decoration:none;">📲 Ouvrir Wave pour payer</a></p>
         <p>Après le transfert, indique la référence de transaction si tu l’as. Le paiement reste en attente jusqu’à sa vérification par l’administrateur.</p>
       </div>
