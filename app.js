@@ -1,11 +1,10 @@
 let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
 let paymentCategories=[];
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
-function renderDahiraWaveQr(){
- ['memberWaveQr'].forEach(id=>{const box=$(id);if(!box)return;box.innerHTML='';if(window.QRCode)new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});});
- ['memberWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
+function configureDahiraWaveLinks(){
+ ['memberWavePayLink','adminWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
 }
-document.addEventListener('DOMContentLoaded',renderDahiraWaveQr);
+document.addEventListener('DOMContentLoaded',configureDahiraWaveLinks);
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
