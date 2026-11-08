@@ -5,7 +5,6 @@
   <nav id="mainNavigation">
     <a href="#accueil">⌂ <span>Accueil</span></a>
     <a href="#contenus">▤ <span>Contenus publics</span></a>
-    <a href="#publicWavePayment">₣ <span>Payer avec Wave</span></a>
     <a href="#dahiraInformation">ℹ <span>Informations du Dahira</span></a>
     <a href="#dahiraCharters">📜 <span>Chartes du Dahira</span></a>
     <a href="#admin" id="adminNav" class="hidden" data-admin-target="admin">⚙ <span>Gérer les contenus</span></a>
@@ -13,11 +12,14 @@
     <a href="#adminDashboard" id="dashboardNav" class="hidden" data-admin-target="adminDashboard">▦ <span>Tableau de bord</span></a>
     <a href="#members" id="membersNav" class="hidden" data-admin-target="members">♙ <span>Membres</span></a>
     <a href="#commissions" id="commissionsNav" class="hidden" data-admin-target="commissions">♧ <span>Commissions</span></a>
-    <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
-    <a href="#financeDashboard" id="financeNav" class="hidden" data-admin-target="financeDashboard">▥ <span>Finances</span></a>
+    <a href="#financeDashboard" id="financeNav" class="hidden" data-admin-target="financeDashboard">▥ <span>Finance</span></a>
+    <div class="finance-subnav">
+      <a href="#contributions" id="contributionsNav" class="hidden" data-admin-target="contributions">₣ <span>Cotisations</span></a>
+      <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi des paiements</span></a>
+      <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
+      <a href="#financeWavePayment" id="financeWaveNav" class="hidden" data-admin-target="financeDashboard">🌊 <span>Paiement Wave</span></a>
+    </div>
     <a href="#posters" id="postersNav" class="hidden" data-admin-target="posters">🎨 <span>Générateur d’affiches</span></a>
-    <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi paiements</span></a>
-    <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Paiements</span></a>
     <a href="#membershipRequests" id="membershipRequestsNav" class="hidden" data-admin-target="membershipRequests">✉ <span>Demandes d’adhésion</span> <b id="membershipRequestBadge" class="request-count hidden">0</b></a>
   </nav>
   <div class="sidebar-account"><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></div>
@@ -65,27 +67,6 @@
 <section id="admin" class="section hidden"><div class="head"><span>ADMINISTRATION</span><h2>Gérer les contenus</h2></div><form id="contentForm"><label>Type<select id="type"><option value="khasside">Khassaïde</option><option value="audio">Audio</option><option value="video">Vidéo</option><option value="cours">Cours</option><option value="annonce">Annonce</option><option value="information">Information du Dahira</option><option value="charte">Charte du Dahira</option></select></label><label>Titre<input id="title" required></label><label>Description<textarea id="description"></textarea></label><label for="charterText">Texte intégral du règlement (pour une charte)<textarea id="charterText" rows="18" placeholder="Collez ici le texte officiel complet du règlement. Le texte sera affiché directement dans la plateforme."></textarea><small>Le texte est conservé tel quel et visible par les membres et l’administrateur.</small></label><label class="pdf-upload-label">📄 Ajouter un document PDF (facultatif, notamment pour les chartes)<input id="contentPdf" type="file" accept="application/pdf,.pdf"><small>PDF uniquement, 15 Mo maximum. Le document sera consultable par tous les visiteurs.</small></label><p id="pdfCurrentInfo" class="pdf-current-info">PDF facultatif — 15 Mo maximum.</p><label>Lien du contenu (facultatif)<input id="external_url" type="url" placeholder="https://..."></label><input id="editingContentId" type="hidden"><div class="button-row"><button class="primary" id="contentSubmitBtn" type="submit">Publier</button><button class="secondary hidden" id="cancelContentEditBtn" type="button">Annuler la modification</button></div><p id="formMessage"></p></form><div class="head content-admin-list-head"><h2>Contenus publiés</h2><p>Modifie un contenu existant ou ajoute une nouvelle information/charte.</p></div><div id="adminContentRows" class="content-admin-list"><div class="loading">Chargement…</div></div><div class="head content-admin-list-head"><h2>Consultation des chartes</h2><p>Les chartes publiées sont consultables ici par l’administrateur, avec lecture PDF et téléchargement.</p></div><div id="adminChartersList" class="content-admin-list"><div class="loading">Chargement des chartes…</div></div></section>
 
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
-
-<section id="publicWavePayment" class="section alt">
-  <div class="head">
-    <span>SOUTENIR LE DAHIRA</span>
-    <h2>Payer avec Wave</h2>
-    <p>Vous pouvez effectuer un paiement au Dahira avec le QR code ci-dessous ou en ouvrant directement le lien Wave.</p>
-  </div>
-  <div class="public-wave-card">
-    <div class="public-wave-qr-wrap">
-      <div id="publicWaveQr" class="public-wave-qr" aria-label="QR code Wave du Dahira"></div>
-      <p>Scannez ce QR code avec votre téléphone pour ouvrir le paiement Wave.</p>
-    </div>
-    <div class="public-wave-details">
-      <h3>Effectuer un transfert</h3>
-      <p><strong>Numéro Wave : 761 263 937</strong></p>
-      <p>Vous pouvez aussi cliquer sur le lien ci-dessous pour ouvrir directement la page de paiement Wave.</p>
-      <a id="publicWavePayLink" class="primary public-wave-link" href="https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p" target="_blank" rel="noopener noreferrer">Ouvrir Wave et payer</a>
-      <small>Après le transfert, conservez la confirmation. Le paiement sera enregistré sur la plateforme après vérification par l’administration.</small>
-    </div>
-  </div>
-</section>
 
 <section id="membershipFormSection" class="section">
   <div class="head">
@@ -253,6 +234,14 @@
 
   <div class="stats contribution-stats">
     <div class="stat"><strong id="financeTotal">0 FCFA</strong><span>Total encaissé</span></div>
+  <div id="financeWavePayment" class="member-form finance-wave-panel">
+    <h3>🌊 Paiement Wave du Dahira</h3>
+    <p>Numéro Wave/Tigo : <strong>761 263 937</strong></p>
+    <p>Le QR code original sera affiché ici dès que son image source aura été jointe à nouveau. En attendant, le lien direct reste disponible :</p>
+    <a id="adminWavePayLink" class="primary public-wave-link" href="https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p" target="_blank" rel="noopener noreferrer">Ouvrir Wave et payer</a>
+    <small>Les transferts doivent être vérifiés par l’administration avant confirmation sur la plateforme.</small>
+  </div>
+
     <div class="stat"><strong id="financeMonth">0 FCFA</strong><span>Encaissé ce mois</span></div>
     <div class="stat"><strong id="financeWave">0 FCFA</strong><span>Via Wave</span></div>
     <div class="stat"><strong id="financeOrange">0 FCFA</strong><span>Via Orange Money</span></div>
@@ -383,8 +372,7 @@
       <div class="payment-instructions">
         <h3>📲 Envoyer votre cotisation</h3>
         <p>🌊 <strong>Wave/Tigo :</strong> 761 263 937</p>
-        <div id="adminWaveQr" style="display:flex;justify-content:center;padding:14px;background:#fff;border-radius:12px;max-width:210px;margin:12px auto;"></div>
-        <p style="text-align:center"><a id="adminWavePayLink" href="https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p" target="_blank" rel="noopener noreferrer" class="primary" style="display:inline-block;text-decoration:none;">📲 Ouvrir Wave pour payer</a></p>
+        <p>Consultez la rubrique Finance pour accéder au QR et au lien Wave du Dahira.</p>
         <p>Après le transfert, indiquez la référence de la transaction. Le paiement sera validé après vérification par l'administrateur.</p>
       </div>
 
