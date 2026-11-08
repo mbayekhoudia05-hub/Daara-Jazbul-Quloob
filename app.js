@@ -1683,7 +1683,7 @@ async function savePaymentTransaction(e){
 
 async function loadPaymentTransactions(){
   const r=await sb.from("payment_transactions")
-    .select("id,member_id,payer_name,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
+    .select("id,member_id,payer_member_id,payer_name,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members!payment_transactions_member_id_fkey(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
   if(r.error){alert(r.error.message);return;}
   const rows=r.data||[];
