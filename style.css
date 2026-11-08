@@ -1755,3 +1755,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* Gestion des catégories de paiement */
 .payment-category-list{display:grid;gap:10px;margin-top:14px}.payment-category-row{display:grid;grid-template-columns:minmax(160px,1fr) auto auto;align-items:center;gap:12px;padding:12px;border:1px solid var(--line,#dfe7e2);border-radius:12px;background:var(--surface,#fff)}.payment-category-row input{width:100%;min-width:0;padding:10px;border:1px solid var(--line,#dfe7e2);border-radius:8px;font:inherit}.payment-category-row button{white-space:nowrap}@media(max-width:600px){.payment-category-row{grid-template-columns:1fr auto}.payment-category-row input{grid-column:1/-1}}
+
+
+/* Paiement Wave public : QR et lien accessibles à tous les visiteurs */
+.public-wave-card{max-width:900px;margin:0 auto;background:#fff;border:1px solid #dce9df;border-radius:18px;padding:28px;display:grid;grid-template-columns:minmax(220px,1fr) minmax(260px,1.2fr);gap:30px;align-items:center;box-shadow:0 8px 24px #073b1b12}
+.public-wave-qr-wrap{text-align:center}
+.public-wave-qr{width:220px;min-height:220px;margin:0 auto 12px;padding:12px;background:#fff;border:1px solid #e1e9e3;border-radius:12px;display:grid;place-items:center}
+.public-wave-qr img,.public-wave-qr canvas{max-width:100%;height:auto!important}
+.public-wave-qr-wrap p,.public-wave-details p{color:#617066;line-height:1.6}
+.public-wave-details h3{margin-top:0;color:#075c2d}
+.public-wave-link{display:inline-block;text-decoration:none;margin:8px 0 14px}
+.public-wave-details small{display:block;color:#617066;line-height:1.5}
+@media(max-width:700px){.public-wave-card{grid-template-columns:1fr;padding:20px}.public-wave-qr{width:210px;min-height:210px}}
