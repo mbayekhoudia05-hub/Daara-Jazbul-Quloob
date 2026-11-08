@@ -354,12 +354,7 @@
           <input id="paymentReference" placeholder="Référence de transaction">
         </label>
         <label>Catégorie de cotisation
-          <select id="paymentCategory" required>
-            <option value="mensualite">Mensualité</option>
-            <option value="tombe_dahira">Tombe Dahira</option>
-            <option value="chasse">Chasse</option>
-            <option value="divers">Divers</option>
-          </select>
+          <select id="paymentCategory" required><option value="mensualite">Mensualité</option></select>
         </label>
       </div>
 
@@ -386,9 +381,19 @@
     </form>
   </div>
 
+  <div class="member-form">
+    <h3>⚙️ Catégories de paiement</h3>
+    <form id="paymentCategoryForm" class="form-row">
+      <label>Ajouter une catégorie<input id="newPaymentCategoryLabel" maxlength="80" placeholder="Ex. Participation spéciale" required></label>
+      <button class="primary" type="submit">Ajouter</button>
+    </form>
+    <div id="paymentCategoryRows" class="payment-category-list"></div>
+    <small>Les catégories désactivées ne sont plus proposées aux membres, mais restent visibles dans les anciens historiques.</small>
+  </div>
+
   <div class="member-table-wrap">
-    <table><thead><tr><th>Membre</th><th>Montant</th><th>Mode</th><th>Catégorie</th><th>Référence</th><th>Mois</th><th>Statut</th><th>Date</th></tr></thead>
-    <tbody id="paymentTransactionRows"><tr><td colspan="7">Aucune transaction.</td></tr></tbody></table>
+    <table><thead><tr><th>Bénéficiaire</th><th>Payé par</th><th>Montant</th><th>Mode</th><th>Catégorie</th><th>Référence</th><th>Mois</th><th>Statut</th><th>Date</th></tr></thead>
+    <tbody id="paymentTransactionRows"><tr><td colspan="9">Aucune transaction.</td></tr></tbody></table>
   </div>
 </section>
 
@@ -460,6 +465,33 @@
   </div>
 
   <div class="card">
+    <h3>💳 Effectuer un paiement Wave</h3>
+    <p>Tu peux payer pour toi-même ou pour un autre membre. Le versement sera attribué au bénéficiaire choisi après vérification par l’administrateur.</p>
+    <form id="memberPaymentForm" class="member-form">
+      <label>Pour qui effectues-tu le paiement ?
+        <select id="memberPaymentFor"><option value="self">Pour moi-même</option><option value="other">Pour un autre membre</option></select>
+      </label>
+      <label id="memberPaymentBeneficiaryWrap" class="hidden">Choisir le membre bénéficiaire
+        <select id="memberPaymentBeneficiary"></select>
+      </label>
+      <div class="form-row">
+        <label>Type de paiement<select id="memberPaymentCategory" required></select></label>
+        <label>Montant (FCFA)<input id="memberPaymentAmount" type="number" min="1" step="1" required placeholder="2000"></label>
+        <label>Mois concerné<input id="memberPaymentMonth" type="month" required></label>
+      </div>
+      <div class="payment-instructions">
+        <h3>🌊 Paiement Wave</h3>
+        <p><strong>Numéro du Dahira :</strong> 761 263 937</p>
+        <p>Effectue le transfert dans Wave, puis indique la référence de transaction si tu l’as déjà. Le paiement reste en attente jusqu’à sa vérification.</p>
+      </div>
+      <label>Référence Wave (facultatif)<input id="memberPaymentReference" maxlength="120" placeholder="Référence affichée dans Wave"></label>
+      <label>Note (facultatif)<textarea id="memberPaymentNote" rows="2"></textarea></label>
+      <button class="primary" type="submit">Enregistrer ma demande de paiement</button>
+      <p id="memberPaymentMessage" role="status"></p>
+    </form>
+  </div>
+
+  <div class="card">
     <h3>💰 Mes cotisations</h3>
     <div class="member-table-wrap">
       <table>
@@ -473,8 +505,8 @@
     <h3>💳 Mes transactions</h3>
     <div class="member-table-wrap">
       <table>
-        <thead><tr><th>Montant</th><th>Catégorie</th><th>Mode</th><th>Référence</th><th>Statut</th></tr></thead>
-        <tbody id="myPaymentRows"><tr><td colspan="4">Chargement…</td></tr></tbody>
+        <thead><tr><th>Montant</th><th>Catégorie</th><th>Mode</th><th>Référence</th><th>Payé par</th><th>Statut</th></tr></thead>
+        <tbody id="myPaymentRows"><tr><td colspan="6">Chargement…</td></tr></tbody>
       </table>
     </div>
   </div>
