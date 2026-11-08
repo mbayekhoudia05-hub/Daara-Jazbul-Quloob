@@ -2,8 +2,8 @@ let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=f
 let paymentCategories=[];
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
 function renderDahiraWaveQr(){
- ['publicWaveQr','memberWaveQr','adminWaveQr'].forEach(id=>{const box=$(id);if(!box)return;box.innerHTML='';if(window.QRCode)new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});});
- ['publicWavePayLink','memberWavePayLink','adminWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
+ ['memberWaveQr'].forEach(id=>{const box=$(id);if(!box)return;box.innerHTML='';if(window.QRCode)new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});});
+ ['memberWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
 }
 document.addEventListener('DOMContentLoaded',renderDahiraWaveQr);
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
