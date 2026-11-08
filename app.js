@@ -1,4 +1,5 @@
 let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
+let paymentCategories=[];
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
@@ -93,7 +94,7 @@ function contributionMethodLabel(v){
   }[v]||v||'—';
 }
 function contributionCategoryLabel(v){
-  return ({mensualite:'Mensualité',tombe_dahira:'Tombe Dahira',chasse:'Chasse',divers:'Divers'})[v]||'Mensualité';
+  return paymentCategories.find(c=>c.id===v)?.label||({mensualite:'Mensualité',tombe_dahira:'Tombe Dahira',chasse:'Chasse',divers:'Divers'})[v]||v||'Autre';
 }
 
 async function auth(e){
@@ -391,6 +392,11 @@ async function init(){
  $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
+ $('memberPaymentForm')?.addEventListener('submit',submitMemberPayment);
+ $('memberPaymentFor')?.addEventListener('change',togglePaymentBeneficiary);
+ $('paymentCategoryForm')?.addEventListener('submit',addPaymentCategory);
+ $('paymentCategoryRows')?.addEventListener('click',handlePaymentCategoryAction);
+ $('paymentCategoryRows')?.addEventListener('change',handlePaymentCategoryRename);
  ['contributionSearch','contributionHistoryMonth','contributionHistoryCategory','contributionHistoryStatus'].forEach(id=>{
    const input=$(id);
    if(input) input.addEventListener(input.tagName==='INPUT'&&input.type==='search'?'input':'change',()=>renderContributionRows(window.__contributionRows||[]));
@@ -521,6 +527,8 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
 
+  await loadMemberPaymentForm(member);
+
   // Commission personnelle : relire directement la commission liée à la fiche membre.
   // Cela évite de dépendre d'une ancienne relation ou d'un objet incomplet transmis à la fonction.
   const commissionName=$('myCommissionName');
@@ -597,7 +605,7 @@ async function loadConnectedMemberDashboard(member){
 
   // Transactions personnelles
   const pr=await sb.from('payment_transactions')
-    .select('amount,payment_method,category,reference,payment_month,status,created_at')
+    .select('amount,payment_method,category,reference,payment_month,status,created_at,payer_name')
     .eq('member_id',member.id)
     .order('created_at',{ascending:false});
 
@@ -611,6 +619,7 @@ async function loadConnectedMemberDashboard(member){
         <td>${esc(contributionCategoryLabel(x.category))}</td>
         <td>${esc(x.payment_method==='wave'?'Wave':'Orange Money')}</td>
         <td>${esc(x.reference||'—')}</td>
+        <td>${esc(x.payer_name||'—')}</td>
         <td>${esc(x.status==='confirmed'?'Confirmé':x.status==='cancelled'?'Annulé':'En attente')}</td>
       </tr>
     `).join(''):'<tr><td colspan="5">Aucune transaction.</td></tr>';
@@ -1561,10 +1570,74 @@ function prefillContribution(member,month){
 }
 
 
+
+async function loadPaymentCategories(){
+ const r=await sb.from('payment_categories').select('id,label,is_active,sort_order').order('sort_order').order('label');
+ if(r.error){console.warn('Catégories indisponibles : '+r.error.message);return;}
+ paymentCategories=r.data||[];
+ const active=paymentCategories.filter(c=>c.is_active);
+ ['paymentCategory','contributionCategory','memberPaymentCategory'].forEach(id=>{
+  const el=$(id);if(!el)return;const selected=el.value;
+  el.innerHTML=active.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.label)+'</option>').join('');
+  if(active.some(c=>c.id===selected))el.value=selected;
+ });
+ const box=$('paymentCategoryRows');
+ if(box&&isAdmin)box.innerHTML=paymentCategories.map(c=>'<div class="payment-category-row"><input type="text" maxlength="80" value="'+esc(c.label)+'" data-category-label="'+esc(c.id)+'"><span class="status-pill '+(c.is_active?'paid-pill':'unpaid-pill')+'">'+(c.is_active?'Active':'Désactivée')+'</span><button type="button" class="table-btn" data-category-toggle="'+esc(c.id)+'" data-active="'+(c.is_active?'true':'false')+'">'+(c.is_active?'Désactiver':'Réactiver')+'</button></div>').join('')||'<p>Aucune catégorie.</p>';
+}
+async function addPaymentCategory(e){
+ e.preventDefault();if(!isAdmin)return;const label=$('newPaymentCategoryLabel').value.trim();if(!label)return;
+ const id=label.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,48);
+ if(!id||paymentCategories.some(c=>c.id===id)){alert('Nom invalide ou catégorie déjà existante.');return;}
+ const r=await sb.from('payment_categories').insert({id,label,sort_order:paymentCategories.length*10+10,is_active:true});
+ if(r.error){alert('Ajout impossible : '+r.error.message);return;}
+ $('newPaymentCategoryLabel').value='';await loadPaymentCategories();
+}
+async function handlePaymentCategoryRename(e){
+ const input=e.target.closest('[data-category-label]');if(!input||!isAdmin)return;
+ const id=input.dataset.categoryLabel,label=input.value.trim(),old=paymentCategories.find(c=>c.id===id);
+ if(!label||!old||old.label===label)return;
+ const r=await sb.from('payment_categories').update({label}).eq('id',id);
+ if(r.error){alert('Modification impossible : '+r.error.message);input.value=old.label;return;}
+ await loadPaymentCategories();
+}
+async function handlePaymentCategoryAction(e){
+ const b=e.target.closest('[data-category-toggle]');if(!b||!isAdmin)return;
+ const r=await sb.from('payment_categories').update({is_active:b.dataset.active!=='true'}).eq('id',b.dataset.categoryToggle);
+ if(r.error){alert('Mise à jour impossible : '+r.error.message);return;}await loadPaymentCategories();
+}
+function togglePaymentBeneficiary(){
+ const other=$('memberPaymentFor')?.value==='other';
+ $('memberPaymentBeneficiaryWrap')?.classList.toggle('hidden',!other);
+ if(!other&&currentMemberRecord&&$('memberPaymentBeneficiary'))$('memberPaymentBeneficiary').value=currentMemberRecord.id;
+}
+async function loadMemberPaymentForm(member){
+ if(!$('memberPaymentForm')||!member)return;
+ const [b,c]=await Promise.all([sb.rpc('get_payment_beneficiaries'),sb.from('payment_categories').select('id,label').eq('is_active',true).order('sort_order')]);
+ if(b.error){msg('memberPaymentMessage','Chargement des membres impossible : '+b.error.message);return;}
+ if(c.error){msg('memberPaymentMessage','Chargement des catégories impossible : '+c.error.message);return;}
+ $('memberPaymentBeneficiary').innerHTML=(b.data||[]).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.member_number)+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>').join('');
+ $('memberPaymentBeneficiary').value=member.id;
+ $('memberPaymentCategory').innerHTML=(c.data||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.label)+'</option>').join('');
+ const d=new Date();$('memberPaymentMonth').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+ $('memberPaymentFor').value='self';togglePaymentBeneficiary();
+}
+async function submitMemberPayment(e){
+ e.preventDefault();if(!currentUser||!currentMemberRecord)return;
+ const beneficiary=$('memberPaymentFor').value==='other'?$('memberPaymentBeneficiary').value:currentMemberRecord.id;
+ const amount=Number($('memberPaymentAmount').value),month=$('memberPaymentMonth').value,category=$('memberPaymentCategory').value;
+ if(!beneficiary||amount<=0||!month||!category){msg('memberPaymentMessage','Vérifie le bénéficiaire, le montant, le type et le mois.');return;}
+ const r=await sb.rpc('submit_member_payment',{p_beneficiary_member_id:beneficiary,p_amount:amount,p_category:category,p_payment_month:month+'-01',p_reference:$('memberPaymentReference').value.trim()||null,p_note:$('memberPaymentNote').value.trim()||null});
+ if(r.error){msg('memberPaymentMessage','Enregistrement impossible : '+r.error.message);return;}
+ const chosen=$('memberPaymentBeneficiary').selectedOptions[0]?.textContent||'';
+ msg('memberPaymentMessage','Demande enregistrée pour '+(beneficiary===currentMemberRecord.id?'votre compte':chosen)+'. Effectue le transfert Wave au 761 263 937. Le paiement reste en attente jusqu’à vérification.',true);
+ $('memberPaymentForm').reset();await loadMemberPaymentForm(currentMemberRecord);await loadConnectedMemberDashboard(currentMemberRecord);
+}
+
 async function initPaymentTransactions(){
   if(!sb||!isAdmin)return;
   const d=new Date();
   if($("paymentMonth")) $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  await loadPaymentCategories();
 
   const mr=await sb.from("members").select("id,member_number,first_name,last_name").eq("status","active").order("first_name",{ascending:true});
   if(mr.error){alert(mr.error.message);return;}
@@ -1602,7 +1675,7 @@ async function savePaymentTransaction(e){
 
 async function loadPaymentTransactions(){
   const r=await sb.from("payment_transactions")
-    .select("id,member_id,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
+    .select("id,member_id,payer_name,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
   if(r.error){alert(r.error.message);return;}
   const rows=r.data||[];
@@ -1621,6 +1694,7 @@ async function loadPaymentTransactions(){
       "<span class='status-pill pending-pill'>⏳ EN ATTENTE</span>";
     return `<tr>
       <td><strong>${esc(x.members?.member_number||"")}</strong><br>${esc((x.members?.first_name||"")+" "+(x.members?.last_name||""))}</td>
+      <td>${esc(x.payer_name||"—")}</td>
       <td>${esc(formatMoney(x.amount))}</td><td>${method}</td>
       <td>${esc(contributionCategoryLabel(x.category))}</td>
       <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
