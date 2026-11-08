@@ -1615,6 +1615,7 @@ async function loadMemberPaymentForm(member){
  const [b,c]=await Promise.all([sb.rpc('get_payment_beneficiaries'),sb.from('payment_categories').select('id,label').eq('is_active',true).order('sort_order')]);
  if(b.error){msg('memberPaymentMessage','Chargement des membres impossible : '+b.error.message);return;}
  if(c.error){msg('memberPaymentMessage','Chargement des catégories impossible : '+c.error.message);return;}
+ paymentCategories=c.data||[];
  $('memberPaymentBeneficiary').innerHTML=(b.data||[]).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.member_number)+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>').join('');
  $('memberPaymentBeneficiary').value=member.id;
  $('memberPaymentCategory').innerHTML=(c.data||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.label)+'</option>').join('');
