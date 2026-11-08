@@ -1751,3 +1751,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .member-card .qrcode img,.member-card .qrcode canvas{
   width:100%!important;height:100%!important;object-fit:contain!important;
 }
+
+
+/* Gestion des catégories de paiement */
+.payment-category-list{display:grid;gap:10px;margin-top:14px}.payment-category-row{display:grid;grid-template-columns:minmax(160px,1fr) auto auto;align-items:center;gap:12px;padding:12px;border:1px solid var(--line,#dfe7e2);border-radius:12px;background:var(--surface,#fff)}.payment-category-row input{width:100%;min-width:0;padding:10px;border:1px solid var(--line,#dfe7e2);border-radius:8px;font:inherit}.payment-category-row button{white-space:nowrap}@media(max-width:600px){.payment-category-row{grid-template-columns:1fr auto}.payment-category-row input{grid-column:1/-1}}
