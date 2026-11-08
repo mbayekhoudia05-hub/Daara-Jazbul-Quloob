@@ -2,10 +2,8 @@ let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=f
 let paymentCategories=[];
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
 function renderDahiraWaveQr(){
- const box=$('memberWaveQr');if(!box)return;
- box.innerHTML='';
- if(window.QRCode){new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
- const linkEl=$('memberWavePayLink');if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;
+ ['memberWaveQr','adminWaveQr'].forEach(id=>{const box=$(id);if(!box)return;box.innerHTML='';if(window.QRCode)new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});});
+ ['memberWavePayLink','adminWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
 }
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
@@ -1644,6 +1642,7 @@ async function submitMemberPayment(e){
 
 async function initPaymentTransactions(){
   if(!sb||!isAdmin)return;
+  renderDahiraWaveQr();
   const d=new Date();
   if($("paymentMonth")) $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   await loadPaymentCategories();
