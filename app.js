@@ -1705,7 +1705,7 @@ async function loadPaymentTransactions(){
         <button class="table-btn danger-btn" data-action="cancel-payment" data-id="${esc(x.id)}">❌ Annuler</button>`:""}
       </td>
     </tr>`;
-  }).join(""):'<tr><td colspan="9">Aucune transaction.</td></tr>';
+  }).join(""):'<tr><td colspan="10">Aucune transaction.</td></tr>';
 }
 
 
