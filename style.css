@@ -1767,3 +1767,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .public-wave-link{display:inline-block;text-decoration:none;margin:8px 0 14px}
 .public-wave-details small{display:block;color:#617066;line-height:1.5}
 @media(max-width:700px){.public-wave-card{grid-template-columns:1fr;padding:20px}.public-wave-qr{width:210px;min-height:210px}}
+
+
+/* Sous-rubriques regroupées dans Finance */
+.finance-subnav{display:grid;gap:2px;margin:0 0 8px 18px;padding-left:10px;border-left:2px solid #dce8df}
+.finance-subnav a{font-size:.92em;padding-top:8px;padding-bottom:8px}
+.finance-wave-panel{margin:22px 0}
+.finance-wave-panel small{display:block;color:#617066;line-height:1.5;margin-top:10px}
