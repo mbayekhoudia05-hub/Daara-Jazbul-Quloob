@@ -1,5 +1,12 @@
 let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
 let paymentCategories=[];
+const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
+function renderDahiraWaveQr(){
+ const box=$('memberWaveQr');if(!box)return;
+ box.innerHTML='';
+ if(window.QRCode){new QRCode(box,{text:DAHIRA_WAVE_PAYMENT_URL,width:180,height:180,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
+ const linkEl=$('memberWavePayLink');if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;
+}
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
@@ -1611,6 +1618,7 @@ function togglePaymentBeneficiary(){
  if(!other&&currentMemberRecord&&$('memberPaymentBeneficiary'))$('memberPaymentBeneficiary').value=currentMemberRecord.id;
 }
 async function loadMemberPaymentForm(member){
+ renderDahiraWaveQr();
  if(!$('memberPaymentForm')||!member)return;
  const [b,c]=await Promise.all([sb.rpc('get_payment_beneficiaries'),sb.from('payment_categories').select('id,label').eq('is_active',true).order('sort_order')]);
  if(b.error){msg('memberPaymentMessage','Chargement des membres impossible : '+b.error.message);return;}
