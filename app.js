@@ -610,7 +610,7 @@ async function loadConnectedMemberDashboard(member){
     .order('created_at',{ascending:false});
 
   if(pr.error){
-    $('myPaymentRows').innerHTML='<tr><td colspan="5">Erreur de chargement.</td></tr>';
+    $('myPaymentRows').innerHTML='<tr><td colspan="6">Erreur de chargement.</td></tr>';
   }else{
     const rows=pr.data||[];
     $('myPaymentRows').innerHTML=rows.length?rows.map(x=>`
@@ -622,7 +622,7 @@ async function loadConnectedMemberDashboard(member){
         <td>${esc(x.payer_name||'—')}</td>
         <td>${esc(x.status==='confirmed'?'Confirmé':x.status==='cancelled'?'Annulé':'En attente')}</td>
       </tr>
-    `).join(''):'<tr><td colspan="5">Aucune transaction.</td></tr>';
+    `).join(''):'<tr><td colspan="6">Aucune transaction.</td></tr>';
   }
 
   // Signalements personnels
