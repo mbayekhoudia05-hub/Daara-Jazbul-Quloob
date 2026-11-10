@@ -556,8 +556,8 @@ async function loadConnectedMemberDashboard(member){
   if(commissionDescription)commissionDescription.textContent=commission?.description||'Aucune description disponible pour le moment.';
   if(commissionRole){
     const roles=[];
-    if(commission?.responsible_member_id===member.id)roles.push('Président de commission');
-    if(commission?.successor_member_id===member.id)roles.push('Vice-président / successeur');
+    if(commission?.responsible_member_id===member.id)roles.push('Dieuwrigne de commission');
+    if(commission?.successor_member_id===member.id)roles.push('Adjoint Dieuwrigne / successeur');
     commissionRole.textContent=roles.length?roles.join(' · '):(commission?'Membre de la commission':'—');
   }
 
@@ -1044,7 +1044,7 @@ async function exportCommissionsCSV(){
     memberById.get(c.successor_member_id)||'Non désigné'
   ]);
   downloadAdminCSV('commissions_daara_jazbul_qulub.csv',
-    ['Commission','Description','Statut','Président','Vice-président'],rows);
+    ['Commission','Description','Statut','Dieuwrigne','Adjoint Dieuwrigne'],rows);
   alert('Export des commissions terminé : '+rows.length+' ligne(s).');
 }
 
@@ -1185,7 +1185,7 @@ function formatMemberCardDate(value){if(!value)return '—';const s=String(value
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.commissions?.name||'Aucune commission';
- const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
+ const role=m.commissions?.responsible_member_id===m.id?'Dieuwrigne':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'—'));
  show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=m.commissions?.description||'—';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
@@ -1235,7 +1235,7 @@ function memberCardPrintMarkup(m){
  card.removeAttribute('id');
  card.classList.add('print-card-copy');
  const commission=m.commissions?.name||'Aucune commission';
- const role=m.commissions?.responsible_member_id===m.id?'Président':(m.commissions?.successor_member_id===m.id?'Vice-président':(m.commission_id?'Membre de la commission':'—'));
+ const role=m.commissions?.responsible_member_id===m.id?'Dieuwrigne':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'—'));
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
@@ -1826,7 +1826,7 @@ async function loadCommissions(){
         '<div class="commission-card-heading"><span class="commission-index">'+String(index+1).padStart(2,'0')+'</span><div><h3>'+esc(c.name)+'</h3><span class="commission-status '+(c.is_active?'is-active':'')+'">'+(c.is_active?'Commission active':'Commission inactive')+'</span></div></div>'+
         '<label class="commission-description-label">Mission et responsabilités</label>'+
         '<textarea rows="3" maxlength="1000" aria-label="Description de '+esc(c.name)+'" data-commission-description="'+esc(c.id)+'" placeholder="Décris la mission et les activités de cette commission">'+esc(c.description||'')+'</textarea>'+
-        '<div class="commission-leadership"><label>Président<select aria-label="Président de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select></label><label>Vice-président<select aria-label="Vice-président de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select></label></div>'+
+        '<div class="commission-leadership"><label>Dieuwrigne<select aria-label="Dieuwrigne de '+esc(c.name)+'" data-commission-responsible="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.responsible_member_id)+'</select></label><label>Adjoint Dieuwrigne<select aria-label="Adjoint Dieuwrigne de '+esc(c.name)+'" data-commission-successor="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>'+memberOptions(c.successor_member_id)+'</select></label></div>'+
         '<div class="commission-roster-heading"><strong>Membres affectés</strong><span>'+activeRoster.length+' actif(s)'+(inactiveRoster?' · '+inactiveRoster+' inactif(s)':'')+'</span></div>'+rosterHtml+
         '<div class="commission-card-actions"><button type="button" class="table-btn" data-action="update-commission-description" data-id="'+esc(c.id)+'">Enregistrer la mission</button><button type="button" class="table-btn" data-action="assign-commission" data-id="'+esc(c.id)+'" '+(mr.error?'disabled':'')+'>Enregistrer les responsables</button><button type="button" class="table-btn danger-btn" data-action="toggle-commission" data-id="'+esc(c.id)+'" data-active="'+String(c.is_active)+'">'+(c.is_active?'Désactiver':'Activer')+'</button></div>'+
       '</article>';
@@ -1866,7 +1866,7 @@ async function assignCommission(id){
   const successor=document.querySelector('[data-commission-successor="'+CSS.escape(id)+'"]');
   if(!responsible||!successor)return;
   if(responsible.value&&successor.value&&responsible.value===successor.value){
-    msg('commissionMessage','Le président et le vice-président doivent être deux membres différents.');
+    msg('commissionMessage','Le Dieuwrigne et son adjoint doivent être deux membres différents.');
     return;
   }
   const r=await sb.from('commissions').update({
@@ -1875,7 +1875,7 @@ async function assignCommission(id){
   }).eq('id',id).select('id,responsible_member_id,successor_member_id').maybeSingle();
   if(r.error){msg('commissionMessage','Enregistrement impossible : '+r.error.message);return;}
   if(!r.data){msg('commissionMessage','Aucune modification enregistrée. Vérifie les droits administrateur sur cette commission.');return;}
-  msg('commissionMessage','Président et vice-président enregistrés.',true);
+  msg('commissionMessage','Dieuwrigne et adjoint Dieuwrigne enregistrés.',true);
   await loadCommissions();
 }
 async function toggleCommission(id,active){
