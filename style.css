@@ -177,7 +177,7 @@ body.sidebar-collapsed .topbar{margin-left:calc(-1 * var(--sidebar-mini));width:
 .poster-controls small{font-weight:400;color:#64756a;line-height:1.4}
 .poster-fields-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .poster-preview-card{position:sticky;top:18px}
-.poster-preview-card canvas{display:block;width:min(100%,540px);height:auto;margin:14px auto 0;border-radius:10px;box-shadow:0 8px 28px #102d1d2b;background:#063c25}
+.poster-preview-card canvas{display:block;width:min(100%,540px);height:auto;margin:14px auto 0;border-radius:10px;box-shadow:0 8px 28px #102d1d2b;background:#eef5ee}.poster-controls input[type=file]{padding:8px}
 #posterMessage{min-height:20px;color:#075c2d}
 @media(max-width:850px){.poster-maker-grid{grid-template-columns:1fr}.poster-preview-card{position:static}}
 

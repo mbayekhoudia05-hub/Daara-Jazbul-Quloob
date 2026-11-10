@@ -305,22 +305,26 @@
 </section>
 
 <section id="posters" class="section hidden">
- <div class="head"><span>COMMUNICATION</span><h2>🎨 Générateur d’affiches</h2><p>Créez une affiche pour une rencontre ou une activité du Daara, puis téléchargez-la pour la partager.</p></div>
+ <div class="head"><span>COMMUNICATION</span><h2>🎨 Générateur d’affiches</h2><p>Le fond fourni est conservé. Personnalisez uniquement les photos et les écritures.</p></div>
  <div class="poster-maker-grid">
   <form id="posterForm" class="card poster-controls">
-   <h3>Informations de l’événement</h3>
-   <label>Titre de l’événement<input id="posterTitle" type="text" maxlength="90" placeholder="Ex. Grande journée de récital" required></label>
-   <label>Message complémentaire<input id="posterSubtitle" type="text" maxlength="140" placeholder="Ex. Vous êtes cordialement invités"></label>
-   <label>Lieu<input id="posterPlace" type="text" maxlength="100" placeholder="Adresse ou lieu de la rencontre" required></label>
-   <div class="poster-fields-two"><label>Date<input id="posterDate" type="date" required></label><label>Heure<input id="posterTime" type="time" required></label></div>
-   <h3>Photos de l’affiche</h3>
-   <label>Logo du Daara<input id="posterLogo" type="file" accept="image/*"><small>Le logo actuel du site sera utilisé si aucun fichier n’est choisi.</small></label>
-   <label>Photo de l’événement / de l’invité<input id="posterEventPhoto" type="file" accept="image/*"><small>Facultatif.</small></label>
-   <label>Photo du marabout<input id="posterMaraboutPhoto" type="file" accept="image/*"><small>Facultatif.</small></label>
+   <h3>Écritures</h3>
+   <label>Petit titre au-dessus<input id="posterEyebrow" type="text" maxlength="35" value="SPÉCIAL"></label>
+   <label>Titre principal<input id="posterTitle" type="text" maxlength="55" placeholder="Nom de l’événement" required></label>
+   <label>Ligne en majuscules<input id="posterSubtitle" type="text" maxlength="90" placeholder="Nom de la rencontre"></label>
+   <label>Texte complémentaire<input id="posterDetails" type="text" maxlength="120" placeholder="Sous la présence effective de…"></label>
+   <div class="poster-fields-two"><label>Date<input id="posterDate" type="date" required></label><label>Heure<input id="posterTime" type="time"></label></div>
+   <label>Lieu<input id="posterPlace" type="text" maxlength="70" placeholder="Lieu de l’événement" required></label>
+   <label>Précision du lieu<input id="posterPlaceDetail" type="text" maxlength="90" placeholder="Adresse ou repère"></label>
+   <h3>Photos — emplacements respectifs</h3>
+   <label>Photo de gauche<input id="posterPhotoLeft" type="file" accept="image/*"><small>Portrait gauche de l’affiche.</small></label>
+   <label>Photo centrale<input id="posterPhotoCenter" type="file" accept="image/*"><small>Portrait principal, au centre.</small></label>
+   <label>Photo de droite<input id="posterPhotoRight" type="file" accept="image/*"><small>Portrait droit de l’affiche.</small></label>
+   <label>Logo en bas (facultatif)<input id="posterLogo" type="file" accept="image/*"></label>
    <div class="button-row"><button type="button" class="primary" id="posterDownloadBtn">⬇ Télécharger l’affiche (PNG)</button><button type="button" class="secondary" id="posterResetBtn">Réinitialiser</button></div>
    <p id="posterMessage" role="status"></p>
   </form>
-  <div class="card poster-preview-card"><h3>Aperçu de l’affiche</h3><p>Format portrait prêt à partager sur WhatsApp et les réseaux sociaux.</p><canvas id="posterCanvas" width="1080" height="1350" aria-label="Aperçu de l’affiche générée"></canvas></div>
+  <div class="card poster-preview-card"><h3>Aperçu de l’affiche</h3><p>Format portrait 3:4 — fond d’origine et composition à trois portraits.</p><canvas id="posterCanvas" width="768" height="1024" aria-label="Aperçu de l’affiche générée"></canvas></div>
  </div>
 </section>
 
