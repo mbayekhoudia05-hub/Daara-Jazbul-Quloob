@@ -313,8 +313,87 @@ function setDefaultContributionMonth(){
 let posterImages={left:null,center:null,right:null,logo:null},posterBackground=null,posterSegmentationPromise=null,posterSegmenter=null,posterSegmentationQueue=Promise.resolve();
 const posterImageAdjust={left:{rotate:0,zoom:1,x:0,y:0},center:{rotate:0,zoom:1,x:0,y:0},right:{rotate:0,zoom:1,x:0,y:0},logo:{rotate:0,zoom:1,x:0,y:0}};
 function posterLoadSegmentation(){if(posterSegmenter)return Promise.resolve(posterSegmenter);if(!posterSegmentationPromise)posterSegmentationPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js';script.crossOrigin='anonymous';script.onload=()=>{try{posterSegmenter=new window.SelfieSegmentation({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/'+file});posterSegmenter.setOptions({modelSelection:1});posterSegmenter.initialize().then(()=>resolve(posterSegmenter)).catch(reject)}catch(err){reject(err)}};script.onerror=()=>reject(new Error('Impossible de charger le module IA de détourage.'));document.head.appendChild(script)}).catch(err=>{posterSegmentationPromise=null;throw err});return posterSegmentationPromise}
-async function posterRemovePhotoBackground(file){await posterLoadSegmentation();const task=async()=>new Promise(async(resolve,reject)=>{const url=URL.createObjectURL(file),image=new Image();image.onload=async()=>{try{const canvas=document.createElement('canvas'),mask=document.createElement('canvas');canvas.width=mask.width=image.naturalWidth;canvas.height=mask.height=image.naturalHeight;const ctx=canvas.getContext('2d'),mctx=mask.getContext('2d');posterSegmenter.onResults(results=>{try{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);mctx.clearRect(0,0,mask.width,mask.height);mctx.filter='blur(1.2px)';mctx.drawImage(results.segmentationMask,0,0,mask.width,mask.height);ctx.globalCompositeOperation='destination-in';ctx.drawImage(mask,0,0);ctx.globalCompositeOperation='source-over';canvas.toBlob(blob=>{URL.revokeObjectURL(url);if(blob)resolve(blob);else reject(new Error('Impossible de créer la photo détourée.'))},'image/png')}catch(err){URL.revokeObjectURL(url);reject(err)}});$('posterMessage').textContent='Analyse IA et nettoyage des contours en cours…';await posterSegmenter.send({image})}catch(err){URL.revokeObjectURL(url);reject(err)}};image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Cette image ne peut pas être lue.'))};image.src=url});const result=posterSegmentationQueue.then(task,task);posterSegmentationQueue=result.catch(()=>{});return result}
-function posterRemoveLogoBackground(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),stack=[];const edge=[];for(let x=0;x<w;x++){edge.push(x,(h-1)*w+x)}for(let y=1;y<h-1;y++){edge.push(y*w,y*w+w-1)}let bg=[0,0,0],n=0;for(let i=0;i<edge.length;i++){const p=edge[i]*4;if(d[p+3]>0){bg[0]+=d[p];bg[1]+=d[p+1];bg[2]+=d[p+2];n++}}if(!n){URL.revokeObjectURL(url);resolve(file);return}bg=bg.map(v=>v/n);const tolerance=52,add=p=>{if(p<0||p>=w*h||seen[p])return;const k=p*4;if(d[k+3]===0)return;const dist=Math.hypot(d[k]-bg[0],d[k+1]-bg[1],d[k+2]-bg[2]);if(dist<=tolerance){seen[p]=1;stack.push(p)}};for(const p of edge)add(p);while(stack.length){const p=stack.pop(),k=p*4;d[k+3]=0;const x=p%w,y=(p/w)|0;if(x)add(p-1);if(x<w-1)add(p+1);if(y)add(p-w);if(y<h-1)add(p+w)}ctx.putImageData(im,0,0);c.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('Nettoyage du fond du logo impossible.'))},'image/png')}catch(e){URL.revokeObjectURL(url);reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Le logo ne peut pas être lu.'))};img.src=url})}
+async function posterRemovePhotoBackground(file){
+  await posterLoadSegmentation();
+  const task=async()=>new Promise(async(resolve,reject)=>{
+    const url=URL.createObjectURL(file),image=new Image();
+    image.onload=async()=>{
+      try{
+        const canvas=document.createElement('canvas'),mask=document.createElement('canvas');
+        canvas.width=mask.width=image.naturalWidth;canvas.height=mask.height=image.naturalHeight;
+        const ctx=canvas.getContext('2d',{willReadFrequently:true}),mctx=mask.getContext('2d',{willReadFrequently:true});
+        posterSegmenter.onResults(results=>{
+          try{
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(image,0,0,canvas.width,canvas.height);
+            mctx.clearRect(0,0,mask.width,mask.height);
+            mctx.filter='blur(0.7px)';
+            mctx.drawImage(results.segmentationMask,0,0,mask.width,mask.height);
+            mctx.filter='none';
+            const matte=mctx.getImageData(0,0,mask.width,mask.height),md=matte.data;
+            const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),pd=pixels.data;
+            for(let i=0;i<pd.length;i+=4){
+              const v=md[i]/255;
+              let a=Math.max(0,Math.min(1,(v-0.24)/(0.78-0.24)));
+              a=a*a*(3-2*a);
+              if(a<0.035)a=0;
+              pd[i+3]=Math.round(pd[i+3]*a);
+            }
+            ctx.putImageData(pixels,0,0);
+            canvas.toBlob(blob=>{URL.revokeObjectURL(url);if(blob)resolve(blob);else reject(new Error('Impossible de créer la photo détourée.'))},'image/png');
+          }catch(err){URL.revokeObjectURL(url);reject(err)}
+        });
+        $('posterMessage').textContent='Détourage précis : suppression des résidus et adoucissement des bords…';
+        await posterSegmenter.send({image});
+      }catch(err){URL.revokeObjectURL(url);reject(err)}
+    };
+    image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Cette image ne peut pas être lue.'))};
+    image.src=url;
+  });
+  const result=posterSegmentationQueue.then(task,task);
+  posterSegmentationQueue=result.catch(()=>{});
+  return result;
+}
+function posterRemoveLogoBackground(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      try{
+        const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+        const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+        const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,w=c.width,h=c.height;
+        const seen=new Uint8Array(w*h),stack=[],edge=[];
+        for(let x=0;x<w;x++){edge.push(x,(h-1)*w+x)}
+        for(let y=1;y<h-1;y++){edge.push(y*w,y*w+w-1)}
+        let bg=[0,0,0],n=0;
+        for(const p of edge){const k=p*4;if(d[k+3]>0){bg[0]+=d[k];bg[1]+=d[k+1];bg[2]+=d[k+2];n++}}
+        if(!n){URL.revokeObjectURL(url);resolve(file);return}
+        bg=bg.map(v=>v/n);
+        const tolerance=72,softness=30;
+        const distance=p=>{const k=p*4;return Math.hypot(d[k]-bg[0],d[k+1]-bg[1],d[k+2]-bg[2])};
+        const add=p=>{if(p<0||p>=w*h||seen[p]||d[p*4+3]===0)return;if(distance(p)<=tolerance){seen[p]=1;stack.push(p)}};
+        for(const p of edge)add(p);
+        while(stack.length){
+          const p=stack.pop(),x=p%w,y=(p/w)|0;
+          if(x)add(p-1);if(x<w-1)add(p+1);if(y)add(p-w);if(y<h-1)add(p+w);
+        }
+        for(let p=0;p<w*h;p++){
+          if(!seen[p])continue;
+          const k=p*4,dist=distance(p);
+          const alpha=Math.max(0,Math.min(1,(dist-tolerance)/softness));
+          d[k+3]=Math.round(d[k+3]*alpha);
+          if(alpha>0&&alpha<1){
+            for(let ch=0;ch<3;ch++)d[k+ch]=Math.max(0,Math.min(255,Math.round((d[k+ch]-bg[ch]*(1-alpha))/alpha)));
+          }else if(alpha===0){d[k]=bg[0];d[k+1]=bg[1];d[k+2]=bg[2]}
+        }
+        ctx.putImageData(im,0,0);
+        c.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('Nettoyage du fond du logo impossible.'))},'image/png');
+      }catch(e){URL.revokeObjectURL(url);reject(e)}
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Le logo ne peut pas être lu.'))};
+    img.src=url;
+  });
+}
 function posterBlobToImage(blob){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(blob),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('L’image détourée ne peut pas être affichée.'))};img.src=url})}
 async function posterLoadImage(file){if(!file)return null;if(!file.type.startsWith('image/'))throw new Error('Veuillez choisir un fichier image.');if(file.size>8*1024*1024)throw new Error('Chaque image doit faire moins de 8 Mo.');$('posterMessage').textContent='Suppression automatique du fond de la photo…';return posterBlobToImage(await posterRemovePhotoBackground(file))}
 async function posterLoadLogo(file){if(!file)return null;if(!file.type.startsWith('image/'))throw new Error('Veuillez choisir un fichier image.');$('posterMessage').textContent='Nettoyage automatique du fond du logo…';return posterBlobToImage(await posterRemoveLogoBackground(file))}
