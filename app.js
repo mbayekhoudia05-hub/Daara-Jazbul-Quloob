@@ -398,9 +398,84 @@ function posterBlobToImage(blob){return new Promise((resolve,reject)=>{const url
 async function posterLoadImage(file){if(!file)return null;if(!file.type.startsWith('image/'))throw new Error('Veuillez choisir un fichier image.');if(file.size>8*1024*1024)throw new Error('Chaque image doit faire moins de 8 Mo.');$('posterMessage').textContent='Suppression automatique du fond de la photo…';return posterBlobToImage(await posterRemovePhotoBackground(file))}
 async function posterLoadLogo(file){if(!file)return null;if(!file.type.startsWith('image/'))throw new Error('Veuillez choisir un fichier image.');$('posterMessage').textContent='Nettoyage automatique du fond du logo…';return posterBlobToImage(await posterRemoveLogoBackground(file))}
 function posterCrop(ctx,img,x,y,w,h,radius=0,adjust={}){if(!img)return;ctx.save();if(radius){ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.clip()}const zoom=Number(adjust.zoom)||1,angle=(Number(adjust.rotate)||0)*Math.PI/180;ctx.translate(x+w/2+(Number(adjust.x)||0)*w/100,y+h/2+(Number(adjust.y)||0)*h/100);ctx.rotate(angle);const scale=Math.max(w/img.width,h/img.height)*zoom,sw=w/scale,sh=h/scale,sx=(img.width-sw)/2,sy=(img.height-sh)/2;ctx.drawImage(img,sx,sy,sw,sh,-w/2,-h/2,w,h);ctx.restore()}
-function posterPortrait(ctx,img,x,y,w,h,key){if(!img)return;posterCrop(ctx,img,x,y,w,h,0,posterImageAdjust[key])}
+function posterPortrait(ctx,img,x,y,w,h,key){
+ if(!img)return;
+ const pw=Math.max(1,Math.ceil(w)),ph=Math.max(1,Math.ceil(h));
+ const layer=document.createElement('canvas');layer.width=pw;layer.height=ph;
+ const lctx=layer.getContext('2d');
+ lctx.imageSmoothingEnabled=true;lctx.imageSmoothingQuality='high';
+ posterCrop(lctx,img,0,0,pw,ph,0,posterImageAdjust[key]);
+ lctx.globalCompositeOperation='destination-in';
+ const fade=lctx.createLinearGradient(0,ph*.68,0,ph);
+ fade.addColorStop(0,'rgba(255,255,255,1)');
+ fade.addColorStop(.42,'rgba(255,255,255,.94)');
+ fade.addColorStop(.78,'rgba(255,255,255,.48)');
+ fade.addColorStop(1,'rgba(255,255,255,0)');
+ lctx.fillStyle=fade;lctx.fillRect(0,0,pw,ph);
+ lctx.globalCompositeOperation='source-over';
+ ctx.save();ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=12;ctx.drawImage(layer,x,y,w,h);ctx.restore();
+}
 function posterText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){const words=String(text||'').trim().split(/\\s+/);let line='',lines=[];for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);lines.slice(0,maxLines).forEach((v,i)=>ctx.fillText(v,x,y+i*lineHeight))}
-async function drawPoster(){const canvas=$('posterCanvas');if(!canvas||!posterBackground||!posterBackground.complete)return;const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';const W=canvas.width,H=canvas.height,sx=W/1024,sy=H/1536,X=v=>v*sx,Y=v=>v*sy;ctx.clearRect(0,0,W,H);ctx.drawImage(posterBackground,0,0,W,H);posterPortrait(ctx,posterImages.left,X(0),Y(90),X(390),Y(535),'left');posterPortrait(ctx,posterImages.right,X(634),Y(80),X(390),Y(545),'right');posterPortrait(ctx,posterImages.center,X(296),Y(190),X(432),Y(505),'center');ctx.textAlign='center';ctx.shadowColor='rgba(0,0,0,.12)';ctx.shadowBlur=2;ctx.fillStyle='#202020';ctx.font=`500 ${Y(31)}px Arial`;ctx.fillText(($('posterEyebrow')?.value||'SPÉCIAL').toLocaleUpperCase('fr-FR'),W/2,Y(850));const title=$('posterTitle')?.value||'VOTRE ÉVÉNEMENT';ctx.font=`bold ${Y(126)}px Georgia`;ctx.lineWidth=Y(4);ctx.strokeStyle='#f6e2a0';ctx.fillStyle='#c99718';ctx.strokeText(title,W/2,Y(1000),X(930));ctx.fillText(title,W/2,Y(1000),X(930));ctx.shadowBlur=0;ctx.fillStyle='#101010';ctx.font=`bold ${Y(31)}px Arial`;posterText(ctx,$('posterSubtitle')?.value||'NOM DE LA RENCONTRE',W/2,Y(1070),X(930),Y(39),2);ctx.font=`${Y(24)}px Arial`;posterText(ctx,$('posterDetails')?.value||'',W/2,Y(1125),X(930),Y(31),2);const dv=$('posterDate')?.value;let day='--',month='DATE',weekday='';if(dv){const d=new Date(dv+'T12:00:00');day=String(d.getDate());month=new Intl.DateTimeFormat('fr-FR',{month:'short',year:'numeric'}).format(d).toLocaleUpperCase('fr-FR');weekday=new Intl.DateTimeFormat('fr-FR',{weekday:'long'}).format(d).toLocaleUpperCase('fr-FR')}ctx.fillStyle='#17672a';ctx.font=`bold ${Y(31)}px Arial`;ctx.textAlign='right';ctx.fillText(weekday||'DATE',W/2-X(88),Y(1280));ctx.beginPath();ctx.arc(W/2,Y(1255),X(69),0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`bold ${Y(78)}px Arial`;ctx.fillText(day,W/2,Y(1282));ctx.fillStyle='#17672a';ctx.textAlign='left';ctx.font=`bold ${Y(31)}px Arial`;ctx.fillText(month,W/2+X(88),Y(1280));ctx.fillStyle='#202020';ctx.textAlign='center';ctx.font=`bold ${Y(32)}px Arial`;ctx.fillText(($('posterPlace')?.value||'LIEU').toLocaleUpperCase('fr-FR'),W/2,Y(1400));ctx.font=`${Y(24)}px Arial`;posterText(ctx,$('posterPlaceDetail')?.value||$('posterTime')?.value||'',W/2,Y(1445),X(930),Y(28),1);if(posterImages.logo)posterCrop(ctx,posterImages.logo,W/2-X(42),Y(1465),X(84),Y(68),0,posterImageAdjust.logo);ctx.textAlign='left'}
+function posterTrackedText(ctx,text,x,y,maxWidth,font,fill,tracking=5){
+ const chars=Array.from(String(text||'').toLocaleUpperCase('fr-FR'));
+ ctx.font=font;const widths=chars.map(ch=>ctx.measureText(ch).width);
+ const total=widths.reduce((a,b)=>a+b,0)+Math.max(0,chars.length-1)*tracking;
+ const scale=total>maxWidth?maxWidth/total:1;
+ let cursor=x-total*scale/2;
+ ctx.fillStyle=fill;
+ chars.forEach((ch,i)=>{ctx.fillText(ch,cursor,y);cursor+=(widths[i]+tracking)*scale});
+}
+function posterFitFont(ctx,text,family,weight,maxWidth,initial,min){
+ let size=initial;ctx.font=`${weight} ${size}px ${family}`;
+ while(ctx.measureText(text).width>maxWidth&&size>min){size-=2;ctx.font=`${weight} ${size}px ${family}`}
+ return size;
+}
+function posterDrawDateFlower(ctx,cx,cy,r){
+ ctx.save();ctx.fillStyle='#078d28';
+ for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.ellipse(cx+Math.cos(a)*r*.47,cy+Math.sin(a)*r*.47,r*.52,r*.43,a,0,Math.PI*2);ctx.fill()}
+ ctx.beginPath();ctx.arc(cx,cy,r*.66,0,Math.PI*2);ctx.fill();ctx.restore();
+}
+function posterDrawPin(ctx,x,y,size){
+ ctx.save();ctx.translate(x,y);ctx.strokeStyle='#4a2413';ctx.lineWidth=size*.095;ctx.fillStyle='rgba(255,255,255,.0)';
+ ctx.beginPath();ctx.arc(0,-size*.18,size*.34,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(-size*.24,size*.08);ctx.lineTo(0,size*.55);ctx.lineTo(size*.24,size*.08);ctx.stroke();
+ ctx.beginPath();ctx.arc(0,-size*.18,size*.13,0,Math.PI*2);ctx.stroke();ctx.restore();
+}
+async function drawPoster(){
+ const canvas=$('posterCanvas');if(!canvas||!posterBackground||!posterBackground.complete)return;
+ const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ const W=canvas.width,H=canvas.height,sx=W/1024,sy=H/1536,X=v=>v*sx,Y=v=>v*sy;
+ ctx.clearRect(0,0,W,H);
+ // Le visuel de fond fourni reste strictement inchangé.
+ ctx.drawImage(posterBackground,0,0,W,H);
+ // Les portraits sont superposés comme un groupe, puis fondus progressivement vers le bas.
+ posterPortrait(ctx,posterImages.left,X(0),Y(42),X(405),Y(650),'left');
+ posterPortrait(ctx,posterImages.right,X(619),Y(28),X(405),Y(665),'right');
+ posterPortrait(ctx,posterImages.center,X(275),Y(145),X(474),Y(555),'center');
+ ctx.textAlign='center';ctx.textBaseline='alphabetic';
+ posterTrackedText(ctx,$('posterEyebrow')?.value||'SPÉCIAL',W/2,Y(825),X(800),`500 ${Y(30)}px Arial`,'#090909',Y(9));
+ const title=$('posterTitle')?.value||'VOTRE ÉVÉNEMENT';
+ const titleSize=posterFitFont(ctx,title,'Georgia','bold',X(940),Y(170),Y(78));
+ ctx.font=`bold ${titleSize}px Georgia`;
+ const gold=ctx.createLinearGradient(0,Y(880),0,Y(1040));gold.addColorStop(0,'#f7d84c');gold.addColorStop(.48,'#e6a900');gold.addColorStop(1,'#bd7900');
+ ctx.save();ctx.shadowColor='rgba(88,55,0,.24)';ctx.shadowBlur=Y(5);ctx.shadowOffsetY=Y(4);
+ ctx.lineJoin='round';ctx.lineWidth=Y(7);ctx.strokeStyle='#fff0b0';ctx.strokeText(title,W/2,Y(1015),X(940));
+ ctx.lineWidth=Y(2);ctx.strokeStyle='#d79b08';ctx.strokeText(title,W/2,Y(1015),X(940));
+ ctx.fillStyle=gold;ctx.fillText(title,W/2,Y(1015),X(940));ctx.restore();
+ posterTrackedText(ctx,$('posterSubtitle')?.value||'NOM DE LA RENCONTRE',W/2,Y(1080),X(950),`900 ${Y(31)}px Arial`,'#090909',Y(5));
+ posterTrackedText(ctx,$('posterDetails')?.value||'',W/2,Y(1125),X(900),`700 ${Y(23)}px Arial`,'#171717',Y(4));
+ const dv=$('posterDate')?.value;let day='--',month='MOIS. ANNÉE',weekday='JOUR';
+ if(dv){const d=new Date(dv+'T12:00:00');day=String(d.getDate());month=new Intl.DateTimeFormat('fr-FR',{month:'short',year:'numeric'}).format(d).toLocaleUpperCase('fr-FR').replace('.','');weekday=new Intl.DateTimeFormat('fr-FR',{weekday:'long'}).format(d).toLocaleUpperCase('fr-FR')}
+ ctx.fillStyle='#07852a';ctx.font=`900 ${Y(47)}px Arial`;ctx.textAlign='right';ctx.fillText(weekday,W/2-X(94),Y(1272),X(330));
+ posterDrawDateFlower(ctx,W/2,Y(1248),X(75));
+ ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`900 ${Y(92)}px Arial`;ctx.fillText(day,W/2,Y(1280));
+ ctx.fillStyle='#07852a';ctx.textAlign='left';ctx.font=`900 ${Y(44)}px Arial`;ctx.fillText(month,W/2+X(94),Y(1272),X(360));
+ posterDrawPin(ctx,W/2-X(215),Y(1360),Y(76));
+ ctx.fillStyle='#111';ctx.textAlign='left';ctx.font=`500 ${Y(35)}px Arial`;ctx.fillText(($('posterPlace')?.value||'LIEU').toLocaleUpperCase('fr-FR'),W/2-X(155),Y(1374),X(620));
+ ctx.textAlign='center';ctx.font=`500 ${Y(30)}px Arial`;posterTrackedText(ctx,$('posterPlaceDetail')?.value||$('posterTime')?.value||'',W/2,Y(1430),X(850),`500 ${Y(26)}px Arial`,'#171717',Y(1.5));
+ if(posterImages.logo)posterCrop(ctx,posterImages.logo,W/2-X(70),Y(1450),X(140),Y(78),0,posterImageAdjust.logo);
+ ctx.textAlign='left';
+}
 function initPosterGenerator(){const form=$('posterForm');if(!form)return;posterBackground=new Image();posterBackground.onload=()=>{const canvas=$('posterCanvas');canvas.width=posterBackground.naturalWidth||1024;canvas.height=posterBackground.naturalHeight||1536;drawPoster()};posterBackground.onerror=()=>{$('posterMessage').textContent='Le fond original lv_0_20261110143839.jpg ne peut pas être chargé.'};posterBackground.src='lv_0_20261110143839.jpg';['posterEyebrow','posterTitle','posterSubtitle','posterDetails','posterPlace','posterPlaceDetail','posterDate','posterTime'].forEach(id=>$(id)?.addEventListener('input',drawPoster));form.querySelectorAll('[data-poster-adjust]').forEach(el=>el.addEventListener('input',()=>{const [key,prop]=el.dataset.posterAdjust.split(':');posterImageAdjust[key][prop]=Number(el.value);drawPoster()}));form.querySelectorAll('[data-poster-reset]').forEach(btn=>btn.addEventListener('click',()=>{const key=btn.dataset.posterReset;Object.assign(posterImageAdjust[key],{rotate:0,zoom:1,x:0,y:0});form.querySelectorAll('[data-poster-adjust]').forEach(el=>{if(el.dataset.posterAdjust.startsWith(key+':'))el.value=el.dataset.defaultValue|| (el.dataset.posterAdjust.endsWith(':zoom')?'1':'0')});drawPoster()}));[['posterPhotoLeft','left'],['posterPhotoCenter','center'],['posterPhotoRight','right'],['posterLogo','logo']].forEach(([id,key])=>{$(id)?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file){posterImages[key]=null;drawPoster();return}try{posterImages[key]=key==='logo'?await posterLoadLogo(file):await posterLoadImage(file);$('posterMessage').textContent=key==='logo'?'Fond du logo supprimé automatiquement.':'Fond supprimé automatiquement : photo ajoutée.';drawPoster()}catch(err){e.target.value='';$('posterMessage').textContent=err.message}})});$('posterDownloadBtn')?.addEventListener('click',()=>{const title=($('posterTitle')?.value||'affiche-daara').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'affiche-daara';try{const a=document.createElement('a');a.download=title+'.png';a.href=$('posterCanvas').toDataURL('image/png');a.click();$('posterMessage').textContent='Affiche téléchargée.'}catch(e){$('posterMessage').textContent='Impossible de télécharger l’affiche.'}});$('posterResetBtn')?.addEventListener('click',()=>{form.reset();posterImages={left:null,center:null,right:null,logo:null};Object.keys(posterImageAdjust).forEach(k=>Object.assign(posterImageAdjust[k],{rotate:0,zoom:1,x:0,y:0}));form.querySelectorAll('[data-poster-adjust]').forEach(el=>{el.value=el.dataset.defaultValue||0});drawPoster();$('posterMessage').textContent='Formulaire réinitialisé.'});drawPoster()}
 async function init(){
  const c=window.DJQ_CONFIG;
