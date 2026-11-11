@@ -7,6 +7,7 @@
     <a href="#contenus">▤ <span>Contenus publics</span></a>
     <a href="#dahiraInformation">ℹ <span>Informations du Dahira</span></a>
     <a href="#dahiraCharters">📜 <span>Chartes du Dahira</span></a>
+    <a href="#publicCommissions">♧ <span>Nos commissions</span></a>
     <a href="#admin" id="adminNav" class="hidden" data-admin-target="admin">⚙ <span>Gérer les contenus</span></a>
     <a href="#annonces">▣ <span>Annonces</span></a>
     <a href="#activites">▦ <span>Agenda et activités</span></a>
@@ -68,6 +69,12 @@
 <section id="dahiraInformation" class="section"><div class="head"><span>LE DAHIRA</span><h2>Informations du Dahira</h2><p>Présentation, mission, organisation et activités du Daara Jazbul Qulub.</p></div><div id="dahiraInformationGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 
 <section id="dahiraCharters" class="section alt"><div class="head"><span>RÈGLES DE VIE</span><h2>Chartes du Dahira</h2><p>Consultez les chartes et les règles de fonctionnement du Dahira.</p></div><div id="dahiraChartersGrid" class="grid"><div class="loading">Chargement…</div></div></section>
+
+<section id="publicCommissions" class="section">
+  <div class="head"><span>ORGANISATION</span><h2>Nos commissions</h2><p>Découvrez les commissions actives et leurs missions au sein du Daara Jazbul Quluub – Cellule Dakar.</p></div>
+  <div id="publicCommissionGrid" class="commissions-grid"><div class="loading">Chargement des commissions…</div></div>
+  <p class="preview-note">Les informations affichées proviennent de la base officielle. Les données personnelles des membres ne sont pas exposées dans cette rubrique publique.</p>
+</section>
 
 <section id="admin" class="section hidden"><div class="head"><span>ADMINISTRATION</span><h2>Gérer les contenus</h2></div><form id="contentForm"><label>Type<select id="type"><option value="khasside">Khassaïde</option><option value="audio">Audio</option><option value="video">Vidéo</option><option value="cours">Cours</option><option value="annonce">Annonce</option><option value="information">Information du Dahira</option><option value="charte">Charte du Dahira</option></select></label><label>Titre<input id="title" required></label><label>Description<textarea id="description"></textarea></label><label for="charterText">Texte intégral du règlement (pour une charte)<textarea id="charterText" rows="18" placeholder="Collez ici le texte officiel complet du règlement. Le texte sera affiché directement dans la plateforme."></textarea><small>Le texte est conservé tel quel et visible par les membres et l’administrateur.</small></label><label class="pdf-upload-label">📄 Ajouter un document PDF (facultatif, notamment pour les chartes)<input id="contentPdf" type="file" accept="application/pdf,.pdf"><small>PDF uniquement, 15 Mo maximum. Le document sera consultable par tous les visiteurs.</small></label><p id="pdfCurrentInfo" class="pdf-current-info">PDF facultatif — 15 Mo maximum.</p><label>Lien du contenu (facultatif)<input id="external_url" type="url" placeholder="https://..."></label><input id="editingContentId" type="hidden"><div class="button-row"><button class="primary" id="contentSubmitBtn" type="submit">Publier</button><button class="secondary hidden" id="cancelContentEditBtn" type="button">Annuler la modification</button></div><p id="formMessage"></p></form><div class="head content-admin-list-head"><h2>Contenus publiés</h2><p>Modifie un contenu existant ou ajoute une nouvelle information/charte.</p></div><div id="adminContentRows" class="content-admin-list"><div class="loading">Chargement…</div></div><div class="head content-admin-list-head"><h2>Consultation des chartes</h2><p>Les chartes publiées sont consultables ici par l’administrateur, avec lecture PDF et téléchargement.</p></div><div id="adminChartersList" class="content-admin-list"><div class="loading">Chargement des chartes…</div></div></section>
 
