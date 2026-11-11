@@ -2678,3 +2678,27 @@ document.addEventListener('click', async function(e) {
     case 'reject-request': rejectMembershipRequest(id); break;
   }
 });
+
+// Démarrer l'application après le chargement du DOM.
+// Sans cet appel, les boutons (dont « Connexion ») ne reçoivent aucun gestionnaire.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    void init().catch(error => {
+      console.error('Initialisation du portail impossible :', error);
+      const message = document.getElementById('authMessage');
+      if (message) {
+        message.textContent = "Le portail rencontre un problème de chargement. Actualise la page puis réessaie.";
+        message.style.color = '#a52d2d';
+      }
+    });
+  }, { once: true });
+} else {
+  void init().catch(error => {
+    console.error('Initialisation du portail impossible :', error);
+    const message = document.getElementById('authMessage');
+    if (message) {
+      message.textContent = "Le portail rencontre un problème de chargement. Actualise la page puis réessaie.";
+      message.style.color = '#a52d2d';
+    }
+  });
+}
