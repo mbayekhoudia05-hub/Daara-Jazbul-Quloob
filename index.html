@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="apple-touch-icon" href="./logo.jpeg"><meta name="google-site-verification" content="cWRouP63b3VBqGXAhb5u46tnYCMe9pPZbg93cDHzLKk" /><title>Dahira Jazbul Quloub — Cellule Dakar</title><meta name="description" content="Site officiel du Dahira Jazbul Quloub — Cellule Dakar : informations, chartes, annonces et espace des membres."><meta name="robots" content="index, follow"><link rel="canonical" href="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><meta property="og:type" content="website"><meta property="og:title" content="Dahira Jazbul Quloub — Cellule Dakar"><meta property="og:description" content="Informations, chartes, annonces et espace des membres du Dahira Jazbul Quloub — Cellule Dakar."><meta property="og:url" content="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><link rel="stylesheet" href="style.css?v=20261111-accessible-labels-v10"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261111-dialog-keyboard-v16"></script></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="apple-touch-icon" href="./logo.jpeg"><meta name="google-site-verification" content="cWRouP63b3VBqGXAhb5u46tnYCMe9pPZbg93cDHzLKk" /><title>Dahira Jazbul Quloub — Cellule Dakar</title><meta name="description" content="Site officiel du Dahira Jazbul Quloub — Cellule Dakar : informations, chartes, annonces et espace des membres."><meta name="robots" content="index, follow"><link rel="canonical" href="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><meta property="og:type" content="website"><meta property="og:title" content="Dahira Jazbul Quloub — Cellule Dakar"><meta property="og:description" content="Informations, chartes, annonces et espace des membres du Dahira Jazbul Quloub — Cellule Dakar."><meta property="og:url" content="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><link rel="stylesheet" href="style.css?v=20261111-member-quick-nav-v11"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261111-dialog-keyboard-v16"></script></head><body>
 <aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
   <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
   <div class="sidebar-caption">MENU PRINCIPAL</div>
@@ -607,13 +607,24 @@
     <div class="stat"><strong id="myTotalPaid">0 FCFA</strong><span>Total cotisé</span></div>
     <div class="stat"><strong id="myPaymentCount">0</strong><span>Paiements enregistrés</span></div>
   </div>
+  <nav class="member-quick-nav" aria-label="Accès rapides à mon espace">
+    <a href="#memberNotificationsPanel">Notifications</a>
+    <a href="#memberProfilePanel">Mon profil</a>
+    <a href="#memberCommissionPanel">Ma commission</a>
+    <a href="#memberPaymentPanel">Paiements</a>
+    <a href="#memberContributionsPanel">Cotisations</a>
+    <a href="#memberTransactionsPanel">Transactions</a>
+    <a href="#memberSupportPanel">Assistance</a>
+    <a href="#memberInfoPanel">Informations</a>
+    <a href="#memberChartersPanel">Chartes</a>
+  </nav>
   <div class="member-dashboard-group-title"><span>VIE DU DAHIRA</span><h3>Actualités et informations personnelles</h3><p>Les messages importants et les informations liées à votre adhésion.</p></div>
-  <div class="card member-notifications-card">
+  <div id="memberNotificationsPanel" class="card member-notifications-card">
     <div class="section-inline-heading"><h3>♢ Mes notifications</h3><span id="memberNotificationCount" class="status-pill">0 message</span></div>
     <div id="memberNotificationsList"><div class="loading">Chargement des notifications…</div></div>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberProfilePanel" class="card member-dashboard-card">
     <h3>👤 Mon profil</h3>
     <p><b>Nom :</b> <span id="myMemberName">—</span></p>
     <p><b>Téléphone :</b> <span id="myMemberPhone">—</span></p>
@@ -623,7 +634,7 @@
     <button type="button" class="primary" id="myMemberCardBtn">🎫 Voir ma carte de membre</button>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberCommissionPanel" class="card member-dashboard-card">
     <h3>♧ Ma commission</h3>
     <p><b>Commission :</b> <span id="myCommissionName">Chargement…</span></p>
     <p><b>Fonction :</b> <span id="myCommissionRole">—</span></p>
@@ -636,7 +647,7 @@
   </div>
 
   <div class="member-dashboard-group-title"><span>SUIVI FINANCIER</span><h3>Mes paiements et cotisations</h3><p>Retrouvez les informations de paiement et l’historique associé à votre compte.</p></div>
-  <div class="card member-dashboard-card">
+  <div id="memberPaymentPanel" class="card member-dashboard-card">
     <h3>💳 Effectuer un paiement Wave</h3>
     <p>Tu peux payer pour toi-même ou pour un autre membre. Le versement sera attribué au bénéficiaire choisi après vérification par l’administrateur.</p>
     <form id="memberPaymentForm" class="member-form">
@@ -668,7 +679,7 @@
     </form>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberContributionsPanel" class="card member-dashboard-card">
     <h3>💰 Mes cotisations</h3>
     <div class="member-table-wrap">
       <table>
@@ -678,7 +689,7 @@
     </div>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberTransactionsPanel" class="card member-dashboard-card">
     <h3>💳 Mes transactions</h3>
     <div class="member-table-wrap">
       <table>
@@ -689,7 +700,7 @@
   </div>
 
   <div class="member-dashboard-group-title"><span>ASSISTANCE ET DOCUMENTS</span><h3>Rester informé et obtenir de l’aide</h3><p>Signalez une difficulté et consultez les informations et chartes officielles du Dahira.</p></div>
-  <div class="card member-dashboard-card">
+  <div id="memberSupportPanel" class="card member-dashboard-card">
     <h3>📢 Signaler une erreur à l'administrateur</h3>
     <form id="memberReportForm">
       <label for="memberReportSubject">Objet du signalement</label>
@@ -703,12 +714,12 @@
     <div id="myReportRows">Chargement…</div>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberInfoPanel" class="card member-dashboard-card">
     <h3>ℹ️ Informations du Dahira</h3>
     <div id="memberDahiraInformation">Chargement…</div>
   </div>
 
-  <div class="card member-dashboard-card">
+  <div id="memberChartersPanel" class="card member-dashboard-card">
     <h3>📜 Chartes du Dahira</h3>
     <div id="memberDahiraCharters">Chargement…</div>
   </div>
