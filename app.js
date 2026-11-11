@@ -522,7 +522,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();void loadPublicCommissionDirectory();$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -2048,6 +2048,36 @@ async function loadPublicCommissions(){
   }else{
     msg('membershipRequestMessage','Aucune commission active disponible dans la base.');
   }
+}
+
+async function loadPublicCommissionDirectory(){
+  const box=$('publicCommissionGrid');
+  if(!box||!sb)return;
+  box.innerHTML='<div class="loading">Chargement des commissions…</div>';
+  const r=await sb.from('commissions')
+    .select('id,name,description,is_active')
+    .eq('is_active',true)
+    .order('name');
+  if(r.error){
+    box.innerHTML='<div class="loading">Les commissions ne peuvent pas être chargées pour le moment. Réessaie ultérieurement.</div>';
+    console.warn('Annuaire public des commissions indisponible :',r.error.message);
+    return;
+  }
+  const rows=r.data||[];
+  const preferredOrder=['Audiovisuelle','Communication','Culturelle','Finance','Organisation','Relations externes','Relations extérieures et internationales','Santé'];
+  rows.sort((a,b)=>{
+    const ai=preferredOrder.indexOf(a.name),bi=preferredOrder.indexOf(b.name);
+    if(ai<0&&bi<0)return a.name.localeCompare(b.name,'fr');
+    if(ai<0)return 1;
+    if(bi<0)return -1;
+    return ai-bi;
+  });
+  box.innerHTML=rows.length?rows.map((c,index)=>
+    '<article class="commission-card public-commission-card">'+
+      '<div class="commission-card-heading"><span class="commission-index">'+String(index+1).padStart(2,'0')+'</span><div><h3>'+esc(c.name)+'</h3><span class="commission-status is-active">Commission active</span></div></div>'+
+      '<p class="public-commission-description">'+esc(c.description||'La mission de cette commission sera précisée par l’administration.')+'</p>'+
+    '</article>'
+  ).join(''):'<div class="loading">Aucune commission active publiée pour le moment.</div>';
 }
 async function submitMembershipRequest(e) {
   e.preventDefault();
