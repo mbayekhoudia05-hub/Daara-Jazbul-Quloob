@@ -61,7 +61,7 @@ document.addEventListener('click',e=>{
   if(button.dataset.action==='export-commissions')void exportCommissionsCSV();
 });
 document.addEventListener('click',e=>{
-  const a=e.target.closest('.app-sidebar nav a[data-admin-target]');
+  const a=e.target.closest('a[data-admin-target]');
   if(!a||!isAdmin)return;
   e.preventDefault();
   showAdminSection(a.dataset.adminTarget);
