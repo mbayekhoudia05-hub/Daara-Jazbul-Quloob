@@ -1,5 +1,6 @@
 let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
 let paymentCategories=[];
+let galleryPreviewUrl=null;
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
 function configureDahiraWaveLinks(){
  ['memberWavePayLink','adminWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
@@ -528,7 +529,7 @@ if($('financeMonthFilter')){
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
  $('adminEventForm')?.addEventListener('submit',createAdminEvent);
  $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
- $('galleryImageFile')?.addEventListener('change',()=>{const file=$('galleryImageFile').files?.[0],preview=$('galleryImagePreview');if(!preview)return;if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');$('galleryImageFile').value='';preview.classList.add('hidden');return;}preview.src=URL.createObjectURL(file);preview.classList.remove('hidden');});
+ $('galleryImageFile')?.addEventListener('change',()=>{const file=$('galleryImageFile').files?.[0],preview=$('galleryImagePreview');if(galleryPreviewUrl){URL.revokeObjectURL(galleryPreviewUrl);galleryPreviewUrl=null;}if(!preview)return;if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');$('galleryImageFile').value='';preview.classList.add('hidden');return;}galleryPreviewUrl=URL.createObjectURL(file);preview.src=galleryPreviewUrl;preview.classList.remove('hidden');});
  $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
@@ -2119,7 +2120,7 @@ async function createAdminGalleryItem(e){
     const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:finalImageUrl,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id}).select('id').single();
     if(r.error)throw r.error;
     $('adminGalleryForm').reset();$('galleryPublished').checked=true;
-    const preview=$('galleryImagePreview');if(preview){preview.removeAttribute('src');preview.classList.add('hidden');}
+    if(galleryPreviewUrl){URL.revokeObjectURL(galleryPreviewUrl);galleryPreviewUrl=null;}const preview=$('galleryImagePreview');if(preview){preview.removeAttribute('src');preview.classList.add('hidden');}
     msg('galleryMessage','Photo ajoutée à la galerie.',true);await loadAdminGallery();await loadPublicGallery();
   }catch(err){
     if(uploadedPath)await sb.storage.from('dahira-gallery').remove([uploadedPath]);
