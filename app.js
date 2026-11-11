@@ -574,11 +574,11 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadGeneralLeadership();void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
  $('adminEventForm')?.addEventListener('submit',createAdminEvent);
  $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
  $('galleryImageFile')?.addEventListener('change',()=>{const file=$('galleryImageFile').files?.[0],preview=$('galleryImagePreview');if(galleryPreviewUrl){URL.revokeObjectURL(galleryPreviewUrl);galleryPreviewUrl=null;}if(!preview)return;if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');$('galleryImageFile').value='';preview.classList.add('hidden');return;}galleryPreviewUrl=URL.createObjectURL(file);preview.src=galleryPreviewUrl;preview.classList.remove('hidden');});
- $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
+ $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('generalLeaderForm')?.addEventListener('submit',saveGeneralLeadership);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -660,6 +660,7 @@ async function setUser(u){
 
   if(isAdmin){
     await loadMembers();
+    await loadGeneralLeadership();
     await loadCommissions();
     await loadMembershipRequests();
     await initPortalAdminModules();
@@ -2239,6 +2240,53 @@ async function loadPublicCommissions(){
   }
 }
 
+async function loadGeneralLeadership(){
+  const publicName=$('generalLeaderPublicName');
+  if(!sb)return;
+  const result=await sb.from('dahira_general_leadership')
+    .select('display_name,title')
+    .eq('id',1)
+    .maybeSingle();
+  if(result.error){
+    if(publicName)publicName.textContent='Information momentanément indisponible';
+    console.warn('Chargement de la direction générale impossible :',result.error.message);
+    return;
+  }
+  if(publicName)publicName.textContent=result.data?.display_name||'Fonction à désigner';
+  const select=$('generalLeaderMember');
+  if(!isAdmin||!select)return;
+  const members=await sb.from('members')
+    .select('id,member_number,first_name,last_name')
+    .eq('status','active')
+    .order('last_name',{ascending:true})
+    .order('first_name',{ascending:true});
+  if(members.error){
+    select.innerHTML='<option value="">Impossible de charger les membres actifs</option>';
+    msg('generalLeaderMessage','Chargement des membres impossible : '+members.error.message);
+    return;
+  }
+  const current=await sb.from('dahira_general_leadership').select('member_id').eq('id',1).maybeSingle();
+  const selectedId=current.data?.member_id||'';
+  select.innerHTML='<option value="">Choisir un membre actif</option>'+
+    (members.data||[]).map(m=>'<option value="'+esc(m.id)+'" '+(m.id===selectedId?'selected':'')+'>'+esc(m.member_number||'')+' — '+esc((m.first_name||'')+' '+(m.last_name||''))+'</option>').join('');
+}
+async function saveGeneralLeadership(e){
+  e.preventDefault();
+  if(!sb||!isAdmin)return;
+  const select=$('generalLeaderMember');
+  const memberId=select?.value;
+  if(!memberId){msg('generalLeaderMessage','Choisis un membre actif.');return;}
+  const member=await sb.from('members').select('id,first_name,last_name,status').eq('id',memberId).eq('status','active').maybeSingle();
+  if(member.error||!member.data){msg('generalLeaderMessage','Ce membre est introuvable ou n’est plus actif. Actualise la liste.');return;}
+  const displayName=[member.data.first_name,member.data.last_name].filter(Boolean).join(' ').trim();
+  const saved=await sb.from('dahira_general_leadership').upsert({
+    id:1,member_id:member.data.id,display_name:displayName,
+    title:'Dieuwrigne Général du Dahira',updated_at:new Date().toISOString()
+  },{onConflict:'id'});
+  if(saved.error){msg('generalLeaderMessage','Enregistrement impossible : '+saved.error.message);return;}
+  msg('generalLeaderMessage','Dieuwrigne Général enregistré avec succès.',true);
+  await loadGeneralLeadership();
+}
 async function loadPublicCommissionDirectory(){
   const box=$('publicCommissionGrid');
   if(!box||!sb)return;
