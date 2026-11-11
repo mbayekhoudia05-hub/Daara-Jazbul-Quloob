@@ -1319,9 +1319,9 @@ async function addMember(e){
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
 const GENERAL_DIEUWRIGNE_MISSION='Assurer la direction et la coordination générale du Dahira. Superviser les différentes commissions, veiller à leur bon fonctionnement, coordonner leurs responsables, suivre l’exécution des décisions et orienter les activités vers la réalisation des objectifs du Dahira, dans un esprit d’unité, de discipline et de solidarité.';
 async function getGeneralLeadershipForMember(memberId){
-  const result=await sb.from('dahira_general_leadership').select('member_id,title').eq('id',1).maybeSingle();
+  const result=await sb.from('dahira_general_leadership').select('member_id,title,mission').eq('id',1).maybeSingle();
   if(result.error)throw result.error;
-  return !!(result.data?.member_id&&result.data.member_id===memberId);
+  return result.data?.member_id===memberId?{...result.data,isGeneralDieuwrigne:true}:false;
 }
 async function showMyMemberCard(){
  const member=currentMemberRecord;
@@ -1341,16 +1341,16 @@ async function showMyMemberCard(){
    }
    commission=result.data||null;
  }
- const isGeneralDieuwrigne=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
- showMemberCard({...member,commissions:commission,isGeneralDieuwrigne});
+ const leadership=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
+ showMemberCard({...member,commissions:commission,isGeneralDieuwrigne:!!leadership,...(leadership||{})});
 }
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
- const role=(m.function_title||'').trim()||defaultRole;
- const mission=(m.mission||'').trim()||(m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.'));
+ const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
+ const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
  show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
@@ -1401,8 +1401,8 @@ function memberCardPrintMarkup(m){
  card.classList.add('print-card-copy');
  const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
- const role=(m.function_title||'').trim()||defaultRole;
- const mission=(m.mission||'').trim()||(m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.'));
+ const role=m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):((m.function_title||'').trim()||defaultRole);
+ const mission=m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.'));
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
@@ -2267,7 +2267,7 @@ async function loadGeneralLeadership(){
   const publicName=$('generalLeaderPublicName');
   if(!sb)return;
   const result=await sb.from('dahira_general_leadership')
-    .select('display_name,title')
+    .select('display_name,title,mission')
     .eq('id',1)
     .maybeSingle();
   if(result.error){
@@ -2276,6 +2276,10 @@ async function loadGeneralLeadership(){
     return;
   }
   if(publicName)publicName.textContent=result.data?.display_name||'Fonction à désigner';
+  if(isAdmin){
+    if($('generalLeaderTitle'))$('generalLeaderTitle').value=result.data?.title||'Dieuwrigne Général du Dahira';
+    if($('generalLeaderMission'))$('generalLeaderMission').value=result.data?.mission||GENERAL_DIEUWRIGNE_MISSION;
+  }
   const select=$('generalLeaderMember');
   if(!isAdmin||!select)return;
   const members=await sb.from('members')
@@ -2302,9 +2306,11 @@ async function saveGeneralLeadership(e){
   const member=await sb.from('members').select('id,first_name,last_name,status').eq('id',memberId).eq('status','active').maybeSingle();
   if(member.error||!member.data){msg('generalLeaderMessage','Ce membre est introuvable ou n’est plus actif. Actualise la liste.');return;}
   const displayName=[member.data.first_name,member.data.last_name].filter(Boolean).join(' ').trim();
+  const title=$('generalLeaderTitle')?.value.trim()||'Dieuwrigne Général du Dahira';
+  const mission=$('generalLeaderMission')?.value.trim()||GENERAL_DIEUWRIGNE_MISSION;
+  if(title.length>120||mission.length>1000){msg('generalLeaderMessage','La fonction doit faire 120 caractères maximum et la mission 1 000 caractères maximum.');return;}
   const saved=await sb.from('dahira_general_leadership').upsert({
-    id:1,member_id:member.data.id,display_name:displayName,
-    title:'Dieuwrigne Général du Dahira',updated_at:new Date().toISOString()
+    id:1,member_id:member.data.id,display_name:displayName,title,mission,updated_at:new Date().toISOString()
   },{onConflict:'id'});
   if(saved.error){msg('generalLeaderMessage','Enregistrement impossible : '+saved.error.message);return;}
   msg('generalLeaderMessage','Dieuwrigne Général enregistré avec succès.',true);
@@ -2620,10 +2626,12 @@ document.addEventListener('click', async function(e) {
           .maybeSingle();
         r.data.commissions=commissionResult.data||null;
       }
-      r.data.isGeneralDieuwrigne=await getGeneralLeadershipForMember(r.data.id).catch(error=>{
+      const leadership=await getGeneralLeadershipForMember(r.data.id).catch(error=>{
         console.warn('Lecture direction générale impossible',error);
         return false;
       });
+      r.data.isGeneralDieuwrigne=!!leadership;
+      if(leadership){r.data.title=leadership.title;r.data.leadershipMission=leadership.mission;}
       showMemberCard(r.data);
       break;
     }
