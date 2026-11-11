@@ -172,10 +172,13 @@
     <h3>Ajouter une photo</h3>
     <label>Titre<input id="galleryTitle" maxlength="180" required></label>
     <label>Description<textarea id="galleryDescription" rows="3" maxlength="2000"></textarea></label>
-    <label>Lien direct de l’image (URL)<input id="galleryImageUrl" type="url" required placeholder="https://…"></label>
+    <label>Photo depuis le téléphone ou l’ordinateur<input id="galleryImageFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"></label>
+    <img id="galleryImagePreview" class="gallery-upload-preview hidden" alt="Aperçu de la photo choisie">
+    <p class="gallery-upload-help">JPG, PNG ou WebP · 8 Mo maximum. Tu peux aussi utiliser un lien direct ci-dessous.</p>
+    <label>Lien direct de l’image (facultatif)<input id="galleryImageUrl" type="url" placeholder="https://…"></label>
     <label>Date de l’activité (facultatif)<input id="galleryEventDate" type="date"></label>
     <label class="inline-check"><input id="galleryPublished" type="checkbox" checked> Publier immédiatement</label>
-    <button class="primary" type="submit">Ajouter à la galerie</button><p id="galleryMessage" role="status"></p>
+    <button class="primary" id="gallerySubmitBtn" type="submit">Ajouter à la galerie</button><p id="galleryMessage" role="status"></p>
   </form>
   <div id="adminGalleryRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
 </section>

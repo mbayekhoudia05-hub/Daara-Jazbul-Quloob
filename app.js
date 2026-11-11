@@ -528,6 +528,7 @@ if($('financeMonthFilter')){
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
  $('adminEventForm')?.addEventListener('submit',createAdminEvent);
  $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
+ $('galleryImageFile')?.addEventListener('change',()=>{const file=$('galleryImageFile').files?.[0],preview=$('galleryImagePreview');if(!preview)return;if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');$('galleryImageFile').value='';preview.classList.add('hidden');return;}preview.src=URL.createObjectURL(file);preview.classList.remove('hidden');});
  $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
@@ -2097,12 +2098,35 @@ async function createAdminEvent(e){
   $('adminEventForm').reset();$('eventPublished').checked=true;msg('eventMessage','Activité enregistrée.',true);await loadAdminEvents();await loadPublicEvents();
 }
 async function createAdminGalleryItem(e){
-  e.preventDefault();if(!sb||!isAdmin)return;
-  const image=$('galleryImageUrl').value.trim();
-  if(!/^https?:\/\//i.test(image)){msg('galleryMessage','Ajoute une URL d’image commençant par https:// ou http://.');return;}
-  const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:image,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id});
-  if(r.error){msg('galleryMessage','Ajout impossible : '+r.error.message);return;}
-  $('adminGalleryForm').reset();$('galleryPublished').checked=true;msg('galleryMessage','Photo ajoutée à la galerie.',true);await loadAdminGallery();await loadPublicGallery();
+  e.preventDefault();if(!sb||!isAdmin||!currentUser)return;
+  const file=$('galleryImageFile')?.files?.[0]||null;
+  const imageUrl=$('galleryImageUrl').value.trim();
+  if(!file&&!imageUrl){msg('galleryMessage','Choisis une photo depuis ton téléphone ou ajoute un lien direct.');return;}
+  if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)){
+    msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');return;
+  }
+  if(!file&&imageUrl&&!/^https?:\/\//i.test(imageUrl)){msg('galleryMessage','Le lien doit commencer par https:// ou http://.');return;}
+  const submit=$('gallerySubmitBtn');if(submit){submit.disabled=true;submit.textContent='Enregistrement…';}
+  let uploadedPath=null,finalImageUrl=imageUrl;
+  try{
+    if(file){
+      const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'-').slice(-70);
+      uploadedPath='gallery/'+currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+(safeName||'photo');
+      const upload=await sb.storage.from('dahira-gallery').upload(uploadedPath,file,{upsert:false,contentType:file.type,cacheControl:'3600'});
+      if(upload.error)throw upload.error;
+      finalImageUrl=sb.storage.from('dahira-gallery').getPublicUrl(uploadedPath).data.publicUrl;
+    }
+    const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:finalImageUrl,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id}).select('id').single();
+    if(r.error)throw r.error;
+    $('adminGalleryForm').reset();$('galleryPublished').checked=true;
+    const preview=$('galleryImagePreview');if(preview){preview.removeAttribute('src');preview.classList.add('hidden');}
+    msg('galleryMessage','Photo ajoutée à la galerie.',true);await loadAdminGallery();await loadPublicGallery();
+  }catch(err){
+    if(uploadedPath)await sb.storage.from('dahira-gallery').remove([uploadedPath]);
+    msg('galleryMessage','Ajout impossible : '+(err?.message||String(err)));
+  }finally{
+    if(submit){submit.disabled=false;submit.textContent='Ajouter à la galerie';}
+  }
 }
 async function createAdminNotification(e){
   e.preventDefault();if(!sb||!isAdmin)return;
