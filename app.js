@@ -9,8 +9,8 @@ const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden
 function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
 
 function setAdminUI(){
-  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters'];
-  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','postersNav'];
+  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
+  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','postersNav','eventsNav','galleryNav','notificationsNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
@@ -21,7 +21,7 @@ function setAdminUI(){
 }
 function showAdminSection(id){
   if(!isAdmin)return;
-  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters'];
+  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
   if(!allowed.includes(id))return;
   allowed.forEach(hide);
   show(id);
@@ -32,6 +32,9 @@ function showAdminSection(id){
   if(id==='members')void loadMembers();
   if(id==='commissions')void loadCommissions();
   if(id==='membershipRequests')void loadMembershipRequests();
+  if(id==='adminEvents')void loadAdminEvents();
+  if(id==='adminGallery')void loadAdminGallery();
+  if(id==='adminNotifications')void loadAdminNotifications();
 }
 async function updatePendingMembershipCount(){
   if(!sb||!isAdmin)return;
@@ -522,7 +525,10 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
+ $('adminEventForm')?.addEventListener('submit',createAdminEvent);
+ $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
+ $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
@@ -604,6 +610,7 @@ async function setUser(u){
     await loadMembers();
     await loadCommissions();
     await loadMembershipRequests();
+    await initPortalAdminModules();
     await loadContributions();
     await loadFinanceDashboard();
     await loadUnpaidTracker();
@@ -614,6 +621,7 @@ async function setUser(u){
 }
 async function loadConnectedMemberDashboard(member){
   show('memberDashboard');
+  void loadMemberNotifications();
 
   $('memberWelcome').textContent=member.first_name||'Membre';
   $('myMemberNumber').textContent=member.member_number||'—';
@@ -2026,6 +2034,111 @@ async function loadMembershipRequests() {
       `).join('')
     : '<tr><td colspan="6">Aucune demande pour le moment.</td></tr>';
 }
+function formatPortalDate(value,withTime=true){
+  if(!value)return '—';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return '—';
+  return d.toLocaleString('fr-FR',withTime?{dateStyle:'medium',timeStyle:'short'}:{dateStyle:'medium'});
+}
+function adminStatusToggle(label,published){
+  return '<span class="status-pill '+(published?'paid-pill':'unpaid-pill')+'">'+(published?'Publié':'Brouillon')+'</span>';
+}
+async function loadPublicEvents(){
+  const box=$('publicEventsGrid');if(!box||!sb)return;
+  const r=await sb.from('dahira_events').select('id,title,description,starts_at,ends_at,location').eq('is_published',true).gte('starts_at',new Date(Date.now()-86400000).toISOString()).order('starts_at').limit(30);
+  if(r.error){box.innerHTML='<div class="loading">Agenda temporairement indisponible.</div>';console.warn(r.error.message);return;}
+  const rows=r.data||[];
+  box.innerHTML=rows.length?rows.map(x=>'<article class="card event-card"><span class="tag">AGENDA DU DAHIRA</span><h3>'+esc(x.title)+'</h3><p class="event-date">'+esc(formatPortalDate(x.starts_at))+(x.ends_at?' – '+esc(formatPortalDate(x.ends_at)):'')+'</p>'+(x.location?'<p><b>Lieu :</b> '+esc(x.location)+'</p>':'')+'<p>'+esc(x.description||'')+'</p></article>').join(''):'<div class="loading">Aucune activité publiée pour le moment.</div>';
+}
+async function loadPublicGallery(){
+  const box=$('publicGalleryGrid');if(!box||!sb)return;
+  const r=await sb.from('dahira_gallery').select('id,title,description,image_url,event_date').eq('is_published',true).order('event_date',{ascending:false}).order('created_at',{ascending:false}).limit(60);
+  if(r.error){box.innerHTML='<div class="loading">Galerie temporairement indisponible.</div>';console.warn(r.error.message);return;}
+  const rows=r.data||[];
+  box.innerHTML=rows.length?rows.map(x=>'<article class="card gallery-card"><img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'" loading="lazy"><div><h3>'+esc(x.title)+'</h3>'+(x.event_date?'<small>'+esc(formatPortalDate(x.event_date,false))+'</small>':'')+'<p>'+esc(x.description||'')+'</p></div></article>').join(''):'<div class="loading">Aucune photo publiée pour le moment.</div>';
+}
+async function loadMemberNotifications(){
+  const box=$('memberNotificationsList');if(!box||!currentMemberRecord||!sb)return;
+  const r=await sb.from('dahira_notifications').select('id,title,message,notification_type,created_at,expires_at').eq('is_published',true).order('created_at',{ascending:false}).limit(50);
+  if(r.error){box.innerHTML='<p class="loading">Chargement des notifications impossible.</p>';console.warn(r.error.message);return;}
+  const rows=(r.data||[]).filter(x=>!x.expires_at||new Date(x.expires_at)>new Date());
+  const count=$('memberNotificationCount');if(count)count.textContent=rows.length+' message(s)';
+  box.innerHTML=rows.length?rows.map(x=>'<article class="notification-item notification-'+esc(x.notification_type)+'"><div><span class="tag">'+esc(({information:'Information',rappel:'Rappel',convocation:'Convocation',important:'Important'})[x.notification_type]||'Information')+'</span><h4>'+esc(x.title)+'</h4><small>'+esc(formatPortalDate(x.created_at))+'</small></div><p>'+esc(x.message)+'</p></article>').join(''):'<p class="loading">Aucune notification pour le moment.</p>';
+}
+async function loadAdminEvents(){
+  if(!sb||!isAdmin)return;const box=$('adminEventRows');if(!box)return;
+  const r=await sb.from('dahira_events').select('*').order('starts_at',{ascending:false});
+  if(r.error){box.innerHTML='<p class="loading">Erreur : '+esc(r.error.message)+'</p>';return;}
+  const rows=r.data||[];
+  box.innerHTML=rows.length?rows.map(x=>'<article class="admin-module-row"><div><h3>'+esc(x.title)+'</h3><p>'+esc(formatPortalDate(x.starts_at))+' · '+esc(x.location||'Lieu à préciser')+'</p><p>'+esc(x.description||'')+'</p>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn" data-action="toggle-event" data-id="'+esc(x.id)+'" data-published="'+String(x.is_published)+'">'+(x.is_published?'Masquer':'Publier')+'</button><button type="button" class="table-btn danger-btn" data-action="delete-event" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<p class="loading">Aucune activité enregistrée.</p>';
+}
+async function loadAdminGallery(){
+  if(!sb||!isAdmin)return;const box=$('adminGalleryRows');if(!box)return;
+  const r=await sb.from('dahira_gallery').select('*').order('created_at',{ascending:false});
+  if(r.error){box.innerHTML='<p class="loading">Erreur : '+esc(r.error.message)+'</p>';return;}
+  const rows=r.data||[];
+  box.innerHTML=rows.length?rows.map(x=>'<article class="admin-module-row gallery-admin-row"><img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'"><div><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn" data-action="toggle-gallery" data-id="'+esc(x.id)+'" data-published="'+String(x.is_published)+'">'+(x.is_published?'Masquer':'Publier')+'</button><button type="button" class="table-btn danger-btn" data-action="delete-gallery" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<p class="loading">Aucune photo enregistrée.</p>';
+}
+async function loadAdminNotifications(){
+  if(!sb||!isAdmin)return;const box=$('adminNotificationRows');if(!box)return;
+  const r=await sb.from('dahira_notifications').select('id,title,message,notification_type,target_member_id,is_published,created_at').order('created_at',{ascending:false});
+  if(r.error){box.innerHTML='<p class="loading">Erreur : '+esc(r.error.message)+'</p>';return;}
+  const rows=r.data||[];
+  box.innerHTML=rows.length?rows.map(x=>'<article class="admin-module-row"><div><h3>'+esc(x.title)+'</h3><p>'+esc(x.message)+'</p><small>'+esc(x.target_member_id?'Notification ciblée':'Tous les membres')+' · '+esc(formatPortalDate(x.created_at))+'</small>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn danger-btn" data-action="delete-notification" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<p class="loading">Aucune notification envoyée.</p>';
+}
+async function createAdminEvent(e){
+  e.preventDefault();if(!sb||!isAdmin)return;
+  const title=$('eventTitle').value.trim(),starts=$('eventStartsAt').value,ends=$('eventEndsAt').value;
+  if(!title||!starts){msg('eventMessage','Le titre et la date de début sont obligatoires.');return;}
+  const startDate=new Date(starts),endDate=ends?new Date(ends):null;
+  if(Number.isNaN(startDate.getTime())||(endDate&&endDate<startDate)){msg('eventMessage','Vérifie les dates de cette activité.');return;}
+  const r=await sb.from('dahira_events').insert({title,description:$('eventDescription').value.trim(),starts_at:startDate.toISOString(),ends_at:endDate?endDate.toISOString():null,location:$('eventLocation').value.trim()||null,is_published:$('eventPublished').checked,created_by:currentUser.id});
+  if(r.error){msg('eventMessage','Enregistrement impossible : '+r.error.message);return;}
+  $('adminEventForm').reset();$('eventPublished').checked=true;msg('eventMessage','Activité enregistrée.',true);await loadAdminEvents();await loadPublicEvents();
+}
+async function createAdminGalleryItem(e){
+  e.preventDefault();if(!sb||!isAdmin)return;
+  const image=$('galleryImageUrl').value.trim();
+  if(!/^https?:\/\//i.test(image)){msg('galleryMessage','Ajoute une URL d’image commençant par https:// ou http://.');return;}
+  const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:image,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id});
+  if(r.error){msg('galleryMessage','Ajout impossible : '+r.error.message);return;}
+  $('adminGalleryForm').reset();$('galleryPublished').checked=true;msg('galleryMessage','Photo ajoutée à la galerie.',true);await loadAdminGallery();await loadPublicGallery();
+}
+async function createAdminNotification(e){
+  e.preventDefault();if(!sb||!isAdmin)return;
+  const title=$('notificationTitle').value.trim(),message=$('notificationMessage').value.trim();
+  if(!title||!message){msg('notificationMessageStatus','Le titre et le message sont obligatoires.');return;}
+  const target=$('notificationTarget').value||null,expiry=$('notificationExpires').value;
+  const r=await sb.from('dahira_notifications').insert({title,message,notification_type:$('notificationType').value,target_member_id:target,is_published:true,expires_at:expiry?new Date(expiry).toISOString():null,created_by:currentUser.id});
+  if(r.error){msg('notificationMessageStatus','Envoi impossible : '+r.error.message);return;}
+  $('adminNotificationForm').reset();msg('notificationMessageStatus','Notification envoyée.',true);await loadAdminNotifications();
+}
+async function initPortalAdminModules(){
+  if(!sb||!isAdmin)return;
+  const select=$('notificationTarget');if(select){
+    const r=await sb.from('members').select('id,member_number,first_name,last_name').eq('status','active').order('first_name');
+    if(!r.error)select.innerHTML='<option value="">Tous les membres actifs</option>'+(r.data||[]).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.member_number)+' — '+esc(m.first_name)+' '+esc(m.last_name)+'</option>').join('');
+  }
+  await Promise.all([loadAdminEvents(),loadAdminGallery(),loadAdminNotifications()]);
+}
+async function handlePortalAdminAction(button){
+  if(!sb||!isAdmin)return;const id=button.dataset.id,action=button.dataset.action;
+  if(action==='toggle-event'||action==='toggle-gallery'){
+    const table=action==='toggle-event'?'dahira_events':'dahira_gallery';
+    const r=await sb.from(table).update({is_published:button.dataset.published!=='true',updated_at:new Date().toISOString()}).eq('id',id);
+    if(r.error){alert('Modification impossible : '+r.error.message);return;}
+    if(table==='dahira_events'){await loadAdminEvents();await loadPublicEvents();}else{await loadAdminGallery();await loadPublicGallery();}
+  }else if(action==='delete-event'||action==='delete-gallery'||action==='delete-notification'){
+    if(!confirm('Supprimer définitivement cet élément ?'))return;
+    const table=action==='delete-event'?'dahira_events':action==='delete-gallery'?'dahira_gallery':'dahira_notifications';
+    const r=await sb.from(table).delete().eq('id',id).select('id').maybeSingle();
+    if(r.error||!r.data){alert('Suppression impossible : '+(r.error?.message||'aucune ligne supprimée'));return;}
+    if(table==='dahira_events'){await loadAdminEvents();await loadPublicEvents();}
+    if(table==='dahira_gallery'){await loadAdminGallery();await loadPublicGallery();}
+    if(table==='dahira_notifications')await loadAdminNotifications();
+  }
+}
+
 async function loadPublicCommissions(){
   const select=$('requestCommission');
   if(!select||!sb)return;
@@ -2048,6 +2161,36 @@ async function loadPublicCommissions(){
   }else{
     msg('membershipRequestMessage','Aucune commission active disponible dans la base.');
   }
+}
+
+async function loadPublicCommissionDirectory(){
+  const box=$('publicCommissionGrid');
+  if(!box||!sb)return;
+  box.innerHTML='<div class="loading">Chargement des commissions…</div>';
+  const r=await sb.from('commissions')
+    .select('id,name,description,is_active')
+    .eq('is_active',true)
+    .order('name');
+  if(r.error){
+    box.innerHTML='<div class="loading">Les commissions ne peuvent pas être chargées pour le moment. Réessaie ultérieurement.</div>';
+    console.warn('Annuaire public des commissions indisponible :',r.error.message);
+    return;
+  }
+  const rows=r.data||[];
+  const preferredOrder=['Audiovisuelle','Communication','Culturelle','Finance','Organisation','Relations externes','Relations extérieures et internationales','Santé'];
+  rows.sort((a,b)=>{
+    const ai=preferredOrder.indexOf(a.name),bi=preferredOrder.indexOf(b.name);
+    if(ai<0&&bi<0)return a.name.localeCompare(b.name,'fr');
+    if(ai<0)return 1;
+    if(bi<0)return -1;
+    return ai-bi;
+  });
+  box.innerHTML=rows.length?rows.map((c,index)=>
+    '<article class="commission-card public-commission-card">'+
+      '<div class="commission-card-heading"><span class="commission-index">'+String(index+1).padStart(2,'0')+'</span><div><h3>'+esc(c.name)+'</h3><span class="commission-status is-active">Commission active</span></div></div>'+
+      '<p class="public-commission-description">'+esc(c.description||'La mission de cette commission sera précisée par l’administration.')+'</p>'+
+    '</article>'
+  ).join(''):'<div class="loading">Aucune commission active publiée pour le moment.</div>';
 }
 async function submitMembershipRequest(e) {
   e.preventDefault();
@@ -2255,6 +2398,7 @@ document.addEventListener('click', async function(e) {
     alert("Action réservée à l'administrateur.");
     return;
   }
+  if(['toggle-event','toggle-gallery','delete-event','delete-gallery','delete-notification'].includes(button.dataset.action)){await handlePortalAdminAction(button);return;}
   switch (button.dataset.action) {
     case 'edit-content': startEditContent(id); break;
     case 'delete-content': {

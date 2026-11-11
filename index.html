@@ -7,8 +7,12 @@
     <a href="#contenus">▤ <span>Contenus publics</span></a>
     <a href="#dahiraInformation">ℹ <span>Informations du Dahira</span></a>
     <a href="#dahiraCharters">📜 <span>Chartes du Dahira</span></a>
+    <a href="#publicCommissions">♧ <span>Nos commissions</span></a>
     <a href="#admin" id="adminNav" class="hidden" data-admin-target="admin">⚙ <span>Gérer les contenus</span></a>
     <a href="#annonces">▣ <span>Annonces</span></a>
+    <a href="#activites">▦ <span>Agenda et activités</span></a>
+    <a href="#galerie">▧ <span>Galerie</span></a>
+    <a href="#contact">✉ <span>Contact</span></a>
     <a href="#adminDashboard" id="dashboardNav" class="hidden" data-admin-target="adminDashboard">▦ <span>Tableau de bord</span></a>
     <a href="#members" id="membersNav" class="hidden" data-admin-target="members">♙ <span>Membres</span></a>
     <a href="#commissions" id="commissionsNav" class="hidden" data-admin-target="commissions">♧ <span>Commissions</span></a>
@@ -23,6 +27,9 @@
     </div>
     <a href="#posters" id="postersNav" class="hidden" data-admin-target="posters">🎨 <span>Générateur d’affiches</span></a>
     <a href="#membershipRequests" id="membershipRequestsNav" class="hidden" data-admin-target="membershipRequests">✉ <span>Demandes d’adhésion</span> <b id="membershipRequestBadge" class="request-count hidden">0</b></a>
+    <a href="#adminEvents" id="eventsNav" class="hidden" data-admin-target="adminEvents">▦ <span>Agenda</span></a>
+    <a href="#adminGallery" id="galleryNav" class="hidden" data-admin-target="adminGallery">▧ <span>Galerie</span></a>
+    <a href="#adminNotifications" id="notificationsNav" class="hidden" data-admin-target="adminNotifications">♢ <span>Notifications</span></a>
   </nav>
   <div class="sidebar-account"><button id="loginBtn">Connexion</button><button id="logoutBtn" class="hidden">Déconnexion</button></div>
 </aside>
@@ -66,9 +73,35 @@
 
 <section id="dahiraCharters" class="section alt"><div class="head"><span>RÈGLES DE VIE</span><h2>Chartes du Dahira</h2><p>Consultez les chartes et les règles de fonctionnement du Dahira.</p></div><div id="dahiraChartersGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 
+<section id="publicCommissions" class="section">
+  <div class="head"><span>ORGANISATION</span><h2>Nos commissions</h2><p>Découvrez les commissions actives et leurs missions au sein du Daara Jazbul Quluub – Cellule Dakar.</p></div>
+  <div id="publicCommissionGrid" class="commissions-grid"><div class="loading">Chargement des commissions…</div></div>
+  <p class="preview-note">Les informations affichées proviennent de la base officielle. Les données personnelles des membres ne sont pas exposées dans cette rubrique publique.</p>
+</section>
+
 <section id="admin" class="section hidden"><div class="head"><span>ADMINISTRATION</span><h2>Gérer les contenus</h2></div><form id="contentForm"><label>Type<select id="type"><option value="khasside">Khassaïde</option><option value="audio">Audio</option><option value="video">Vidéo</option><option value="cours">Cours</option><option value="annonce">Annonce</option><option value="information">Information du Dahira</option><option value="charte">Charte du Dahira</option></select></label><label>Titre<input id="title" required></label><label>Description<textarea id="description"></textarea></label><label for="charterText">Texte intégral du règlement (pour une charte)<textarea id="charterText" rows="18" placeholder="Collez ici le texte officiel complet du règlement. Le texte sera affiché directement dans la plateforme."></textarea><small>Le texte est conservé tel quel et visible par les membres et l’administrateur.</small></label><label class="pdf-upload-label">📄 Ajouter un document PDF (facultatif, notamment pour les chartes)<input id="contentPdf" type="file" accept="application/pdf,.pdf"><small>PDF uniquement, 15 Mo maximum. Le document sera consultable par tous les visiteurs.</small></label><p id="pdfCurrentInfo" class="pdf-current-info">PDF facultatif — 15 Mo maximum.</p><label>Lien du contenu (facultatif)<input id="external_url" type="url" placeholder="https://..."></label><input id="editingContentId" type="hidden"><div class="button-row"><button class="primary" id="contentSubmitBtn" type="submit">Publier</button><button class="secondary hidden" id="cancelContentEditBtn" type="button">Annuler la modification</button></div><p id="formMessage"></p></form><div class="head content-admin-list-head"><h2>Contenus publiés</h2><p>Modifie un contenu existant ou ajoute une nouvelle information/charte.</p></div><div id="adminContentRows" class="content-admin-list"><div class="loading">Chargement…</div></div><div class="head content-admin-list-head"><h2>Consultation des chartes</h2><p>Les chartes publiées sont consultables ici par l’administrateur, avec lecture PDF et téléchargement.</p></div><div id="adminChartersList" class="content-admin-list"><div class="loading">Chargement des chartes…</div></div></section>
 
 <section id="annonces" class="section alt"><div class="head"><span>INFORMATIONS</span><h2>Annonces</h2></div><div id="announcementGrid" class="grid"></div></section>
+
+<section id="activites" class="section">
+  <div class="head"><span>VIE DU DAHIRA</span><h2>Agenda et activités</h2><p>Retrouvez les rencontres, séances et événements publiés par l’administration.</p></div>
+  <div id="publicEventsGrid" class="grid"><div class="loading">Chargement de l’agenda…</div></div>
+</section>
+
+<section id="galerie" class="section alt">
+  <div class="head"><span>EN IMAGES</span><h2>Galerie du Daara</h2><p>Les photos publiées par l’administration, classées par date et par activité.</p></div>
+  <div id="publicGalleryGrid" class="grid"><div class="loading">Chargement de la galerie…</div></div>
+</section>
+
+<section id="contact" class="section">
+  <div class="head"><span>NOUS JOINDRE</span><h2>Contact</h2><p>Pour toute question concernant le Daara Jazbul Quluub – Cellule Dakar.</p></div>
+  <div class="grid">
+    <article class="card"><h3>Informations officielles</h3><p>Les coordonnées publiques seront affichées ici après vérification et validation par l’administration.</p></article>
+    <article class="card"><h3>Demande d’adhésion</h3><p>Vous pouvez utiliser le formulaire de demande d’adhésion déjà disponible sur cette plateforme.</p><a href="#membershipFormSection">Accéder au formulaire</a></article>
+    <article class="card"><h3>Connexion</h3><p>Les membres peuvent utiliser le bouton Connexion dans le menu pour accéder à leur espace personnel.</p></article>
+  </div>
+  <p class="preview-note">Aucun numéro, adresse e-mail ou lien de contact n’est inventé. Les coordonnées seront ajoutées après confirmation.</p>
+</section>
 
 <section id="membershipFormSection" class="section">
   <div class="head">
@@ -118,6 +151,47 @@
 </section>
 
 <section id="adminDashboard" class="section hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Tableau de bord</h2><p>Bienvenue dans la gestion de votre Dahira. Choisissez une rubrique dans le menu à gauche.</p></div><div class="stats contribution-stats"><div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div><div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div><div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div></div></section>
+
+<section id="adminEvents" class="section hidden">
+  <div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Agenda et activités</h2><p>Crée, publie ou retire les événements du calendrier public.</p></div>
+  <form id="adminEventForm" class="member-form">
+    <h3>Ajouter une activité</h3>
+    <label>Titre<input id="eventTitle" maxlength="180" required></label>
+    <label>Description<textarea id="eventDescription" rows="3" maxlength="3000"></textarea></label>
+    <div class="form-row"><label>Date et heure de début<input id="eventStartsAt" type="datetime-local" required></label><label>Date et heure de fin (facultatif)<input id="eventEndsAt" type="datetime-local"></label></div>
+    <label>Lieu<input id="eventLocation" maxlength="250" placeholder="Lieu de la rencontre"></label>
+    <label class="inline-check"><input id="eventPublished" type="checkbox" checked> Publier immédiatement</label>
+    <button class="primary" type="submit">Enregistrer l’activité</button><p id="eventMessage" role="status"></p>
+  </form>
+  <div id="adminEventRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
+</section>
+
+<section id="adminGallery" class="section hidden">
+  <div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Galerie photos</h2><p>Ajoute une photo avec son lien public. Seules les images publiées sont visibles sur le site.</p></div>
+  <form id="adminGalleryForm" class="member-form">
+    <h3>Ajouter une photo</h3>
+    <label>Titre<input id="galleryTitle" maxlength="180" required></label>
+    <label>Description<textarea id="galleryDescription" rows="3" maxlength="2000"></textarea></label>
+    <label>Lien direct de l’image (URL)<input id="galleryImageUrl" type="url" required placeholder="https://…"></label>
+    <label>Date de l’activité (facultatif)<input id="galleryEventDate" type="date"></label>
+    <label class="inline-check"><input id="galleryPublished" type="checkbox" checked> Publier immédiatement</label>
+    <button class="primary" type="submit">Ajouter à la galerie</button><p id="galleryMessage" role="status"></p>
+  </form>
+  <div id="adminGalleryRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
+</section>
+
+<section id="adminNotifications" class="section hidden">
+  <div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Centre de notifications</h2><p>Envoie une information générale à tous les membres actifs ou un message à un membre précis.</p></div>
+  <form id="adminNotificationForm" class="member-form">
+    <h3>Nouvelle notification</h3>
+    <label>Titre<input id="notificationTitle" maxlength="180" required></label>
+    <label>Message<textarea id="notificationMessage" rows="4" maxlength="3000" required></textarea></label>
+    <div class="form-row"><label>Type<select id="notificationType"><option value="information">Information</option><option value="rappel">Rappel</option><option value="convocation">Convocation</option><option value="important">Important</option></select></label><label>Destinataire<select id="notificationTarget"><option value="">Tous les membres actifs</option></select></label></div>
+    <label>Date d’expiration (facultatif)<input id="notificationExpires" type="datetime-local"></label>
+    <button class="primary" type="submit">Envoyer la notification</button><p id="notificationMessageStatus" role="status"></p>
+  </form>
+  <div id="adminNotificationRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
+</section>
 
 <section id="members" class="section alt hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Gestion des membres</h2><p>Ajoute les membres, leur photo et génère leur carte avec QR Code.</p><button type="button" class="primary" data-action="export-members">📥 Exporter la liste des membres (CSV)</button> <button type="button" class="primary" id="printAllMemberCardsBtn">🖨️ Imprimer toutes les cartes</button></div><div class="stats"><div class="stat"><strong id="memberCount">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="totalMemberCount">0</strong><span>Total membres</span></div></div><form id="memberForm" class="member-form"><h3>Ajouter un membre</h3><div class="form-row"><label>Prénom<input id="memberFirstName" required></label><label>Nom<input id="memberLastName" required></label></div><div class="form-row"><label>Téléphone<input id="memberPhone" type="tel" placeholder="77 000 00 00"></label><label>Email<input id="memberEmail" type="email"></label></div><label for="memberCommission">Commission du membre (facultatif)</label><select id="memberCommission"><option value="">Aucune commission (facultatif)</option></select><label class="photo-upload-label">📷 Photo du membre<input id="memberPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>Choisis une photo JPG, PNG ou WEBP (5 Mo maximum). Elle sera automatiquement enregistrée sur la carte.</small></label><div id="photoPreviewWrap" class="photo-preview hidden"><img id="photoPreview" src="logo.jpeg" alt="Aperçu"><div><strong>Aperçu de la photo</strong><span id="photoPreviewName"></span></div></div><button class="primary">Créer le membre</button><p id="memberMessage"></p></form><div class="member-table-wrap"><table><thead><tr><th>N° membre</th><th>Nom</th><th>Commission</th><th>Téléphone</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="memberRows"><tr><td colspan="7">Aucun membre.</td></tr></tbody></table></div></section>
 
@@ -465,6 +539,10 @@
     <div class="stat"><strong id="myMemberNumber">—</strong><span>Mon numéro</span></div>
     <div class="stat"><strong id="myTotalPaid">0 FCFA</strong><span>Total cotisé</span></div>
     <div class="stat"><strong id="myPaymentCount">0</strong><span>Paiements enregistrés</span></div>
+  </div>
+  <div class="card member-notifications-card">
+    <div class="section-inline-heading"><h3>♢ Mes notifications</h3><span id="memberNotificationCount" class="status-pill">0 message</span></div>
+    <div id="memberNotificationsList"><div class="loading">Chargement des notifications…</div></div>
   </div>
 
   <div class="card">
