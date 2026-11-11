@@ -59,13 +59,20 @@
   const sidebar=document.getElementById('appSidebar');
   if(!toggle||!sidebar||!backdrop)return;
   function setOpen(open){
-    if(window.innerWidth<=800){
+    const mobile=window.innerWidth<=800;
+    if(mobile){
       body.classList.toggle('sidebar-mobile-open',open);
     }else{
       body.classList.toggle('sidebar-collapsed',!open);
     }
     toggle.setAttribute('aria-expanded',String(open));
     toggle.setAttribute('aria-label',open?'Masquer le menu':'Afficher le menu');
+    if(mobile&&open){
+      const firstLink=sidebar.querySelector('nav a:not(.hidden)');
+      if(firstLink)firstLink.focus();
+    }else if(mobile&&!open){
+      toggle.focus();
+    }
   }
   toggle.addEventListener('click',()=>{
     const isOpen=window.innerWidth<=800
@@ -74,9 +81,21 @@
     setOpen(!isOpen);
   });
   backdrop.addEventListener('click',()=>setOpen(false));
-  window.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
+  window.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&body.classList.contains('sidebar-mobile-open'))setOpen(false);
+  });
   sidebar.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=800)setOpen(false)}));
-  window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth>800){
+      body.classList.remove('sidebar-mobile-open');
+      toggle.setAttribute('aria-expanded',String(!body.classList.contains('sidebar-collapsed')));
+    }else{
+      body.classList.remove('sidebar-collapsed');
+      body.classList.remove('sidebar-mobile-open');
+      toggle.setAttribute('aria-expanded','false');
+    }
+  });
+  if(window.innerWidth<=800)setOpen(false);
 })();
 </script>
 <main>
