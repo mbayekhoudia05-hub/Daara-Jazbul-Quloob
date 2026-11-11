@@ -1263,7 +1263,8 @@ async function loadMembers(){
   // Charger les membres sans jointure : une relation PostgREST défectueuse ne doit pas masquer toute la liste.
   const r=await sb.from('members')
    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,created_at')
-   .order('created_at',{ascending:false});
+   .order('last_name',{ascending:true})
+   .order('first_name',{ascending:true});
   if(r.error){
    box.innerHTML='<tr><td colspan="7">Erreur de chargement des membres : '+esc(r.error.message)+'</td></tr>';
    msg('memberMessage','Chargement impossible : '+r.error.message);
