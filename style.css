@@ -1913,3 +1913,30 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .hero-actions .hero-secondary:hover{background:rgba(255,255,255,.16)}
 @media(max-width:800px){.hero-actions{justify-content:center}.hero-actions a{min-width:min(100%,220px)}}
 @media(max-width:520px){.hero-actions{width:100%;flex-direction:column;align-items:stretch}.hero-actions a{width:100%;box-sizing:border-box}.hero h1{letter-spacing:-.8px}}
+
+
+/* Responsive renforcé pour les espaces membre et administration */
+.table-wrap,.member-table-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.table-wrap table{min-width:680px}
+#memberDashboard,#financeDashboard,#adminDashboard,#members,#commissions,#membershipRequests,#contributions,#unpaidMembers,#paymentTransactions{min-width:0}
+#memberDashboard .card,#financeDashboard .card,#adminDashboard .card,
+#members .card,#commissions .card,#membershipRequests .card{min-width:0;overflow-wrap:anywhere}
+#memberDashboard img,#financeDashboard img,#adminDashboard img{max-width:100%}
+@media(max-width:800px){
+  main,.section{min-width:0;max-width:100%}
+  .section{padding-left:clamp(14px,4vw,24px);padding-right:clamp(14px,4vw,24px)}
+  .section form{width:100%;box-sizing:border-box;padding:clamp(16px,4vw,22px)}
+  .form-row{grid-template-columns:minmax(0,1fr)}
+  .admin-workspace-group-title,.member-dashboard-group-title,.finance-dashboard-group-title{max-width:100%}
+  .table-wrap,.member-table-wrap{border-radius:12px}
+  .table-wrap th,.table-wrap td,.member-table-wrap th,.member-table-wrap td{white-space:nowrap}
+  .button-row,.admin-module-actions,.content-admin-actions{gap:8px}
+  .button-row button,.admin-module-actions button,.content-admin-actions button{max-width:100%}
+}
+@media(max-width:520px){
+  #memberDashboard .stats,#financeDashboard .stats,#adminDashboard .stats{grid-template-columns:minmax(0,1fr)}
+  .section .head{overflow-wrap:anywhere}
+  .section form label{min-width:0}
+  .section input,.section select,.section textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+  .table-btn{padding:7px 9px}
+}
