@@ -1800,3 +1800,31 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 #publicCommissions .commission-card-heading{margin-bottom:0}
 #publicCommissions .commission-status.is-active{display:inline-block}
 @media(max-width:650px){#publicCommissions .public-commission-card{min-height:0}}
+
+
+/* Modules dynamiques du portail */
+.admin-module-list{display:grid;gap:12px;margin-top:22px}
+.admin-module-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;background:#fff;border:1px solid var(--djq-line,#e3eae4);border-radius:14px}
+.admin-module-row h3{margin:0 0 6px;color:var(--djq-deep,#063d27)}
+.admin-module-row p{margin:5px 0;color:var(--djq-muted,#68796f)}
+.admin-module-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.inline-check{display:flex!important;align-items:center;gap:9px}
+.inline-check input{width:auto!important}
+.event-card .event-date{color:var(--djq-green,#075b35);font-weight:700;margin:10px 0}
+.gallery-card{padding:0;overflow:hidden}
+.gallery-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#edf3ed}
+.gallery-card>div{padding:16px}
+.gallery-card h3{margin:0 0 5px}
+.gallery-card small{color:var(--djq-muted,#68796f)}
+.gallery-admin-row>img{width:104px;height:84px;object-fit:cover;border-radius:10px;flex:0 0 auto}
+.gallery-admin-row>div:nth-child(2){flex:1}
+.member-notifications-card{border-left:3px solid var(--djq-gold,#d8b653)}
+.section-inline-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.notification-item{padding:14px 0;border-bottom:1px solid var(--djq-line,#e3eae4)}
+.notification-item:last-child{border-bottom:0}
+.notification-item h4{margin:7px 0 2px;color:var(--djq-deep,#063d27)}
+.notification-item small{color:var(--djq-muted,#68796f)}
+.notification-item p{margin:8px 0 0;white-space:pre-wrap}
+.notification-important{border-left:3px solid #c47a2c;padding-left:12px}
+.notification-convocation{border-left:3px solid var(--djq-green,#075b35);padding-left:12px}
+@media(max-width:650px){.admin-module-row{display:grid}.admin-module-actions{width:100%}.gallery-admin-row{grid-template-columns:82px 1fr}.gallery-admin-row>img{width:82px;height:72px}.section-inline-heading{align-items:flex-start;flex-direction:column}}
