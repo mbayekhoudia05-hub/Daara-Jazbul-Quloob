@@ -1926,7 +1926,7 @@ async function savePaymentTransaction(e){
 
 async function loadPaymentTransactions(){
   const r=await sb.from("payment_transactions")
-    .select("id,member_id,payer_member_id,payer_name,amount,payment_method,category,reference,payment_month,status,note,created_at,confirmed_at,members!payment_transactions_member_id_fkey(member_number,first_name,last_name)")
+    .select("id,member_id,payer_member_id,payer_name,amount,payment_method,category,reference,payment_month,payment_date,status,note,created_at,confirmed_at,members!payment_transactions_member_id_fkey(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
   if(r.error){alert(r.error.message);return;}
   const rows=r.data||[];
@@ -1950,7 +1950,7 @@ async function loadPaymentTransactions(){
       <td>${esc(contributionCategoryLabel(x.category))}</td>
       <td>${esc(x.reference||"—")}</td><td>${esc(contributionMonthLabel(x.payment_month))}</td>
       <td>${status}</td>
-      <td>${esc(x.confirmed_at?new Date(x.confirmed_at).toLocaleDateString("fr-FR"):new Date(x.created_at).toLocaleDateString("fr-FR"))}</td>
+      <td>${esc(x.payment_date?new Date(x.payment_date+"T00:00:00").toLocaleDateString("fr-FR"):"—")}</td>
       <td>
         ${x.status==="pending"?`<button class="table-btn" data-action="confirm-payment" data-id="${esc(x.id)}">✅ Confirmer</button>
         <button class="table-btn danger-btn" data-action="cancel-payment" data-id="${esc(x.id)}">❌ Annuler</button>`:""}
