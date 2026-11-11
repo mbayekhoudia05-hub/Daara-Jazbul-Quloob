@@ -1828,3 +1828,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .notification-important{border-left:3px solid #c47a2c;padding-left:12px}
 .notification-convocation{border-left:3px solid var(--djq-green,#075b35);padding-left:12px}
 @media(max-width:650px){.admin-module-row{display:grid}.admin-module-actions{width:100%}.gallery-admin-row{grid-template-columns:82px 1fr}.gallery-admin-row>img{width:82px;height:72px}.section-inline-heading{align-items:flex-start;flex-direction:column}}
+
+/* Téléversement direct de photos dans la galerie */
+.gallery-upload-preview{display:block;width:min(100%,360px);max-height:260px;object-fit:contain;margin:8px 0 14px;border:1px solid var(--djq-line,#e3eae4);border-radius:12px;background:#f5f8f5}
+.gallery-upload-preview.hidden{display:none}
+.gallery-upload-help{margin:-4px 0 14px;color:var(--djq-muted,#68796f);font-size:.9rem;line-height:1.5}
+#galleryImageFile{display:block;width:100%;padding:12px;background:#f8faf8;border:1px dashed #9ab5a2;border-radius:10px}
