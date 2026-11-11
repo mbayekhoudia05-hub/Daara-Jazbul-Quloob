@@ -706,7 +706,7 @@ async function loadConnectedMemberDashboard(member){
       commission=commissionResult.data||null;
     }
   }
-  if(commissionName)commissionName.textContent=commission?.name||'Aucune commission attribuée';
+  if(commissionName)commissionName.textContent=isGeneralDieuwrigne?'Direction générale':(commission?.name||'Aucune commission attribuée');
   if(commissionDescription)commissionDescription.textContent=isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(commission?.description||'Aucune description disponible pour le moment.');
   if(commissionRole){
     const roles=[];
@@ -1347,7 +1347,7 @@ async function showMyMemberCard(){
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
- const commission=m.commissions?.name||'Aucune commission';
+ const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
  const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
  show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
@@ -1398,7 +1398,7 @@ function memberCardPrintMarkup(m){
  const card=template.cloneNode(true);
  card.removeAttribute('id');
  card.classList.add('print-card-copy');
- const commission=m.commissions?.name||'Aucune commission';
+ const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
  const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
