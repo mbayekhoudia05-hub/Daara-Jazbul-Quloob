@@ -692,8 +692,8 @@ async function loadConnectedMemberDashboard(member){
   const commissionDescription=$('myCommissionDescription');
   const commissionRole=$('myCommissionRole');
   let commission=null;
-  const generalLeadership=await sb.from('dahira_general_leadership').select('member_id').eq('id',1).maybeSingle();
-  const isGeneralDieuwrigne=!generalLeadership.error&&generalLeadership.data?.member_id===member.id;
+  const generalLeadership=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
+  const isGeneralDieuwrigne=!!generalLeadership;
   if(member.commission_id){
     const commissionResult=await sb.from('commissions')
       .select('id,name,description,responsible_member_id,successor_member_id')
@@ -707,13 +707,13 @@ async function loadConnectedMemberDashboard(member){
     }
   }
   if(commissionName)commissionName.textContent=isGeneralDieuwrigne?'Direction générale':(commission?.name||'Aucune commission attribuée');
-  if(commissionDescription)commissionDescription.textContent=(member.mission||'').trim()||(isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(commission?.description||'Aucune description disponible pour le moment.'));
+  if(commissionDescription)commissionDescription.textContent=isGeneralDieuwrigne?(generalLeadership.leadershipMission||generalLeadership.mission||GENERAL_DIEUWRIGNE_MISSION):((member.mission||'').trim()||(commission?.description||'Aucune description disponible pour le moment.'));
   if(commissionRole){
     const roles=[];
-    if(isGeneralDieuwrigne)roles.push('Dieuwrigne Général du Dahira');
+    if(isGeneralDieuwrigne)roles.push(generalLeadership.title||'Dieuwrigne Général du Dahira');
     if(commission?.responsible_member_id===member.id)roles.push('Dieuwrigne de commission');
     if(commission?.successor_member_id===member.id)roles.push('Adjoint Dieuwrigne / successeur');
-    commissionRole.textContent=(member.function_title||'').trim()||(roles.length?roles.join(' · '):(commission?'Membre de la commission':'—'));
+    commissionRole.textContent=isGeneralDieuwrigne?(generalLeadership.title||'Dieuwrigne Général du Dahira'):((member.function_title||'').trim()||(roles.length?roles.join(' · '):(commission?'Membre de la commission':'—')));
   }
 
   // Annuaire complet des commissions actives du Dahira.
@@ -1617,7 +1617,7 @@ async function printAllMemberCards(){
   let commissions=[];
   if(ids.length){const cr=await sb.from('commissions').select('id,name,description,responsible_member_id,successor_member_id').in('id',ids);if(cr.error)throw cr.error;commissions=cr.data||[];}
   const byId=new Map(commissions.map(c=>[c.id,c]));
-  const leader=await sb.from('dahira_general_leadership').select('member_id,title,mission').eq('id',1).maybeSingle();
+  const leader=await sb.from('dahira_general_leadership').select('member_id,title,mission').maybeSingle();
   if(leader.error)throw leader.error;
   members.forEach(m=>{m.commissions=byId.get(m.commission_id)||null;m.isGeneralDieuwrigne=!!(leader.data?.member_id&&leader.data.member_id===m.id);if(m.isGeneralDieuwrigne){m.title=leader.data.title;m.leadershipMission=leader.data.mission;}});
   openMemberCardsPrint(members,'Cartes des membres actifs');
