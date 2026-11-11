@@ -644,15 +644,31 @@ async function setUser(u){
   show('logoutBtn');
 
   const r=await sb.from('profiles')
-    .select('role')
+    .select('role,full_name')
     .eq('id',u.id)
     .maybeSingle();
 
-  isAdmin=r.data?.role==='admin';
+  if(r.error){
+    console.error('Lecture du profil utilisateur impossible:',r.error);
+    alert("Impossible de vérifier les droits de ce compte. Déconnecte-toi puis réessaie. Si le problème persiste, contacte l'administrateur.");
+    await sb.auth.signOut();
+    return;
+  }
+  if(!r.data){
+    alert("Le profil de ce compte n'a pas été créé correctement. Contacte l'administrateur avant de réessayer.");
+    await sb.auth.signOut();
+    return;
+  }
+
+  isAdmin=r.data.role==='admin';
   setAdminUI();
   await loadPublicCommissionDirectory();
 
-  await sb.rpc('link_my_member_account');
+  const linkResult=await sb.rpc('link_my_member_account');
+  if(linkResult.error){
+    console.error('Liaison du compte à la fiche membre impossible:',linkResult.error);
+    alert("Ton compte est connecté, mais la liaison à ta fiche membre n'a pas abouti. Contacte l'administrateur.");
+  }
 
   const mr=await sb.from('members')
     .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission')
