@@ -1786,3 +1786,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .member-wave-image-link{width:min(300px,100%)}
 .finance-wave-panel{text-align:center;padding:22px;background:#fff;border:1px solid #dce8df;border-radius:16px}
 .finance-wave-panel .public-wave-link{display:inline-block;margin:8px auto}
+
+
+/* DJQ PORTAIL : rubriques publiques en préparation */
+.preview-note{max-width:1000px;margin:22px auto 0;padding:13px 16px;border-left:3px solid var(--djq-gold,#d8b653);border-radius:9px;background:#fffdf5;color:#6a5a2b;font-size:13px;line-height:1.6}
+#activites .grid,#galerie .grid,#contact .grid{align-items:stretch}
+#activites .card,#galerie .card,#contact .card{height:100%}
