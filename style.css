@@ -1867,3 +1867,23 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 #adminDashboard .dashboard-action small{font-size:12px;color:#6b7b70;line-height:1.35}
 #adminDashboard .dashboard-action>b{margin-left:auto;color:#08733a;font-size:23px}
 @media(max-width:650px){#adminDashboard .dashboard-actions{grid-template-columns:1fr}#adminDashboard .dashboard-action{min-height:74px;padding:12px}}
+
+
+/* Espaces membre et finances : hiérarchie visuelle, sans modifier les fonctions existantes. */
+.member-dashboard-group-title,
+.finance-dashboard-group-title{max-width:1100px;margin:30px auto 14px;padding:0 0 12px;border-bottom:1px solid #dce8df}
+.member-dashboard-group-title>span,
+.finance-dashboard-group-title>span{display:block;margin-bottom:5px;color:#08733a;font-size:10px;font-weight:850;letter-spacing:1.25px}
+.member-dashboard-group-title h3,
+.finance-dashboard-group-title h3{margin:0;color:#123b27;font-size:19px}
+.member-dashboard-group-title p,
+.finance-dashboard-group-title p{margin:6px 0 0;color:#68796f;font-size:13px;line-height:1.55}
+#memberDashboard .member-dashboard-card{margin-bottom:14px}
+#memberDashboard .member-notifications-card{margin-bottom:18px}
+#financeDashboard .finance-dashboard-group-title{margin-top:32px}
+#financeDashboard .finance-wave-panel{margin-top:0}
+#financeDashboard .finance-dashboard-table{margin-top:0}
+@media(max-width:650px){
+ .member-dashboard-group-title,.finance-dashboard-group-title{margin-top:24px}
+ .member-dashboard-group-title h3,.finance-dashboard-group-title h3{font-size:17px}
+}
