@@ -1612,9 +1612,9 @@ async function printAllMemberCards(){
   let commissions=[];
   if(ids.length){const cr=await sb.from('commissions').select('id,name,description,responsible_member_id,successor_member_id').in('id',ids);if(cr.error)throw cr.error;commissions=cr.data||[];}
   const byId=new Map(commissions.map(c=>[c.id,c]));
-  const leader=await sb.from('dahira_general_leadership').select('member_id').eq('id',1).maybeSingle();
+  const leader=await sb.from('dahira_general_leadership').select('member_id,title,mission').eq('id',1).maybeSingle();
   if(leader.error)throw leader.error;
-  members.forEach(m=>{m.commissions=byId.get(m.commission_id)||null;m.isGeneralDieuwrigne=!!(leader.data?.member_id&&leader.data.member_id===m.id);});
+  members.forEach(m=>{m.commissions=byId.get(m.commission_id)||null;m.isGeneralDieuwrigne=!!(leader.data?.member_id&&leader.data.member_id===m.id);if(m.isGeneralDieuwrigne){m.title=leader.data.title;m.leadershipMission=leader.data.mission;}});
   openMemberCardsPrint(members,'Cartes des membres actifs');
  }catch(err){alert('Impossible de préparer les cartes : '+(err?.message||String(err)));}
  finally{if(btn){btn.disabled=false;btn.textContent='🖨️ Imprimer toutes les cartes';}}
