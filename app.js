@@ -2242,15 +2242,14 @@ async function handlePortalAdminAction(button){
 async function loadPublicCommissions(){
   const select=$('requestCommission');
   if(!select||!sb)return;
-  const fallbackOptions=select.innerHTML;
+  select.disabled=true;
   const r=await sb.from('commissions')
     .select('id,name')
     .eq('is_active',true)
     .order('name');
   if(r.error){
-    // Conserver les 7 choix préchargés dans la page si l'API est temporairement indisponible.
-    if(!select.options.length||select.options.length<2)select.innerHTML=fallbackOptions;
-    msg('membershipRequestMessage','Liste préchargée affichée. Actualisation Supabase impossible : '+r.error.message);
+    select.innerHTML='<option value="">Commissions indisponibles — réessaie plus tard</option>';
+    msg('membershipRequestMessage','Impossible de charger les commissions : '+r.error.message);
     return;
   }
   const rows=r.data||[];
@@ -2259,6 +2258,7 @@ async function loadPublicCommissions(){
       rows.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
     select.disabled=false;
   }else{
+    select.innerHTML='<option value="">Aucune commission active disponible</option>';
     msg('membershipRequestMessage','Aucune commission active disponible dans la base.');
   }
 }
