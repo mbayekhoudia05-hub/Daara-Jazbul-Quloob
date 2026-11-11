@@ -692,6 +692,8 @@ async function loadConnectedMemberDashboard(member){
   const commissionDescription=$('myCommissionDescription');
   const commissionRole=$('myCommissionRole');
   let commission=null;
+  const generalLeadership=await sb.from('dahira_general_leadership').select('member_id').eq('id',1).maybeSingle();
+  const isGeneralDieuwrigne=!generalLeadership.error&&generalLeadership.data?.member_id===member.id;
   if(member.commission_id){
     const commissionResult=await sb.from('commissions')
       .select('id,name,description,responsible_member_id,successor_member_id')
@@ -705,9 +707,10 @@ async function loadConnectedMemberDashboard(member){
     }
   }
   if(commissionName)commissionName.textContent=commission?.name||'Aucune commission attribuée';
-  if(commissionDescription)commissionDescription.textContent=commission?.description||'Aucune description disponible pour le moment.';
+  if(commissionDescription)commissionDescription.textContent=isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(commission?.description||'Aucune description disponible pour le moment.');
   if(commissionRole){
     const roles=[];
+    if(isGeneralDieuwrigne)roles.push('Dieuwrigne Général du Dahira');
     if(commission?.responsible_member_id===member.id)roles.push('Dieuwrigne de commission');
     if(commission?.successor_member_id===member.id)roles.push('Adjoint Dieuwrigne / successeur');
     commissionRole.textContent=roles.length?roles.join(' · '):(commission?'Membre de la commission':'—');
@@ -1314,6 +1317,12 @@ async function addMember(e){
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();await loadCommissions();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
+const GENERAL_DIEUWRIGNE_MISSION='Coordonner l’ensemble du Dahira, superviser les commissions, veiller à l’application des décisions et assurer le suivi général des activités.';
+async function getGeneralLeadershipForMember(memberId){
+  const result=await sb.from('dahira_general_leadership').select('member_id,title').eq('id',1).maybeSingle();
+  if(result.error)throw result.error;
+  return !!(result.data?.member_id&&result.data.member_id===memberId);
+}
 async function showMyMemberCard(){
  const member=currentMemberRecord;
  if(!member||!currentUser||member.status!=='active'){
@@ -1332,14 +1341,16 @@ async function showMyMemberCard(){
    }
    commission=result.data||null;
  }
- showMemberCard({...member,commissions:commission});
+ const isGeneralDieuwrigne=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
+ showMemberCard({...member,commissions:commission,isGeneralDieuwrigne});
 }
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.commissions?.name||'Aucune commission';
- const role=m.commissions?.responsible_member_id===m.id?'Dieuwrigne':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'—'));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=m.commissions?.description||'—';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
+ const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1388,11 +1399,12 @@ function memberCardPrintMarkup(m){
  card.removeAttribute('id');
  card.classList.add('print-card-copy');
  const commission=m.commissions?.name||'Aucune commission';
- const role=m.commissions?.responsible_member_id===m.id?'Dieuwrigne':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'—'));
+ const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
+ const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
- const values=[m.member_number,m.phone||'Non renseigné',commission,role,m.commissions?.description||'—',formatMemberCardDate(m.membership_date),m.status==='active'?'ACTIF':'INACTIF'];
+ const values=[m.member_number,m.phone||'Non renseigné',commission,role,mission,formatMemberCardDate(m.membership_date),m.status==='active'?'ACTIF':'INACTIF'];
  card.querySelectorAll('.card-info p span').forEach((node,i)=>{if(values[i]!==undefined)node.textContent=values[i];});
  const qr=card.querySelector('.qrcode');
  qr.innerHTML='';
@@ -1598,7 +1610,9 @@ async function printAllMemberCards(){
   let commissions=[];
   if(ids.length){const cr=await sb.from('commissions').select('id,name,description,responsible_member_id,successor_member_id').in('id',ids);if(cr.error)throw cr.error;commissions=cr.data||[];}
   const byId=new Map(commissions.map(c=>[c.id,c]));
-  members.forEach(m=>m.commissions=byId.get(m.commission_id)||null);
+  const leader=await sb.from('dahira_general_leadership').select('member_id').eq('id',1).maybeSingle();
+  if(leader.error)throw leader.error;
+  members.forEach(m=>{m.commissions=byId.get(m.commission_id)||null;m.isGeneralDieuwrigne=!!(leader.data?.member_id&&leader.data.member_id===m.id);});
   openMemberCardsPrint(members,'Cartes des membres actifs');
  }catch(err){alert('Impossible de préparer les cartes : '+(err?.message||String(err)));}
  finally{if(btn){btn.disabled=false;btn.textContent='🖨️ Imprimer toutes les cartes';}}
