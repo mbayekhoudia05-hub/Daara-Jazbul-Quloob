@@ -2051,3 +2051,11 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 @media(max-width:800px){
   body.sidebar-mobile-open{overflow:hidden}
 }
+
+
+/* Direction générale du Dahira : identité verte existante, sans modifier les couleurs globales. */
+.general-leader-card{max-width:760px;margin:0 auto 30px;padding:26px 30px;border:1px solid rgba(13,105,54,.22);border-left:5px solid var(--primary,#08733b);border-radius:16px;background:linear-gradient(135deg,rgba(12,105,54,.09),rgba(12,105,54,.025));text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.045)}
+.general-leader-label{display:block;font-size:.76rem;font-weight:800;letter-spacing:.12em;color:var(--primary,#08733b);margin-bottom:10px}
+.general-leader-card strong{display:block;font-size:1.35rem;color:var(--text,#183b29)}
+.general-leader-card p{margin:9px 0 0;color:var(--muted,#66756b);font-size:.92rem}
+.commission-directory-heading{margin-top:28px}
