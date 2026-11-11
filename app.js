@@ -1639,6 +1639,7 @@ function startEditMember(m){
  if($('memberCommission'))$('memberCommission').value=m.commission_id||'';
  if($('memberFunctionTitle'))$('memberFunctionTitle').value=m.function_title||'';
  if($('memberMission'))$('memberMission').value=m.mission||'';
+ if($('memberStatus')){$('memberStatus').value=m.status||'active';$('memberStatus').closest('label').classList.remove('hidden');}
  $('memberPhoto').value='';
  if(m.photo_url){$('photoPreview').src=m.photo_url;show('photoPreviewWrap');$('photoPreviewName').textContent='Photo actuelle — choisir un nouveau fichier pour la remplacer.';}
  const btn=$('memberForm').querySelector('button.primary');btn.textContent='Enregistrer les modifications';
@@ -1648,7 +1649,7 @@ function startEditMember(m){
  $('members').scrollIntoView({behavior:'smooth'});
 }
 function cancelEditMember(){
- editingMemberId=null;$('memberForm').reset();$('memberForm').querySelector('h3').textContent='Ajouter un membre';$('memberForm').querySelector('button.primary').textContent='Créer le membre';hide('photoPreviewWrap');msg('memberMessage','');
+ editingMemberId=null;$('memberForm').reset();$('memberForm').querySelector('h3').textContent='Ajouter un membre';$('memberForm').querySelector('button.primary').textContent='Créer le membre';if($('memberStatus')){$('memberStatus').value='active';$('memberStatus').closest('label').classList.add('hidden');}hide('photoPreviewWrap');msg('memberMessage','');
  const c=$('cancelMemberEdit');if(c)c.remove();
 }
 async function editMember(id){
@@ -1662,7 +1663,7 @@ async function updateExistingMember(e){
  const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null};
+ const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null,status:$('memberStatus')?.value==='inactive'?'inactive':'active'};
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
