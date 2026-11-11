@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="apple-touch-icon" href="./logo.jpeg"><meta name="google-site-verification" content="cWRouP63b3VBqGXAhb5u46tnYCMe9pPZbg93cDHzLKk" /><title>Dahira Jazbul Quloub — Cellule Dakar</title><meta name="description" content="Site officiel du Dahira Jazbul Quloub — Cellule Dakar : informations, chartes, annonces et espace des membres."><meta name="robots" content="index, follow"><link rel="canonical" href="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><meta property="og:type" content="website"><meta property="og:title" content="Dahira Jazbul Quloub — Cellule Dakar"><meta property="og:description" content="Informations, chartes, annonces et espace des membres du Dahira Jazbul Quloub — Cellule Dakar."><meta property="og:url" content="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><link rel="stylesheet" href="style.css?v=20261111-navigation-v2"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261111-navigation-v2"></script></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="apple-touch-icon" href="./logo.jpeg"><meta name="google-site-verification" content="cWRouP63b3VBqGXAhb5u46tnYCMe9pPZbg93cDHzLKk" /><title>Dahira Jazbul Quloub — Cellule Dakar</title><meta name="description" content="Site officiel du Dahira Jazbul Quloub — Cellule Dakar : informations, chartes, annonces et espace des membres."><meta name="robots" content="index, follow"><link rel="canonical" href="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><meta property="og:type" content="website"><meta property="og:title" content="Dahira Jazbul Quloub — Cellule Dakar"><meta property="og:description" content="Informations, chartes, annonces et espace des membres du Dahira Jazbul Quloub — Cellule Dakar."><meta property="og:url" content="https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/"><link rel="stylesheet" href="style.css?v=20261111-dashboard-v3"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="config.js"></script><script defer src="app.js?v=20261111-dashboard-v3"></script></head><body>
 <aside id="appSidebar" class="app-sidebar" aria-label="Navigation principale">
   <a class="brand" href="#accueil"><img src="logo.jpeg" alt="Logo du Daara"><span><b>DAARA JAZBUL QULUB</b><small>Plateforme du Dahira</small></span></a>
   <div class="sidebar-caption">MENU PRINCIPAL</div>
@@ -164,7 +164,30 @@
   </form>
 </section>
 
-<section id="adminDashboard" class="section hidden"><div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Tableau de bord</h2><p>Bienvenue dans la gestion de votre Dahira. Choisissez une rubrique dans le menu à gauche.</p></div><div class="stats contribution-stats"><div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div><div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div><div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div><div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div></div></section>
+<section id="adminDashboard" class="section hidden">
+  <div class="head">
+    <span>ESPACE ADMINISTRATEUR</span>
+    <h2>Tableau de bord</h2>
+    <p>Retrouvez les indicateurs essentiels et accédez directement aux outils de gestion du Dahira.</p>
+  </div>
+  <div class="stats contribution-stats">
+    <div class="stat"><strong id="dashMembers">0</strong><span>Membres actifs</span></div>
+    <div class="stat"><strong id="dashContributions">0 FCFA</strong><span>Encaissé ce mois</span></div>
+    <div class="stat"><strong id="dashPending">0</strong><span>Demandes à traiter</span></div>
+    <div class="stat"><strong id="dashPayments">0</strong><span>Paiements en attente</span></div>
+  </div>
+  <div class="dashboard-block">
+    <div class="section-inline-heading"><h3>Accès rapides</h3><span class="dashboard-hint">Gestion quotidienne</span></div>
+    <div class="dashboard-actions">
+      <a href="#members" class="dashboard-action" data-admin-target="members"><span class="dashboard-action-icon">♙</span><span><strong>Gérer les membres</strong><small>Fiches, photos et cartes de membre</small></span><b>›</b></a>
+      <a href="#membershipRequests" class="dashboard-action" data-admin-target="membershipRequests"><span class="dashboard-action-icon">✉</span><span><strong>Demandes d’adhésion</strong><small>Consulter les nouvelles demandes</small></span><b>›</b></a>
+      <a href="#financeDashboard" class="dashboard-action" data-admin-target="financeDashboard"><span class="dashboard-action-icon">₣</span><span><strong>Suivi financier</strong><small>Cotisations et situation des paiements</small></span><b>›</b></a>
+      <a href="#adminEvents" class="dashboard-action" data-admin-target="adminEvents"><span class="dashboard-action-icon">▦</span><span><strong>Gérer l’agenda</strong><small>Créer et publier les activités</small></span><b>›</b></a>
+      <a href="#adminGallery" class="dashboard-action" data-admin-target="adminGallery"><span class="dashboard-action-icon">▧</span><span><strong>Gérer la galerie</strong><small>Ajouter et publier des photos</small></span><b>›</b></a>
+      <a href="#admin" class="dashboard-action" data-admin-target="admin"><span class="dashboard-action-icon">⚙</span><span><strong>Gérer les contenus</strong><small>Ressources, annonces et chartes</small></span><b>›</b></a>
+    </div>
+  </div>
+</section>
 
 <section id="adminEvents" class="section hidden">
   <div class="head"><span>ESPACE ADMINISTRATEUR</span><h2>Agenda et activités</h2><p>Crée, publie ou retire les événements du calendrier public.</p></div>
