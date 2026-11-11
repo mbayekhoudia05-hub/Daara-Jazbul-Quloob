@@ -1792,3 +1792,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .preview-note{max-width:1000px;margin:22px auto 0;padding:13px 16px;border-left:3px solid var(--djq-gold,#d8b653);border-radius:9px;background:#fffdf5;color:#6a5a2b;font-size:13px;line-height:1.6}
 #activites .grid,#galerie .grid,#contact .grid{align-items:stretch}
 #activites .card,#galerie .card,#contact .card{height:100%}
+
+
+/* Annuaire public des commissions — lecture seule */
+#publicCommissions .public-commission-card{min-height:190px;padding:22px;background:#fff;border:1px solid var(--djq-line,#e3eae4);border-radius:16px;box-shadow:0 12px 30px rgba(8,55,33,.06)}
+#publicCommissions .public-commission-description{margin:16px 0 0;color:var(--djq-muted,#68796f);line-height:1.7}
+#publicCommissions .commission-card-heading{margin-bottom:0}
+#publicCommissions .commission-status.is-active{display:inline-block}
+@media(max-width:650px){#publicCommissions .public-commission-card{min-height:0}}
