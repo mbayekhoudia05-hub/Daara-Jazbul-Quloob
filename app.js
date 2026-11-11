@@ -707,7 +707,11 @@ async function loadConnectedMemberDashboard(member){
     }
   }
   if(commissionName)commissionName.textContent=isGeneralDieuwrigne?'Direction générale':(commission?.name||'Aucune commission attribuée');
-  if(commissionDescription)commissionDescription.textContent=isGeneralDieuwrigne?(generalLeadership.leadershipMission||generalLeadership.mission||GENERAL_DIEUWRIGNE_MISSION):((member.mission||'').trim()||(commission?.description||'Aucune description disponible pour le moment.'));
+  if(commissionDescription){
+    commissionDescription.textContent=isGeneralDieuwrigne?(generalLeadership.leadershipMission||generalLeadership.mission||GENERAL_DIEUWRIGNE_MISSION):((member.mission||'').trim()||(commission?.description||'Aucune description disponible pour le moment.'));
+    commissionDescription.style.fontSize=isGeneralDieuwrigne?'8px':'';
+    commissionDescription.style.lineHeight=isGeneralDieuwrigne?'1.15':'';
+  }
   if(commissionRole){
     const roles=[];
     if(isGeneralDieuwrigne)roles.push(generalLeadership.title||'Dieuwrigne Général du Dahira');
@@ -1351,7 +1355,7 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1410,6 +1414,8 @@ function memberCardPrintMarkup(m){
  Object.entries(values).forEach(([id,value])=>{const node=card.querySelector('#'+id);if(node)node.textContent=value;});
  const commissionLine=card.querySelector('#cardCommission')?.closest('p');
  if(commissionLine)commissionLine.style.display=m.isGeneralDieuwrigne?'none':'';
+ const missionText=card.querySelector('#cardCommissionDescription');
+ if(missionText){missionText.style.fontSize=m.isGeneralDieuwrigne?'8px':'';missionText.style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';}
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
  const qr=card.querySelector('.qrcode');
