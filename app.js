@@ -1317,7 +1317,7 @@ async function addMember(e){
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();await loadCommissions();
 }
 function previewMemberPhoto(e){const f=e.target.files[0];if(!f)return;const img=$('photoPreview');img.src=URL.createObjectURL(f);show('photoPreviewWrap');$('photoPreviewName').textContent=f.name}
-const GENERAL_DIEUWRIGNE_MISSION='Coordonner l’ensemble du Dahira, superviser les commissions, veiller à l’application des décisions et assurer le suivi général des activités.';
+const GENERAL_DIEUWRIGNE_MISSION='Assurer la direction et la coordination générale du Dahira. Superviser les différentes commissions, veiller à leur bon fonctionnement, coordonner leurs responsables, suivre l’exécution des décisions et orienter les activités vers la réalisation des objectifs du Dahira, dans un esprit d’unité, de discipline et de solidarité.';
 async function getGeneralLeadershipForMember(memberId){
   const result=await sb.from('dahira_general_leadership').select('member_id,title').eq('id',1).maybeSingle();
   if(result.error)throw result.error;
@@ -2596,6 +2596,10 @@ document.addEventListener('click', async function(e) {
           .maybeSingle();
         r.data.commissions=commissionResult.data||null;
       }
+      r.data.isGeneralDieuwrigne=await getGeneralLeadershipForMember(r.data.id).catch(error=>{
+        console.warn('Lecture direction générale impossible',error);
+        return false;
+      });
       showMemberCard(r.data);
       break;
     }
