@@ -156,23 +156,50 @@ function contributionCategoryLabel(v){
 
 async function auth(e){
   e.preventDefault();
-  const email=$('email').value;
+  const email=$('email').value.trim().toLowerCase();
   const password=$('password').value;
-
-  const r=signupMode
-    ? await sb.auth.signUp({email,password,options:{emailRedirectTo:window.location.href}})
-    : await sb.auth.signInWithPassword({email,password});
-
-  if(r.error){
-    msg('authMessage',r.error.message);
+  const submit=$('authSubmit');
+  if(!sb){
+    msg('authMessage',"Le service de connexion n'est pas encore prêt. Actualise la page puis réessaie.");
     return;
   }
 
-  if(signupMode){
-    msg('authMessage','Compte créé. Vérifie ta boîte e-mail et confirme ton adresse. Utilise exactement la même adresse que dans ta demande d’adhésion. Après validation par le Dahira, reconnecte-toi pour accéder à ton espace membre.',true);
-  }else{
-    msg('authMessage','Connexion réussie.',true);
-    setTimeout(closeAuth,500);
+  const previousLabel=submit.textContent;
+  submit.disabled=true;
+  submit.textContent=signupMode?'Création en cours…':'Connexion…';
+  try{
+    const redirectTo=window.location.origin+window.location.pathname;
+    const result=signupMode
+      ? await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}})
+      : await sb.auth.signInWithPassword({email,password});
+
+    if(result.error) throw result.error;
+
+    if(signupMode){
+      msg('authMessage',
+        result.data?.session
+          ? "Compte créé et connecté. Le Dahira va associer ton compte à ta fiche membre."
+          : "Demande de création envoyée. Vérifie ta boîte e-mail (et les courriers indésirables), puis confirme ton adresse. Utilise exactement l'adresse e-mail enregistrée sur ta fiche membre.",
+        true
+      );
+    }else{
+      msg('authMessage','Connexion réussie. Chargement de ton espace…',true);
+      setTimeout(closeAuth,700);
+    }
+  }catch(error){
+    console.error('Erreur Auth Supabase:',error);
+    const raw=error?.message||"Une erreur inconnue est survenue.";
+    const lower=raw.toLowerCase();
+    let message=raw;
+    if(lower.includes('invalid login credentials')) message="Adresse e-mail ou mot de passe incorrect.";
+    else if(lower.includes('email not confirmed')) message="Ton adresse e-mail n'est pas encore confirmée. Ouvre le message reçu de Supabase puis réessaie.";
+    else if(lower.includes('already registered')||lower.includes('user already registered')) message="Un compte existe déjà avec cette adresse. Utilise « J’ai déjà un compte » pour te connecter.";
+    else if(lower.includes('password should be at least')) message="Le mot de passe doit contenir au moins 6 caractères.";
+    else if(lower.includes('redirect')||lower.includes('not allowed')) message="L'adresse de retour après confirmation n'est pas autorisée dans Supabase. Il faut ajouter l'adresse du site dans les URL de redirection autorisées.";
+    msg('authMessage',message);
+  }finally{
+    submit.disabled=false;
+    submit.textContent=previousLabel;
   }
 }
 
@@ -583,7 +610,20 @@ if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
   $('memberReportForm').onsubmit=submitMemberReport;
 }
- sb.auth.onAuthStateChange((event,session)=>{if(event!=='SIGNED_IN'&&event!=='SIGNED_OUT')return;setTimeout(()=>{void setUser(session?.user||null)},0)});const s=await sb.auth.getSession();if(s.data.session)await setUser(s.data.session.user);load();await handlePublicMember();
+ sb.auth.onAuthStateChange((event,session)=>{
+  if(event!=='SIGNED_IN'&&event!=='SIGNED_OUT')return;
+  setTimeout(()=>{
+    void setUser(session?.user||null).catch(error=>{
+      console.error('Erreur de chargement après authentification:',error);
+      msg('authMessage',"Ton compte est connecté, mais le chargement de ton profil a échoué. Contacte l'administrateur.");
+    });
+  },0);
+});
+const sessionResult=await sb.auth.getSession();
+if(sessionResult.error) throw sessionResult.error;
+if(sessionResult.data.session) await setUser(sessionResult.data.session.user);
+load();
+await handlePublicMember();
 }
 async function setUser(u){
   currentUser=u;
