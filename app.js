@@ -584,6 +584,8 @@ async function init(){
 if(contributionMonthInput){
   const d=new Date();
   contributionMonthInput.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const dateInput=$('contributionPaymentDate');
+  if(dateInput)dateInput.value=new Date().toISOString().slice(0,10);
 }
  
 if($("unpaidMonth")){
@@ -797,7 +799,7 @@ async function loadConnectedMemberDashboard(member){
 
   // Cotisations personnelles
   const cr=await sb.from('contributions')
-    .select('id,amount,payment_month,payment_method,category,status,paid_at,created_at')
+    .select('id,amount,payment_month,payment_date,payment_method,category,status,paid_at,created_at')
     .eq('member_id',member.id)
     .order('payment_month',{ascending:false});
 
@@ -818,7 +820,7 @@ async function loadConnectedMemberDashboard(member){
         <td>${esc(formatMoney(x.amount))}</td>
         <td>${esc(contributionMethodLabel(x.payment_method))}</td>
         <td>${x.status==='paid'?'Payé':'En attente'}</td>
-        <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
+        <td>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</td>
       </tr>
     `).join(''):'<tr><td colspan="6">Aucune cotisation enregistrée.</td></tr>';
   }
@@ -967,7 +969,7 @@ async function loadContributions(){
   await loadContributionMembers();
 
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
 
   if(r.error){
@@ -1013,7 +1015,7 @@ function renderContributionRows(sourceRows){
         <td><strong>${esc(formatMoney(x.amount))}</strong></td>
         <td>${esc(contributionMethodLabel(x.payment_method))}</td>
         <td>${esc(x.reference||'—')}</td>
-        <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
+        <td>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</td>
         <td>
           <button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button>
           <button class="table-btn danger-btn" data-action="delete-contribution" data-id="${esc(x.id)}">Supprimer</button>
@@ -1028,25 +1030,26 @@ async function addContribution(e){
 
   const memberId=$('contributionMember').value;
   const paymentMonth=contributionMonthDate();
+  const paymentDate=$('contributionPaymentDate')?.value||'';
   const amount=Number($('contributionAmount').value);
   const method=$('contributionMethod').value;
   const category=$('contributionCategory').value;
   const reference=$('contributionReference').value.trim()||null;
   const note=$('contributionNote').value.trim()||null;
 
-  if(!memberId||!paymentMonth||!amount||amount<=0){
-    msg('contributionMessage','Sélectionne le membre, le mois et un montant valide.');
+  if(!memberId||!paymentMonth||!paymentDate||!amount||amount<=0){
+    msg('contributionMessage','Sélectionne le membre, le mois, le jour du versement et un montant valide.');
     return;
   }
 
   // Les paiements digitaux doivent rester en attente jusqu'à vérification.
   const r=method==='especes'
     ? await sb.from('contributions').insert({
-        member_id:memberId,amount,payment_month:paymentMonth,
+        member_id:memberId,amount,payment_month:paymentMonth,payment_date:paymentDate,
         payment_method:method,category,status:'paid',reference,note
       })
     : await sb.from('payment_transactions').insert({
-        member_id:memberId,amount,payment_month:paymentMonth,
+        member_id:memberId,amount,payment_month:paymentMonth,payment_date:paymentDate,
         payment_method:method,category,status:'pending',reference,note
       });
 
@@ -1061,6 +1064,8 @@ async function addContribution(e){
   const selectedMonth=$('contributionMonth').value;
   e.target.reset();
   $('contributionMonth').value=selectedMonth;
+  const dateInput=$('contributionPaymentDate');
+  if(dateInput)dateInput.value=new Date().toISOString().slice(0,10);
   await loadContributions();
   await loadPaymentTransactions();
   await loadFinanceDashboard();
@@ -1104,7 +1109,7 @@ async function loadFinanceDashboard(){
   if(!sb||!isAdmin)return;
 
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .eq('status','paid')
     .order('paid_at',{ascending:false});
 
@@ -1157,7 +1162,7 @@ async function renderFinanceRows(rows){
     <td>${esc(contributionCategoryLabel(x.category))}</td>
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
-    <td>${esc(new Date(x.paid_at).toLocaleDateString('fr-FR'))}</td>
+    <td>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</td>
     <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Imprimer</button></td>
   </tr>`).join('') : '<tr><td colspan="7">Aucune cotisation pour ces critères.</td></tr>';
 }
@@ -1165,7 +1170,7 @@ async function renderFinanceRows(rows){
 async function exportFinanceCSV(){
   if(!sb||!isAdmin)return;
   const r=await sb.from('contributions')
-    .select('member_id,amount,payment_month,payment_method,category,status,reference,paid_at,members(member_number,first_name,last_name)')
+    .select('member_id,amount,payment_month,payment_date,payment_method,category,status,reference,paid_at,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
   if(r.error){alert(r.error.message);return;}
 
@@ -1190,7 +1195,7 @@ async function exportFinanceCSV(){
       contributionMethodLabel(x.payment_method),
       x.status||'',
       x.reference||'',
-      x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):''
+      x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):''
     ].map(csvCell).join(';'))
   ];
 
@@ -1307,7 +1312,7 @@ function printContributionReceipt(x){
   <div class="line"><b>Mode</b><span>${esc(contributionMethodLabel(x.payment_method))}</span></div>
   <div class="line"><b>Référence</b><span>${esc(x.reference||'—')}</span></div>
   <div class="amount">Montant : ${esc(formatMoney(x.amount))}</div>
-  <div class="line"><b>Date du paiement</b><span>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</span></div>
+  <div class="line"><b>Date du versement</b><span>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</span></div>
   <div class="footer">Document généré depuis l'espace administrateur du Daara.</div>
   </div><script>window.onload=()=>{window.print();}</script></body></html>`;
 
@@ -1736,7 +1741,7 @@ async function updateExistingMember(e){
 async function viewMemberContributions(member){
   if(!sb||!isAdmin)return;
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .eq('member_id',member.id)
     .eq('status','paid')
     .order('payment_month',{ascending:false});
@@ -1755,7 +1760,7 @@ async function viewMemberContributions(member){
     <td>${esc(contributionCategoryLabel(x.category))}</td>
     <td><strong>${esc(formatMoney(x.amount))}</strong></td>
     <td>${esc(contributionMethodLabel(x.payment_method))}</td>
-    <td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('fr-FR'):'—')}</td>
+    <td>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</td>
     <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button></td>
   </tr>`).join('') : '<tr><td colspan="6">Aucune cotisation enregistrée pour ce membre.</td></tr>';
 
