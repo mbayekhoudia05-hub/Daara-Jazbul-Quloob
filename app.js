@@ -1266,7 +1266,7 @@ async function loadMembers(){
  try{
   // Charger les membres sans jointure : une relation PostgREST défectueuse ne doit pas masquer toute la liste.
   const r=await sb.from('members')
-   .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,created_at')
+   .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission,created_at')
    .order('last_name',{ascending:true})
    .order('first_name',{ascending:true});
   if(r.error){
@@ -1311,7 +1311,7 @@ async function addMember(e){
  e.preventDefault();if(!isAdmin)return;if(editingMemberId)return updateExistingMember(e);let photoUrl=null;const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null}).select('id,member_number').single();
+ const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();await loadCommissions();
@@ -1348,8 +1348,9 @@ function formatMemberCardDate(value){if(!value)return '—';const s=String(value
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
- const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
- const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
+ const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
+ const role=(m.function_title||'').trim()||defaultRole;
+ const mission=(m.mission||'').trim()||(m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.'));
  show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
@@ -1399,8 +1400,9 @@ function memberCardPrintMarkup(m){
  card.removeAttribute('id');
  card.classList.add('print-card-copy');
  const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
- const role=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
- const mission=m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.');
+ const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
+ const role=(m.function_title||'').trim()||defaultRole;
+ const mission=(m.mission||'').trim()||(m.isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.'));
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
@@ -1604,7 +1606,7 @@ async function printAllMemberCards(){
  if(!isAdmin||!sb)return;
  const btn=$('printAllMemberCardsBtn');if(btn){btn.disabled=true;btn.textContent='Préparation des cartes…';}
  try{
-  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id').eq('status','active').order('member_number',{ascending:true});
+  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id,function_title,mission').eq('status','active').order('member_number',{ascending:true});
   if(mr.error)throw mr.error;
   const members=mr.data||[],ids=[...new Set(members.map(m=>m.commission_id).filter(Boolean))];
   let commissions=[];
@@ -1631,6 +1633,8 @@ function startEditMember(m){
  $('memberPhone').value=m.phone||'';
  $('memberEmail').value=m.email||'';
  if($('memberCommission'))$('memberCommission').value=m.commission_id||'';
+ if($('memberFunctionTitle'))$('memberFunctionTitle').value=m.function_title||'';
+ if($('memberMission'))$('memberMission').value=m.mission||'';
  $('memberPhoto').value='';
  if(m.photo_url){$('photoPreview').src=m.photo_url;show('photoPreviewWrap');$('photoPreviewName').textContent='Photo actuelle — choisir un nouveau fichier pour la remplacer.';}
  const btn=$('memberForm').querySelector('button.primary');btn.textContent='Enregistrer les modifications';
@@ -1645,7 +1649,7 @@ function cancelEditMember(){
 }
 async function editMember(id){
  if(!sb||!isAdmin)return;
- const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id').eq('id',id).single();
+ const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission').eq('id',id).single();
  if(r.error){msg('memberMessage',r.error.message);return}
  startEditMember(r.data);
 }
@@ -1654,7 +1658,7 @@ async function updateExistingMember(e){
  const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null};
+ const payload={first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null};
  const r=await sb.from('members').update(payload).eq('id',editingMemberId).select('member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+up.error.message);return}const url=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:url}).eq('id',editingMemberId);if(ur.error){msg('memberMessage','Membre modifié, mais photo non enregistrée : '+ur.error.message);return}}
@@ -2076,6 +2080,9 @@ async function loadMembershipRequests() {
 
   const requests = r.data || [];
   void updatePendingMembershipCount();
+  const commissionsResult=await sb.from('commissions').select('id,name').eq('is_active',true).order('name');
+  const commissionOptions=(selected)=>'<option value="">Aucune commission</option>'+
+    (commissionsResult.data||[]).map(c=>'<option value="'+esc(c.id)+'" '+(c.id===selected?'selected':'')+'>'+esc(c.name)+'</option>').join('');
 
   box.innerHTML = requests.length
     ? requests.map(x => `
@@ -2083,7 +2090,9 @@ async function loadMembershipRequests() {
           <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
           <td>${esc(x.phone)}</td>
           <td>${esc(x.email || '—')}</td>
-          <td>${esc(x.commissions?.name || '—')}</td>
+          <td>${x.status === 'pending'
+            ? '<select class="request-commission-select" data-request-commission="'+esc(x.id)+'">'+commissionOptions(x.commission_id)+'</select><button class="table-btn" data-action="update-request-commission" data-id="'+esc(x.id)+'">Enregistrer</button>'
+            : esc(x.commissions?.name || '—')}</td>
           <td>${esc(x.status === 'pending' ? 'En attente' :
                      x.status === 'approved' ? 'Approuvée' : 'Refusée')}</td>
           <td>
@@ -2424,6 +2433,21 @@ async function submitMembershipRequest(e) {
     button.textContent = 'Envoyer ma demande';
   }
 }
+async function updateMembershipRequestCommission(id){
+  if(!sb||!isAdmin)return;
+  const select=[...document.querySelectorAll('[data-request-commission]')].find(el=>el.dataset.requestCommission===id);
+  if(!select){alert('Sélecteur de commission introuvable.');return;}
+  const commissionId=select.value||null;
+  if(commissionId){
+    const valid=await sb.from('commissions').select('id').eq('id',commissionId).eq('is_active',true).maybeSingle();
+    if(valid.error||!valid.data){alert('La commission choisie est introuvable ou inactive.');return;}
+  }
+  const saved=await sb.from('membership_requests').update({commission_id:commissionId}).eq('id',id).eq('status','pending').select('id').maybeSingle();
+  if(saved.error||!saved.data){alert('Modification impossible : '+(saved.error?.message||'la demande n’est plus en attente.'));return;}
+  alert('Commission de la demande mise à jour.');
+  await loadMembershipRequests();
+}
+
 async function approveMembershipRequest(id) {
   if (!sb || !isAdmin) {
     alert("Réservé à l'administrateur.");
@@ -2586,7 +2610,7 @@ document.addEventListener('click', async function(e) {
     case 'delete-member': deleteMemberPermanently(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
-        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission')
         .eq('id', id).maybeSingle();
       if (r.error || !r.data) { alert("Membre introuvable."); return; }
       if(r.data.commission_id){
@@ -2628,6 +2652,7 @@ document.addEventListener('click', async function(e) {
     case 'update-commission-description': updateCommissionDescription(id); break;
     case 'assign-commission': assignCommission(id); break;
     case 'toggle-commission': toggleCommission(id,button.dataset.active==='true'); break;
+    case 'update-request-commission': updateMembershipRequestCommission(id); break;
     case 'approve-request': approveMembershipRequest(id); break;
     case 'reject-request': rejectMembershipRequest(id); break;
   }
