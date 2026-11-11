@@ -1940,3 +1940,6 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
   .section input,.section select,.section textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
   .table-btn{padding:7px 9px}
 }
+
+/* Accessible labels for authentication and member support forms */
+.modalbox label{display:grid;gap:6px;color:#365343;font-size:14px;font-weight:700}
