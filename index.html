@@ -285,7 +285,12 @@
     <label>Membre désigné
       <select id="generalLeaderMember" required><option value="">Chargement des membres actifs…</option></select>
     </label>
-    <button class="primary" type="submit">Enregistrer le Dieuwrigne Général</button>
+    <label for="generalLeaderTitle">Fonction affichée sur sa carte</label>
+    <input id="generalLeaderTitle" type="text" maxlength="120" value="Dieuwrigne Général du Dahira" required>
+    <label for="generalLeaderMission">Mission affichée sur sa carte</label>
+    <textarea id="generalLeaderMission" rows="4" maxlength="1000" required placeholder="Définir les responsabilités du Dieuwrigne Général"></textarea>
+    <small>Ces deux informations seront reprises automatiquement sur la carte du Dieuwrigne Général et sur sa page de vérification QR.</small>
+    <button class="primary" type="submit">Enregistrer la direction et la carte</button>
     <p id="generalLeaderMessage" role="status" aria-live="polite"></p>
   </form>
   <div class="admin-workspace-group-title"><span>ANNUAIRE DES COMMISSIONS</span><h3>Commissions et responsables</h3><p>Consultez les commissions existantes et leur organisation.</p></div><div id="commissionRows" class="commissions-grid"><div class="loading">Chargement des commissions…</div></div>
