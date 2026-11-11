@@ -2194,7 +2194,7 @@ async function loadPublicCommissionDirectory(){
   if(!box||!sb)return;
   box.innerHTML='<div class="loading">Chargement des commissions…</div>';
   const r=await sb.from('commissions')
-    .select('id,name,description,is_active')
+    .select('id,name,description,is_active,responsible_member_id,successor_member_id')
     .eq('is_active',true)
     .order('name');
   if(r.error){
@@ -2211,10 +2211,35 @@ async function loadPublicCommissionDirectory(){
     if(bi<0)return -1;
     return ai-bi;
   });
+
+  // Charger uniquement les personnes désignées comme responsables, sans exposer l'annuaire complet.
+  const leaderIds=[...new Set(rows.flatMap(c=>[c.responsible_member_id,c.successor_member_id]).filter(Boolean))];
+  let leadersById=new Map();
+  if(leaderIds.length){
+    const leadersResult=await sb.from('members')
+      .select('id,first_name,last_name,status')
+      .in('id',leaderIds)
+      .eq('status','active');
+    if(leadersResult.error){
+      console.warn('Noms des responsables des commissions indisponibles :',leadersResult.error.message);
+    }else{
+      leadersById=new Map((leadersResult.data||[]).map(m=>[m.id,m]));
+    }
+  }
+
+  const leaderName=(id)=>{
+    if(!id)return 'Non désigné';
+    const member=leadersById.get(id);
+    return member?esc((member.first_name||'')+' '+(member.last_name||'')).trim():'Non renseigné';
+  };
   box.innerHTML=rows.length?rows.map((c,index)=>
     '<article class="commission-card public-commission-card">'+
       '<div class="commission-card-heading"><span class="commission-index">'+String(index+1).padStart(2,'0')+'</span><div><h3>'+esc(c.name)+'</h3><span class="commission-status is-active">Commission active</span></div></div>'+
       '<p class="public-commission-description">'+esc(c.description||'La mission de cette commission sera précisée par l’administration.')+'</p>'+
+      '<div class="public-commission-leadership">'+
+        '<div><span>Dieuwrigne</span><strong>'+leaderName(c.responsible_member_id)+'</strong></div>'+
+        '<div><span>Adjoint Dieuwrigne</span><strong>'+leaderName(c.successor_member_id)+'</strong></div>'+
+      '</div>'+
     '</article>'
   ).join(''):'<div class="loading">Aucune commission active publiée pour le moment.</div>';
 }
