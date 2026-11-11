@@ -2276,6 +2276,8 @@ async function loadGeneralLeadership(){
     return;
   }
   if(publicName)publicName.textContent=result.data?.display_name||'Fonction à désigner';
+  const publicMission=$('generalLeaderPublicMission');
+  if(publicMission)publicMission.textContent=result.data?.mission||GENERAL_DIEUWRIGNE_MISSION;
   if(isAdmin){
     if($('generalLeaderTitle'))$('generalLeaderTitle').value=result.data?.title||'Dieuwrigne Général du Dahira';
     if($('generalLeaderMission'))$('generalLeaderMission').value=result.data?.mission||GENERAL_DIEUWRIGNE_MISSION;
