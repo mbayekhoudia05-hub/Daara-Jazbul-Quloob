@@ -2021,3 +2021,28 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
   .member-quick-nav{margin:14px -2px 20px;padding:8px;gap:6px}
   .member-quick-nav a{min-height:36px;padding:7px 11px;font-size:.82rem}
 }
+
+
+/* Lien d'accès direct au contenu principal */
+.skip-to-content{
+  position:fixed;
+  z-index:10000;
+  top:12px;
+  left:12px;
+  transform:translateY(-160%);
+  padding:11px 16px;
+  border:2px solid var(--primary,#176b43);
+  border-radius:10px;
+  background:#fff;
+  color:var(--primary,#176b43);
+  font-weight:700;
+  text-decoration:none;
+  box-shadow:0 5px 20px rgba(0,0,0,.16);
+}
+.skip-to-content:focus{
+  transform:translateY(0);
+  outline:3px solid rgba(31,112,69,.28);
+  outline-offset:3px;
+}
+#mainContent{scroll-margin-top:16px}
+#mainContent:focus{outline:none}
