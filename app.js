@@ -16,6 +16,7 @@ function setAdminUI(){
   navs.forEach(hide);
   if(isAdmin){
     navs.forEach(show);
+    show('adminNavigationGroup');
     show('adminDashboard');
     updateAdminDashboard();
   }
