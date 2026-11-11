@@ -545,6 +545,7 @@ async function setUser(u){
     currentMemberRecord=null;
     isAdmin=false;
     setAdminUI();
+    await loadPublicCommissionDirectory();
     hide('logoutBtn');
     show('loginBtn');
     hide('memberDashboard');
@@ -562,6 +563,7 @@ async function setUser(u){
 
   isAdmin=r.data?.role==='admin';
   setAdminUI();
+  await loadPublicCommissionDirectory();
 
   await sb.rpc('link_my_member_account');
 
