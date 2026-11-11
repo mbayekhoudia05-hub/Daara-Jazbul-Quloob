@@ -49,7 +49,7 @@
 </aside>
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 <header class="topbar">
-  <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Masquer le menu" aria-expanded="true">☰</button>
+  <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Masquer le menu" aria-controls="appSidebar" aria-expanded="true">☰</button>
   <div class="topbar-title"><strong>Daara Jazbul Qulub</strong><small>Plateforme du Dahira</small></div>
 </header>
 <script>
@@ -74,18 +74,19 @@
     setOpen(!isOpen);
   });
   backdrop.addEventListener('click',()=>setOpen(false));
+  window.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});
   sidebar.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=800)setOpen(false)}));
   window.addEventListener('resize',()=>{if(window.innerWidth>800)body.classList.remove('sidebar-mobile-open')});
 })();
 </script>
 <main>
-<section id="accueil" class="hero"><div><span class="badge">ACCÈS GRATUIT</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Khassaïdes, audios, vidéos, cours et annonces du Dahira au même endroit.</p><button class="primary" onclick="document.querySelector('#contenus').scrollIntoView()">Explorer</button></div><img class="hero-logo" src="logo.jpeg"></section>
-
-<section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
+<section id="accueil" class="hero"><div><span class="badge">DAARA JAZBUL QULUUB · CELLULE DAKAR</span><h1>Bienvenue sur <em>Daara Jazbul Qulub</em></h1><p>Retrouvez les informations officielles du Dahira, consultez ses chartes et accédez à ses ressources et activités depuis un seul espace.</p><div class="hero-actions"><a class="primary" href="#dahiraInformation">Découvrir le Dahira</a><a class="secondary hero-secondary" href="#dahiraCharters">Consulter les chartes</a></div></div><img class="hero-logo" src="logo.jpeg" alt="Logo du Daara Jazbul Qulub"></section>
 
 <section id="dahiraInformation" class="section"><div class="head"><span>LE DAHIRA</span><h2>Informations du Dahira</h2><p>Présentation, mission, organisation et activités du Daara Jazbul Qulub.</p></div><div id="dahiraInformationGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 
 <section id="dahiraCharters" class="section alt"><div class="head"><span>RÈGLES DE VIE</span><h2>Chartes du Dahira</h2><p>Consultez les chartes et les règles de fonctionnement du Dahira.</p></div><div id="dahiraChartersGrid" class="grid"><div class="loading">Chargement…</div></div></section>
+
+<section id="contenus" class="section"><div class="head"><span>RESSOURCES</span><h2>Contenus du Dahira</h2></div><div id="contentGrid" class="grid"><div class="loading">Chargement…</div></div></section>
 
 <section id="publicCommissions" class="section">
   <div class="head"><span>ORGANISATION</span><h2>Nos commissions</h2><p>Découvrez les commissions actives et leurs missions au sein du Daara Jazbul Quluub – Cellule Dakar.</p></div>
