@@ -2215,7 +2215,7 @@ async function loadPublicCommissionDirectory(){
   // Charger uniquement les personnes désignées comme responsables, sans exposer l'annuaire complet.
   const leaderIds=[...new Set(rows.flatMap(c=>[c.responsible_member_id,c.successor_member_id]).filter(Boolean))];
   let leadersById=new Map();
-  if(leaderIds.length){
+  if(isAdmin&&leaderIds.length){
     const leadersResult=await sb.from('members')
       .select('id,first_name,last_name,status')
       .in('id',leaderIds)
@@ -2228,6 +2228,7 @@ async function loadPublicCommissionDirectory(){
   }
 
   const leaderName=(id)=>{
+    if(!isAdmin)return 'Réservé à l’administration';
     if(!id)return 'Non désigné';
     const member=leadersById.get(id);
     return member?esc((member.first_name||'')+' '+(member.last_name||'')).trim():'Non renseigné';
