@@ -1834,3 +1834,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .gallery-upload-preview.hidden{display:none}
 .gallery-upload-help{margin:-4px 0 14px;color:var(--djq-muted,#68796f);font-size:.9rem;line-height:1.5}
 #galleryImageFile{display:block;width:100%;padding:12px;background:#f8faf8;border:1px dashed #9ab5a2;border-radius:10px}
+
+
+/* Navigation restructurée : rubriques publiques et espace administrateur */
+.app-sidebar nav .sidebar-nav-group{display:grid;gap:3px;margin:4px 0 8px}
+.app-sidebar nav .sidebar-group-title{padding:10px 12px 5px;color:#c0d9ca;font-size:10px;font-weight:800;letter-spacing:1.35px;white-space:nowrap}
+.app-sidebar nav .sidebar-subgroup{display:grid;gap:2px;margin:2px 0 7px;padding-left:9px;border-left:1px solid rgba(255,255,255,.22)}
+.app-sidebar nav .sidebar-subgroup-title{padding:5px 10px 3px;color:#d3e7da;font-size:10px;font-weight:750;letter-spacing:.5px}
+.app-sidebar nav .sidebar-subgroup a{min-height:40px;padding-top:8px;padding-bottom:8px;font-size:13px}
+.app-sidebar nav>a.nav-home{background:rgba(255,255,255,.12)}
+.app-sidebar nav .sidebar-nav-group a.active{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.25);color:#fff;box-shadow:inset 3px 0 0 #e6cc70}
+body.sidebar-collapsed .app-sidebar nav .sidebar-group-title,
+body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup-title{display:none}
+body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-left:0;border-left:0}
+@media(max-width:800px){
+  .app-sidebar nav .sidebar-group-title{padding-top:12px}
+  .app-sidebar nav .sidebar-subgroup a{min-height:42px}
+}
