@@ -1351,7 +1351,7 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1406,8 +1406,12 @@ function memberCardPrintMarkup(m){
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
- const values=[m.member_number,m.phone||'Non renseigné',commission,role,mission,formatMemberCardDate(m.membership_date),m.status==='active'?'ACTIF':'INACTIF'];
- card.querySelectorAll('.card-info p span').forEach((node,i)=>{if(values[i]!==undefined)node.textContent=values[i];});
+ const values={cardNumber:m.member_number,cardPhone:m.phone||'Non renseigné',cardCommission:commission,cardCommissionRole:role,cardCommissionDescription:mission,cardDate:formatMemberCardDate(m.membership_date),cardStatus:m.status==='active'?'ACTIF':'INACTIF'};
+ Object.entries(values).forEach(([id,value])=>{const node=card.querySelector('#'+id);if(node)node.textContent=value;});
+ const commissionLine=card.querySelector('#cardCommission')?.closest('p');
+ if(commissionLine)commissionLine.style.display=m.isGeneralDieuwrigne?'none':'';
+ const missionLabel=card.querySelector('#cardMissionLabel');
+ if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
  const qr=card.querySelector('.qrcode');
  qr.innerHTML='';
  new QRCode(qr,{text:location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});
