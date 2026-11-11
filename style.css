@@ -1904,3 +1904,12 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
  .admin-workspace-group-title{margin-top:24px}
  .admin-workspace-group-title h3{font-size:17px}
 }
+
+
+/* Accueil public : accès direct aux informations et aux chartes */
+.hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;text-decoration:none}
+.hero-actions .hero-secondary{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.55);color:#fff}
+.hero-actions .hero-secondary:hover{background:rgba(255,255,255,.16)}
+@media(max-width:800px){.hero-actions{justify-content:center}.hero-actions a{min-width:min(100%,220px)}}
+@media(max-width:520px){.hero-actions{width:100%;flex-direction:column;align-items:stretch}.hero-actions a{width:100%;box-sizing:border-box}.hero h1{letter-spacing:-.8px}}
