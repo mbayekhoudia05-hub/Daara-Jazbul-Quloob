@@ -615,7 +615,7 @@ async function setUser(u){
   await sb.rpc('link_my_member_account');
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id')
+    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
@@ -707,13 +707,13 @@ async function loadConnectedMemberDashboard(member){
     }
   }
   if(commissionName)commissionName.textContent=isGeneralDieuwrigne?'Direction générale':(commission?.name||'Aucune commission attribuée');
-  if(commissionDescription)commissionDescription.textContent=isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(commission?.description||'Aucune description disponible pour le moment.');
+  if(commissionDescription)commissionDescription.textContent=(member.mission||'').trim()||(isGeneralDieuwrigne?GENERAL_DIEUWRIGNE_MISSION:(commission?.description||'Aucune description disponible pour le moment.'));
   if(commissionRole){
     const roles=[];
     if(isGeneralDieuwrigne)roles.push('Dieuwrigne Général du Dahira');
     if(commission?.responsible_member_id===member.id)roles.push('Dieuwrigne de commission');
     if(commission?.successor_member_id===member.id)roles.push('Adjoint Dieuwrigne / successeur');
-    commissionRole.textContent=roles.length?roles.join(' · '):(commission?'Membre de la commission':'—');
+    commissionRole.textContent=(member.function_title||'').trim()||(roles.length?roles.join(' · '):(commission?'Membre de la commission':'—'));
   }
 
   // Annuaire complet des commissions actives du Dahira.
