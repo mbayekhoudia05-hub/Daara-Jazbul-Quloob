@@ -1943,3 +1943,35 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 
 /* Accessible labels for authentication and member support forms */
 .modalbox label{display:grid;gap:6px;color:#365343;font-size:14px;font-weight:700}
+
+/* Responsables affichés dans l'annuaire public des commissions */
+#publicCommissions .public-commission-leadership{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+#publicCommissions .public-commission-leadership>div{
+  display:grid;
+  gap:5px;
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid var(--djq-line,#e3eae4);
+  border-radius:10px;
+  background:#f8fbf8;
+}
+#publicCommissions .public-commission-leadership span{
+  color:var(--djq-muted,#68796f);
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+#publicCommissions .public-commission-leadership strong{
+  color:var(--djq-green,#075b35);
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+@media(max-width:420px){
+  #publicCommissions .public-commission-leadership{grid-template-columns:minmax(0,1fr)}
+}
