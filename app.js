@@ -7,7 +7,54 @@ function configureDahiraWaveLinks(){
 }
 document.addEventListener('DOMContentLoaded',configureDahiraWaveLinks);
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
-function openAuth(){show('authModal')} function closeAuth(){hide('authModal')}
+let activeAccessibleModalId=null;
+let previousAccessibleModalFocus=null;
+function getDialogFocusable(dialog){
+  return [...dialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>el.getClientRects().length>0);
+}
+function openAccessibleModal(id,initialFocusSelector){
+  const modal=$(id);
+  if(!modal)return;
+  if(activeAccessibleModalId)closeAccessibleModal(activeAccessibleModalId,false);
+  previousAccessibleModalFocus=document.activeElement;
+  activeAccessibleModalId=id;
+  show(id);
+  const dialog=modal.querySelector('[role="dialog"]')||modal;
+  const target=(initialFocusSelector&&dialog.querySelector(initialFocusSelector))||getDialogFocusable(dialog)[0]||dialog;
+  target.focus();
+}
+function closeAccessibleModal(id,restoreFocus=true){
+  const modal=$(id);
+  if(!modal)return;
+  hide(id);
+  if(activeAccessibleModalId!==id)return;
+  activeAccessibleModalId=null;
+  const target=previousAccessibleModalFocus;
+  previousAccessibleModalFocus=null;
+  if(restoreFocus&&target&&target.isConnected)target.focus();
+}
+document.addEventListener('keydown',event=>{
+  if(!activeAccessibleModalId)return;
+  const modal=$(activeAccessibleModalId);
+  const dialog=modal?.querySelector('[role="dialog"]')||modal;
+  if(event.key==='Escape'){
+    event.preventDefault();
+    closeAccessibleModal(activeAccessibleModalId);
+    return;
+  }
+  if(event.key!=='Tab')return;
+  const focusable=getDialogFocusable(dialog);
+  if(!focusable.length){event.preventDefault();dialog.focus();return;}
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){
+    event.preventDefault();last.focus();
+  }else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){
+    event.preventDefault();first.focus();
+  }
+});
+function openAuth(){openAccessibleModal('authModal','#email')}
+function closeAuth(){closeAccessibleModal('authModal')}
 
 function setAdminUI(){
   const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
@@ -486,7 +533,7 @@ async function init(){
  const c=window.DJQ_CONFIG;
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
  $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
- $('closeMemberFinance').onclick=()=>hide('memberFinanceModal');
+ $('closeMemberFinance').onclick=()=>closeAccessibleModal('memberFinanceModal');
  initPosterGenerator();
  $('printCardBtn').onclick=()=>void printSelectedMemberCard();
  $('printAllMemberCardsBtn')?.addEventListener('click',()=>void printAllMemberCards());
@@ -1625,7 +1672,7 @@ async function viewMemberContributions(member){
     <td><button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button></td>
   </tr>`).join('') : '<tr><td colspan="6">Aucune cotisation enregistrée pour ce membre.</td></tr>';
 
-  show('memberFinanceModal');
+  openAccessibleModal('memberFinanceModal','.modal-close');
 }
 
 
