@@ -180,7 +180,7 @@
 
     <button type="submit" class="primary">Envoyer ma demande</button>
     <p class="form-help">Après l’envoi, l’administrateur étudiera votre demande. Si elle est acceptée, créez votre compte avec cette même adresse e-mail depuis le bouton « Connexion », puis « Créer un compte gratuit ». Confirmez votre adresse e-mail et reconnectez-vous pour ouvrir votre espace membre.</p>
-    <p id="membershipRequestMessage" role="status"></p>
+    <p id="membershipRequestMessage" role="status" aria-live="polite"></p>
   </form>
 </section>
 
@@ -221,7 +221,7 @@
     <div class="form-row"><label>Date et heure de début<input id="eventStartsAt" type="datetime-local" required></label><label>Date et heure de fin (facultatif)<input id="eventEndsAt" type="datetime-local"></label></div>
     <label>Lieu<input id="eventLocation" maxlength="250" placeholder="Lieu de la rencontre"></label>
     <label class="inline-check"><input id="eventPublished" type="checkbox" checked> Publier immédiatement</label>
-    <button class="primary" type="submit">Enregistrer l’activité</button><p id="eventMessage" role="status"></p>
+    <button class="primary" type="submit">Enregistrer l’activité</button><p id="eventMessage" role="status" aria-live="polite"></p>
   </form>
   <div class="admin-workspace-group-title"><span>CALENDRIER</span><h3>Activités enregistrées</h3><p>Retrouvez les événements et gérez leur publication.</p></div><div id="adminEventRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
 </section>
@@ -238,7 +238,7 @@
     <label>Lien direct de l’image (facultatif)<input id="galleryImageUrl" type="url" placeholder="https://…"></label>
     <label>Date de l’activité (facultatif)<input id="galleryEventDate" type="date"></label>
     <label class="inline-check"><input id="galleryPublished" type="checkbox" checked> Publier immédiatement</label>
-    <button class="primary" id="gallerySubmitBtn" type="submit">Ajouter à la galerie</button><p id="galleryMessage" role="status"></p>
+    <button class="primary" id="gallerySubmitBtn" type="submit">Ajouter à la galerie</button><p id="galleryMessage" role="status" aria-live="polite"></p>
   </form>
   <div class="admin-workspace-group-title"><span>COLLECTION</span><h3>Photos de la galerie</h3><p>Consultez et gérez les images déjà ajoutées.</p></div><div id="adminGalleryRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
 </section>
@@ -251,7 +251,7 @@
     <label>Message<textarea id="notificationMessage" rows="4" maxlength="3000" required></textarea></label>
     <div class="form-row"><label>Type<select id="notificationType"><option value="information">Information</option><option value="rappel">Rappel</option><option value="convocation">Convocation</option><option value="important">Important</option></select></label><label>Destinataire<select id="notificationTarget"><option value="">Tous les membres actifs</option></select></label></div>
     <label>Date d’expiration (facultatif)<input id="notificationExpires" type="datetime-local"></label>
-    <button class="primary" type="submit">Envoyer la notification</button><p id="notificationMessageStatus" role="status"></p>
+    <button class="primary" type="submit">Envoyer la notification</button><p id="notificationMessageStatus" role="status" aria-live="polite"></p>
   </form>
   <div class="admin-workspace-group-title"><span>HISTORIQUE</span><h3>Notifications envoyées</h3><p>Retrouvez les communications déjà enregistrées.</p></div><div id="adminNotificationRows" class="admin-module-list"><div class="loading">Chargement…</div></div>
 </section>
@@ -468,7 +468,7 @@
    <label>Logo en bas (facultatif)<input id="posterLogo" type="file" accept="image/*"></label>
    <details class="poster-adjust"><summary>Corriger le positionnement — logo</summary><label>Redresser / incliner<input type="range" min="-30" max="30" step="1" value="0" data-poster-adjust="logo:rotate" data-default-value="0"><small>Rotation : -30° à +30°</small></label><label>Zoom<input type="range" min="0.6" max="2" step="0.05" value="1" data-poster-adjust="logo:zoom" data-default-value="1"></label><label>Déplacer horizontalement<input type="range" min="-40" max="40" step="1" value="0" data-poster-adjust="logo:x" data-default-value="0"></label><label>Déplacer verticalement<input type="range" min="-40" max="40" step="1" value="0" data-poster-adjust="logo:y" data-default-value="0"></label><button type="button" class="secondary" data-poster-reset="logo">Recentrer cette image</button></details>
    <div class="button-row"><button type="button" class="primary" id="posterDownloadBtn">⬇ Télécharger l’affiche (PNG)</button><button type="button" class="secondary" id="posterResetBtn">Réinitialiser</button></div>
-   <p id="posterMessage" role="status"></p>
+   <p id="posterMessage" role="status" aria-live="polite"></p>
   </form>
   <div class="card poster-preview-card"><h3>Aperçu de l’affiche</h3><p>Format portrait 2:3 — image de fond originale, composition fidèle à l’affiche de référence.</p><canvas id="posterCanvas" width="1024" height="1536" aria-label="Aperçu de l’affiche générée"></canvas></div>
  </div>
@@ -664,7 +664,7 @@
       <label>Référence Wave (facultatif)<input id="memberPaymentReference" maxlength="120" placeholder="Référence affichée dans Wave"></label>
       <label>Note (facultatif)<textarea id="memberPaymentNote" rows="2"></textarea></label>
       <button class="primary" type="submit">Enregistrer ma demande de paiement</button>
-      <p id="memberPaymentMessage" role="status"></p>
+      <p id="memberPaymentMessage" role="status" aria-live="polite"></p>
     </form>
   </div>
 
