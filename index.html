@@ -348,6 +348,7 @@
     <p>Suivi global des cotisations, paiements et membres.</p>
   </div>
 
+  <div class="finance-dashboard-group-title"><span>VUE D’ENSEMBLE</span><h3>Indicateurs financiers</h3><p>Les montants sont calculés à partir des paiements enregistrés et confirmés.</p></div>
   <div class="stats contribution-stats">
     <div class="stat"><strong id="financeTotal">0 FCFA</strong><span>Total encaissé</span></div>
     <div class="stat"><strong id="financeMonth">0 FCFA</strong><span>Encaissé ce mois</span></div>
@@ -359,6 +360,7 @@
     <div class="stat"><strong id="financeCategory_divers">0 FCFA</strong><span>Divers</span></div>
   </div>
 
+  <div class="finance-dashboard-group-title"><span>MOYEN DE PAIEMENT</span><h3>Coordonnées Wave du Dahira</h3><p>Utilisez le QR code ou le lien officiel. Toute transaction doit être vérifiée avant confirmation.</p></div>
   <div id="financeWavePayment" class="member-form finance-wave-panel">
     <h3>🌊 Paiement Wave du Dahira</h3>
     <p>Numéro Wave/Tigo : <strong>761 263 937</strong></p>
@@ -371,6 +373,7 @@
   </div>
 
 
+  <div class="finance-dashboard-group-title"><span>RECHERCHE ET EXPORT</span><h3>Filtrer les opérations</h3><p>Affinez l’historique par membre, mois ou catégorie, puis exportez les résultats.</p></div>
   <div class="member-form">
     <h3>🔎 Recherche et suivi</h3>
     <div class="form-row">
@@ -398,7 +401,8 @@
     </div>
   </div>
 
-  <div class="member-table-wrap">
+  <div class="finance-dashboard-group-title"><span>HISTORIQUE</span><h3>Opérations financières</h3><p>Consultez les versements correspondant aux filtres sélectionnés.</p></div>
+  <div class="member-table-wrap finance-dashboard-table">
     <table>
       <thead>
         <tr>
@@ -580,12 +584,13 @@
     <div class="stat"><strong id="myTotalPaid">0 FCFA</strong><span>Total cotisé</span></div>
     <div class="stat"><strong id="myPaymentCount">0</strong><span>Paiements enregistrés</span></div>
   </div>
+  <div class="member-dashboard-group-title"><span>VIE DU DAHIRA</span><h3>Actualités et informations personnelles</h3><p>Les messages importants et les informations liées à votre adhésion.</p></div>
   <div class="card member-notifications-card">
     <div class="section-inline-heading"><h3>♢ Mes notifications</h3><span id="memberNotificationCount" class="status-pill">0 message</span></div>
     <div id="memberNotificationsList"><div class="loading">Chargement des notifications…</div></div>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>👤 Mon profil</h3>
     <p><b>Nom :</b> <span id="myMemberName">—</span></p>
     <p><b>Téléphone :</b> <span id="myMemberPhone">—</span></p>
@@ -595,19 +600,20 @@
     <button type="button" class="primary" id="myMemberCardBtn">🎫 Voir ma carte de membre</button>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>♧ Ma commission</h3>
     <p><b>Commission :</b> <span id="myCommissionName">Chargement…</span></p>
     <p><b>Fonction :</b> <span id="myCommissionRole">—</span></p>
     <p id="myCommissionDescription">Chargement de la description…</p>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>📚 Les commissions du Dahira</h3>
     <div id="memberAllCommissions">Chargement des commissions…</div>
   </div>
 
-  <div class="card">
+  <div class="member-dashboard-group-title"><span>SUIVI FINANCIER</span><h3>Mes paiements et cotisations</h3><p>Retrouvez les informations de paiement et l’historique associé à votre compte.</p></div>
+  <div class="card member-dashboard-card">
     <h3>💳 Effectuer un paiement Wave</h3>
     <p>Tu peux payer pour toi-même ou pour un autre membre. Le versement sera attribué au bénéficiaire choisi après vérification par l’administrateur.</p>
     <form id="memberPaymentForm" class="member-form">
@@ -639,7 +645,7 @@
     </form>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>💰 Mes cotisations</h3>
     <div class="member-table-wrap">
       <table>
@@ -649,7 +655,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>💳 Mes transactions</h3>
     <div class="member-table-wrap">
       <table>
@@ -659,7 +665,8 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="member-dashboard-group-title"><span>ASSISTANCE ET DOCUMENTS</span><h3>Rester informé et obtenir de l’aide</h3><p>Signalez une difficulté et consultez les informations et chartes officielles du Dahira.</p></div>
+  <div class="card member-dashboard-card">
     <h3>📢 Signaler une erreur à l'administrateur</h3>
     <form id="memberReportForm">
       <input id="memberReportSubject" placeholder="Objet du signalement" required>
@@ -671,12 +678,12 @@
     <div id="myReportRows">Chargement…</div>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>ℹ️ Informations du Dahira</h3>
     <div id="memberDahiraInformation">Chargement…</div>
   </div>
 
-  <div class="card">
+  <div class="card member-dashboard-card">
     <h3>📜 Chartes du Dahira</h3>
     <div id="memberDahiraCharters">Chargement…</div>
   </div>
