@@ -1887,3 +1887,20 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
  .member-dashboard-group-title,.finance-dashboard-group-title{margin-top:24px}
  .member-dashboard-group-title h3,.finance-dashboard-group-title h3{font-size:17px}
 }
+
+
+/* Organisation des espaces d'administration : présentation cohérente et responsive. */
+.admin-workspace-group-title{max-width:1100px;margin:30px auto 14px;padding:0 0 12px;border-bottom:1px solid #dce8df}
+.admin-workspace-group-title>span{display:block;margin-bottom:5px;color:#08733a;font-size:10px;font-weight:850;letter-spacing:1.25px}
+.admin-workspace-group-title h3{margin:0;color:#123b27;font-size:19px}
+.admin-workspace-group-title p{margin:6px 0 0;color:#68796f;font-size:13px;line-height:1.55}
+#members .admin-workspace-group-title:first-of-type,
+#commissions .admin-workspace-group-title:first-of-type,
+#membershipRequests .admin-workspace-group-title:first-of-type{margin-top:22px}
+#members .member-form,#commissions .member-form{margin-top:0}
+#members .member-table-wrap,#commissions .commissions-grid{margin-top:0}
+#membershipRequests .table-wrap{margin-top:0}
+@media(max-width:650px){
+ .admin-workspace-group-title{margin-top:24px}
+ .admin-workspace-group-title h3{font-size:17px}
+}
