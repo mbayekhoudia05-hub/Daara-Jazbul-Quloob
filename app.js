@@ -502,13 +502,20 @@ function posterPortrait(ctx,img,x,y,w,h,key){
 }
 function posterText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){const words=String(text||'').trim().split(/\\s+/);let line='',lines=[];for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);lines.slice(0,maxLines).forEach((v,i)=>ctx.fillText(v,x,y+i*lineHeight))}
 function posterTrackedText(ctx,text,x,y,maxWidth,font,fill,tracking=5){
- const chars=Array.from(String(text||'').toLocaleUpperCase('fr-FR'));
- ctx.font=font;const widths=chars.map(ch=>ctx.measureText(ch).width);
- const total=widths.reduce((a,b)=>a+b,0)+Math.max(0,chars.length-1)*tracking;
- const scale=total>maxWidth?maxWidth/total:1;
- let cursor=x-total*scale/2;
- ctx.fillStyle=fill;
- chars.forEach((ch,i)=>{ctx.fillText(ch,cursor,y);cursor+=(widths[i]+tracking)*scale});
+ const chars=Array.from(String(text||'').trim().toLocaleUpperCase('fr-FR'));
+ if(!chars.length)return;
+ const match=String(font).match(/([0-9]+(?:\\.[0-9]+)?)px/);
+ let size=match?Number(match[1]):28;
+ const family=String(font).replace(/[0-9]+(?:\\.[0-9]+)?px/,'__SIZE__');
+ let widths=[],space=tracking,total=0;
+ const measure=()=>{ctx.font=family.replace('__SIZE__',size+'px');widths=chars.map(ch=>ctx.measureText(ch).width);total=widths.reduce((sum,v)=>sum+v,0)+Math.max(0,chars.length-1)*space};
+ measure();
+ while(total>maxWidth&&size>11){size-=1;measure()}
+ if(total>maxWidth){space=0;measure()}
+ if(total>maxWidth){while(total>maxWidth&&size>9){size-=1;measure()}}
+ ctx.fillStyle=fill;ctx.textAlign='left';
+ let cursor=x-total/2;
+ chars.forEach((ch,i)=>{ctx.fillText(ch,cursor,y);cursor+=widths[i]+space});
 }
 function posterFitFont(ctx,text,family,weight,maxWidth,initial,min){
  let size=initial;ctx.font=`${weight} ${size}px ${family}`;
