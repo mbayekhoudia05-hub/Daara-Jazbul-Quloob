@@ -412,23 +412,24 @@ async function posterRemovePhotoBackground(file){
             ctx.clearRect(0,0,canvas.width,canvas.height);
             ctx.drawImage(image,0,0,canvas.width,canvas.height);
             mctx.clearRect(0,0,mask.width,mask.height);
-            mctx.filter='blur(0.7px)';
+            mctx.filter='blur(1.15px)';
             mctx.drawImage(results.segmentationMask,0,0,mask.width,mask.height);
             mctx.filter='none';
             const matte=mctx.getImageData(0,0,mask.width,mask.height),md=matte.data;
             const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),pd=pixels.data;
             for(let i=0;i<pd.length;i+=4){
-              const v=md[i]/255;
-              let a=Math.max(0,Math.min(1,(v-0.24)/(0.78-0.24)));
-              a=a*a*(3-2*a);
-              if(a<0.035)a=0;
-              pd[i+3]=Math.round(pd[i+3]*a);
+              const confidence=md[i]/255;
+              let alpha=Math.max(0,Math.min(1,(confidence-0.12)/(0.72-0.12)));
+              alpha=alpha*alpha*(3-2*alpha);
+              if(alpha<0.018)alpha=0;
+              else if(alpha>0.985)alpha=1;
+              pd[i+3]=Math.round(pd[i+3]*alpha);
             }
             ctx.putImageData(pixels,0,0);
             canvas.toBlob(blob=>{URL.revokeObjectURL(url);if(blob)resolve(blob);else reject(new Error('Impossible de créer la photo détourée.'))},'image/png');
           }catch(err){URL.revokeObjectURL(url);reject(err)}
         });
-        $('posterMessage').textContent='Détourage précis : suppression des résidus et adoucissement des bords…';
+        $('posterMessage').textContent='Analyse du sujet et affinage des contours (cheveux, vêtements et bords)…';
         await posterSegmenter.send({image});
       }catch(err){URL.revokeObjectURL(url);reject(err)}
     };
