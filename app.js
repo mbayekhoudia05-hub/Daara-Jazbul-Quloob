@@ -504,9 +504,9 @@ function posterText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){const words=Str
 function posterTrackedText(ctx,text,x,y,maxWidth,font,fill,tracking=5){
  const chars=Array.from(String(text||'').trim().toLocaleUpperCase('fr-FR'));
  if(!chars.length)return;
- const match=String(font).match(/([0-9]+(?:\\.[0-9]+)?)px/);
+ const match=String(font).match(/([0-9]+(?:\.[0-9]+)?)px/);
  let size=match?Number(match[1]):28;
- const family=String(font).replace(/[0-9]+(?:\\.[0-9]+)?px/,'__SIZE__');
+ const family=String(font).replace(/[0-9]+(?:\.[0-9]+)?px/,'__SIZE__');
  let widths=[],space=tracking,total=0;
  const measure=()=>{ctx.font=family.replace('__SIZE__',size+'px');widths=chars.map(ch=>ctx.measureText(ch).width);total=widths.reduce((sum,v)=>sum+v,0)+Math.max(0,chars.length-1)*space};
  measure();
