@@ -406,30 +406,43 @@ async function posterRemovePhotoBackground(file){
       try{
         const canvas=document.createElement('canvas'),mask=document.createElement('canvas');
         canvas.width=mask.width=image.naturalWidth;canvas.height=mask.height=image.naturalHeight;
+        const w=canvas.width,h=canvas.height,total=w*h;
         const ctx=canvas.getContext('2d',{willReadFrequently:true}),mctx=mask.getContext('2d',{willReadFrequently:true});
         posterSegmenter.onResults(results=>{
           try{
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.drawImage(image,0,0,canvas.width,canvas.height);
-            mctx.clearRect(0,0,mask.width,mask.height);
-            mctx.filter='blur(1.15px)';
-            mctx.drawImage(results.segmentationMask,0,0,mask.width,mask.height);
-            mctx.filter='none';
-            const matte=mctx.getImageData(0,0,mask.width,mask.height),md=matte.data;
-            const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),pd=pixels.data;
-            for(let i=0;i<pd.length;i+=4){
-              const confidence=md[i]/255;
-              let alpha=Math.max(0,Math.min(1,(confidence-0.12)/(0.72-0.12)));
-              alpha=alpha*alpha*(3-2*alpha);
-              if(alpha<0.018)alpha=0;
-              else if(alpha>0.985)alpha=1;
-              pd[i+3]=Math.round(pd[i+3]*alpha);
+            ctx.clearRect(0,0,w,h);ctx.drawImage(image,0,0,w,h);
+            mctx.clearRect(0,0,w,h);mctx.filter='blur(0.8px)';
+            mctx.drawImage(results.segmentationMask,0,0,w,h);mctx.filter='none';
+            const matte=mctx.getImageData(0,0,w,h),md=matte.data;
+            const pixels=ctx.getImageData(0,0,w,h),pd=pixels.data;
+            const alpha=new Uint8Array(total),seen=new Uint8Array(total),queue=new Int32Array(total);
+            for(let p=0;p<total;p++){
+              const confidence=md[p*4]/255;
+              let a=Math.max(0,Math.min(1,(confidence-0.18)/(0.76-0.18)));
+              a=a*a*(3-2*a);
+              alpha[p]=a<0.025?0:Math.round(a*255);
             }
+            // Remove tiny disconnected mask fragments (background speckles) without cutting the main subject.
+            const minBlob=Math.max(36,Math.min(500,Math.round(total*0.00008)));
+            for(let p=0;p<total;p++){
+              if(seen[p]||alpha[p]<48)continue;
+              let head=0,tail=0;queue[tail++]=p;seen[p]=1;
+              while(head<tail){
+                const q=queue[head++],x=q%w,y=(q/w)|0;
+                for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+                  if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;
+                  if(nx<0||ny<0||nx>=w||ny>=h)continue;
+                  const n=ny*w+nx;if(!seen[n]&&alpha[n]>=48){seen[n]=1;queue[tail++]=n}
+                }
+              }
+              if(tail<minBlob)for(let k=0;k<tail;k++)alpha[queue[k]]=0;
+            }
+            for(let p=0;p<total;p++)pd[p*4+3]=Math.round(pd[p*4+3]*alpha[p]/255);
             ctx.putImageData(pixels,0,0);
-            canvas.toBlob(blob=>{URL.revokeObjectURL(url);if(blob)resolve(blob);else reject(new Error('Impossible de créer la photo détourée.'))},'image/png');
+            canvas.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('Impossible de créer la photo détourée.'))},'image/png');
           }catch(err){URL.revokeObjectURL(url);reject(err)}
         });
-        $('posterMessage').textContent='Analyse du sujet et affinage des contours (cheveux, vêtements et bords)…';
+        $('posterMessage').textContent='Nettoyage des petits résidus autour du sujet et finition des contours…';
         await posterSegmenter.send({image});
       }catch(err){URL.revokeObjectURL(url);reject(err)}
     };
