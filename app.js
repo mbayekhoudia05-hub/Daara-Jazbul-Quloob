@@ -423,9 +423,11 @@ async function posterRemovePhotoBackground(file){
               alpha[p]=a<0.025?0:Math.round(a*255);
             }
             // Remove tiny disconnected mask fragments (background speckles) without cutting the main subject.
-            const minBlob=Math.max(36,Math.min(500,Math.round(total*0.00008)));
+            // Le masque MediaPipe peut produire de petites îles autour du portrait.
+            // On élimine uniquement les îlots détachés, sans toucher au contour principal.
+            const minBlob=Math.max(120,Math.min(3500,Math.round(total*0.0002)));
             for(let p=0;p<total;p++){
-              if(seen[p]||alpha[p]<48)continue;
+              if(seen[p]||alpha[p]<72)continue;
               let head=0,tail=0;queue[tail++]=p;seen[p]=1;
               while(head<tail){
                 const q=queue[head++],x=q%w,y=(q/w)|0;
