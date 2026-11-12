@@ -440,6 +440,30 @@ async function posterRemovePhotoBackground(file){
               if(tail<minBlob)for(let k=0;k<tail;k++)alpha[queue[k]]=0;
             }
             for(let p=0;p<total;p++)pd[p*4+3]=Math.round(pd[p*4+3]*alpha[p]/255);
+            // Affinage inspiré de la décontamination des couleurs de Photoshop :
+            // les pixels semi-transparents héritent d'une couleur du sujet proche,
+            // plutôt que de conserver le liseré coloré de l'ancien arrière-plan.
+            // La transparence du masque n'est pas modifiée : seuls les pixels RVB du bord le sont.
+            const edgeRadius=3,edgeBlend=0.78;
+            for(let p=0;p<total;p++){
+              const a=alpha[p];
+              if(a<24||a>232)continue;
+              const x=p%w,y=(p/w)|0;
+              let best=-1,bestDist=Infinity;
+              for(let dy=-edgeRadius;dy<=edgeRadius;dy++)for(let dx=-edgeRadius;dx<=edgeRadius;dx++){
+                if(!dx&&!dy)continue;
+                const nx=x+dx,ny=y+dy;
+                if(nx<0||ny<0||nx>=w||ny>=h)continue;
+                const q=ny*w+nx;
+                if(alpha[q]<238)continue;
+                const dist=dx*dx+dy*dy;
+                if(dist<bestDist){best=q;bestDist=dist}
+              }
+              if(best<0)continue;
+              const k=p*4,q=best*4;
+              const blend=edgeBlend*(1-a/255);
+              for(let ch=0;ch<3;ch++)pd[k+ch]=Math.round(pd[k+ch]*(1-blend)+pd[q+ch]*blend);
+            }
             ctx.putImageData(pixels,0,0);
             canvas.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('Impossible de créer la photo détourée.'))},'image/png');
           }catch(err){URL.revokeObjectURL(url);reject(err)}
