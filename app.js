@@ -137,6 +137,12 @@ function contributionMonthDate(){
   return v ? v+'-01' : '';
 }
 
+function syncContributionDate(){
+  const date=$('contributionPaymentDate')?.value||'';
+  const month=$('contributionMonth');
+  if(month)month.value=date?date.slice(0,7):'';
+}
+
 function contributionMonthLabel(v){
   if(!v)return '—';
   const d=new Date(v+'T00:00:00');
@@ -582,10 +588,10 @@ async function init(){
  });
  const contributionMonthInput=$('contributionMonth');
 if(contributionMonthInput){
-  const d=new Date();
-  contributionMonthInput.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   const dateInput=$('contributionPaymentDate');
   if(dateInput)dateInput.value=new Date().toISOString().slice(0,10);
+  syncContributionDate();
+  dateInput?.addEventListener('change',syncContributionDate);
 }
  
 if($("unpaidMonth")){
@@ -1029,8 +1035,9 @@ async function addContribution(e){
   if(!isAdmin||!currentUser)return;
 
   const memberId=$('contributionMember').value;
-  const paymentMonth=contributionMonthDate();
   const paymentDate=$('contributionPaymentDate')?.value||'';
+  syncContributionDate();
+  const paymentMonth=contributionMonthDate();
   const amount=Number($('contributionAmount').value);
   const method=$('contributionMethod').value;
   const category=$('contributionCategory').value;
@@ -1061,11 +1068,10 @@ async function addContribution(e){
   msg('contributionMessage',method==='especes'
     ?'Cotisation en espèces enregistrée.'
     :'Paiement numérique enregistré en attente de vérification dans le module Paiements.',true);
-  const selectedMonth=$('contributionMonth').value;
   e.target.reset();
-  $('contributionMonth').value=selectedMonth;
   const dateInput=$('contributionPaymentDate');
   if(dateInput)dateInput.value=new Date().toISOString().slice(0,10);
+  syncContributionDate();
   await loadContributions();
   await loadPaymentTransactions();
   await loadFinanceDashboard();
