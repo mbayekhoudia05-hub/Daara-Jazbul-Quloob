@@ -2640,7 +2640,7 @@ async function approveMembershipRequest(id) {
   const created = await sb.from('members').insert({
     first_name: x.first_name,
     last_name: x.last_name,
-    phone: x.phone || null,
+    phone: formatPhoneDisplay(x.phone)==='—'?null:formatPhoneDisplay(x.phone),
     email: x.email.toLowerCase(),
     commission_id: x.commission_id || null
   }).select('id, member_number').single();
