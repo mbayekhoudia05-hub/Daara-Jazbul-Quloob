@@ -120,13 +120,13 @@ document.addEventListener('click',e=>{
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
 function formatPhoneDisplay(value){
   const raw=String(value??'').trim();
-  let digits=raw.replace(/\\D/g,'');
+  let digits=raw.replace(/\D/g,'');
   if(digits.length===12&&digits.startsWith('221'))digits=digits.slice(3);
   if(digits.length!==9)return raw||'—';
   return digits.slice(0,2)+' '+digits.slice(2,5)+' '+digits.slice(5,7)+' '+digits.slice(7,9);
 }
 function formatPhoneInput(value){
-  let digits=String(value??'').replace(/\\D/g,'');
+  let digits=String(value??'').replace(/\D/g,'');
   if(digits.length===12&&digits.startsWith('221'))digits=digits.slice(3);
   if(digits.length>9)digits=digits.slice(0,9);
   return [digits.slice(0,2),digits.slice(2,5),digits.slice(5,7),digits.slice(7,9)].filter(Boolean).join(' ');
