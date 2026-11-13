@@ -118,6 +118,22 @@ document.addEventListener('click',e=>{
 });
 
 function msg(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?'#08733a':'#a52d2d'}
+function formatPhoneDisplay(value){
+  const raw=String(value??'').trim();
+  let digits=raw.replace(/\\D/g,'');
+  if(digits.length===12&&digits.startsWith('221'))digits=digits.slice(3);
+  if(digits.length!==9)return raw||'—';
+  return digits.slice(0,2)+' '+digits.slice(2,5)+' '+digits.slice(5,7)+' '+digits.slice(7,9);
+}
+function formatPhoneInput(value){
+  let digits=String(value??'').replace(/\\D/g,'');
+  if(digits.length===12&&digits.startsWith('221'))digits=digits.slice(3);
+  if(digits.length>9)digits=digits.slice(0,9);
+  return [digits.slice(0,2),digits.slice(2,5),digits.slice(5,7),digits.slice(7,9)].filter(Boolean).join(' ');
+}
+document.addEventListener('input',event=>{
+  if(['requestPhone','memberPhone'].includes(event.target?.id))event.target.value=formatPhoneInput(event.target.value);
+});
 function esc(s){
   return String(s??'').replace(/[&<>"']/g,m=>({
     '&':'&amp;',
@@ -790,7 +806,7 @@ async function loadConnectedMemberDashboard(member){
   $('memberWelcome').textContent=member.first_name||'Membre';
   $('myMemberNumber').textContent=member.member_number||'—';
   $('myMemberName').textContent=(member.first_name||'')+' '+(member.last_name||'');
-  $('myMemberPhone').textContent=member.phone||'—';
+  $('myMemberPhone').textContent=formatPhoneDisplay(member.phone);
   $('myMemberEmail').textContent=member.email||'—';
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
@@ -1292,7 +1308,7 @@ async function exportMembersCSV(){
   if(commissionsResult.error){alert('Export des commissions impossible : '+commissionsResult.error.message);return;}
   const commissionById=new Map((commissionsResult.data||[]).map(c=>[c.id,c.name]));
   const rows=(membersResult.data||[]).map(m=>[
-    m.member_number,m.first_name,m.last_name,m.phone,m.email,
+    m.member_number,m.first_name,m.last_name,formatPhoneDisplay(m.phone),m.email,
     m.status==='active'?'Actif':'Inactif',m.membership_date,
     commissionById.get(m.commission_id)||'Aucune'
   ]);
@@ -1397,7 +1413,7 @@ async function loadMembers(){
   if(!cr.error)for(const c of cr.data||[])commissionNames[c.id]=c.name;
   $('totalMemberCount').textContent=String(rows.length);
   $('memberCount').textContent=String(rows.filter(x=>x.status==='active').length);
-  box.innerHTML=rows.length?rows.map(x=>'<tr><td><strong>'+esc(x.member_number)+'</strong></td><td><div class="member-mini"><img src="'+esc(x.photo_url||'logo.jpeg')+'" alt=""><span>'+esc(x.first_name)+' '+esc(x.last_name)+'</span></div></td><td>'+esc(commissionNames[x.commission_id]||'Non affecté')+'</td><td>'+esc(x.phone||'—')+'</td><td>'+esc(x.membership_date||'—')+'</td><td><span class="status '+(x.status==='active'?'active':'inactive')+'">'+(x.status==='active'?'Actif':'Inactif')+'</span></td><td><button class="table-btn" data-action="edit-member" data-id="'+esc(x.id)+'">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="'+esc(x.id)+'">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="'+esc(x.status||'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'Désactiver':'Réactiver')+'</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="'+esc(x.id)+'">Supprimer</button></td></tr>').join(''):'<tr><td colspan="7">Aucun membre enregistré dans la base.</td></tr>';
+  box.innerHTML=rows.length?rows.map(x=>'<tr><td><strong>'+esc(x.member_number)+'</strong></td><td><div class="member-mini"><img src="'+esc(x.photo_url||'logo.jpeg')+'" alt=""><span>'+esc(x.first_name)+' '+esc(x.last_name)+'</span></div></td><td>'+esc(commissionNames[x.commission_id]||'Non affecté')+'</td><td>'+esc(formatPhoneDisplay(x.phone))+'</td><td>'+esc(x.membership_date||'—')+'</td><td><span class="status '+(x.status==='active'?'active':'inactive')+'">'+(x.status==='active'?'Actif':'Inactif')+'</span></td><td><button class="table-btn" data-action="edit-member" data-id="'+esc(x.id)+'">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="'+esc(x.id)+'">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="'+esc(x.status||'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'Désactiver':'Réactiver')+'</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="'+esc(x.id)+'">Supprimer</button></td></tr>').join(''):'<tr><td colspan="7">Aucun membre enregistré dans la base.</td></tr>';
   msg('memberMessage',rows.length+' membre(s) chargé(s).'+(cr.error?' Les commissions n’ont pas pu être récupérées : '+cr.error.message:''),!cr.error);
  }catch(err){
   box.innerHTML='<tr><td colspan="7">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
@@ -1428,7 +1444,7 @@ async function addMember(e){
  e.preventDefault();if(!isAdmin)return;if(editingMemberId)return updateExistingMember(e);let photoUrl=null;const file=$('memberPhoto').files[0];
  if(file && file.size>5*1024*1024){msg('memberMessage','Photo trop lourde. Maximum 5 Mo.');return}
  if(file && !['image/jpeg','image/png','image/webp'].includes(file.type)){msg('memberMessage','Format photo non accepté. Utilise JPG, PNG ou WEBP.');return}
- const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:$('memberPhone').value.trim()||null,email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null}).select('id,member_number').single();
+ const r=await sb.from('members').insert({first_name:$('memberFirstName').value.trim(),last_name:$('memberLastName').value.trim(),phone:formatPhoneDisplay($('memberPhone').value)==='—'?null:formatPhoneDisplay($('memberPhone').value),email:$('memberEmail').value.trim()||null,commission_id:$('memberCommission')?.value||null,function_title:$('memberFunctionTitle')?.value.trim()||null,mission:$('memberMission')?.value.trim()||null}).select('id,member_number').single();
  if(r.error){msg('memberMessage',r.error.message);return}
  if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${r.data.member_number}-${Date.now()}.${ext}`;const up=await sb.storage.from('member-photos').upload(path,file,{upsert:false,contentType:file.type});if(up.error){await sb.from('members').delete().eq('id',r.data.id);msg('memberMessage','Membre non créé : '+up.error.message);return}photoUrl=sb.storage.from('member-photos').getPublicUrl(path).data.publicUrl;const ur=await sb.from('members').update({photo_url:photoUrl}).eq('id',r.data.id);if(ur.error){msg('memberMessage','Membre créé, mais photo non enregistrée : '+ur.error.message,true)} }
  msg('memberMessage','Membre créé : '+r.data.member_number,true);e.target.reset();await loadMembers();await loadCommissions();
@@ -1469,7 +1485,7 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone||'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1524,7 +1540,7 @@ function memberCardPrintMarkup(m){
  card.querySelector('.card-background').src='carte-fond-nettoye.jpg';
  const memberPhoto=card.querySelector('.card-photo');memberPhoto.src=m.photo_url||'';memberPhoto.style.display=m.photo_url?'block':'none';
  card.querySelector('.card-info h3').textContent=(m.first_name+' '+m.last_name).trim();
- const values={cardNumber:m.member_number,cardPhone:m.phone||'Non renseigné',cardCommission:commission,cardCommissionRole:role,cardCommissionDescription:mission,cardDate:formatMemberCardDate(m.membership_date),cardStatus:m.status==='active'?'ACTIF':'INACTIF'};
+ const values={cardNumber:m.member_number,cardPhone:m.phone?formatPhoneDisplay(m.phone):'Non renseigné',cardCommission:commission,cardCommissionRole:role,cardCommissionDescription:mission,cardDate:formatMemberCardDate(m.membership_date),cardStatus:m.status==='active'?'ACTIF':'INACTIF'};
  Object.entries(values).forEach(([id,value])=>{const node=card.querySelector('#'+id);if(node)node.textContent=value;});
  const commissionLine=card.querySelector('#cardCommission')?.closest('p');
  if(commissionLine)commissionLine.style.display=m.isGeneralDieuwrigne?'none':'';
@@ -1754,7 +1770,7 @@ function startEditMember(m){
  $('memberForm').querySelector('h3').textContent='Modifier le membre '+m.member_number;
  $('memberFirstName').value=m.first_name||'';
  $('memberLastName').value=m.last_name||'';
- $('memberPhone').value=m.phone||'';
+ $('memberPhone').value=formatPhoneDisplay(m.phone)==='—'?'':formatPhoneDisplay(m.phone);
  $('memberEmail').value=m.email||'';
  if($('memberCommission'))$('memberCommission').value=m.commission_id||'';
  if($('memberFunctionTitle'))$('memberFunctionTitle').value=m.function_title||'';
@@ -2213,7 +2229,7 @@ async function loadMembershipRequests() {
     ? requests.map(x => `
         <tr>
           <td>${esc(x.first_name)} ${esc(x.last_name)}</td>
-          <td>${esc(x.phone)}</td>
+          <td>${esc(formatPhoneDisplay(x.phone))}</td>
           <td>${esc(x.email || '—')}</td>
           <td>${x.status === 'pending'
             ? '<select class="request-commission-select" data-request-commission="'+esc(x.id)+'">'+commissionOptions(x.commission_id)+'</select><button class="table-btn" data-action="update-request-commission" data-id="'+esc(x.id)+'">Enregistrer</button>'
@@ -2503,7 +2519,7 @@ async function submitMembershipRequest(e) {
 
   const first_name = $('requestFirstName').value.trim();
   const last_name = $('requestLastName').value.trim();
-  const phone = $('requestPhone').value.trim();
+  const phone = formatPhoneDisplay($('requestPhone').value)==='—'?'':formatPhoneDisplay($('requestPhone').value);
   const email = $('requestEmail').value.trim().toLowerCase();
   const note = $('requestNote').value.trim() || null;
   const commission_id = $('requestCommission').value || null;
