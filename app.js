@@ -137,14 +137,21 @@ document.addEventListener('input',event=>{
   if(event.target?.id==='contributionMemberSearch')renderContributionMemberSearch(event.target.value);
 });
 function normalizeMemberSearch(value){
-  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+function memberSearchMatches(values,query){
+  const normalized=normalizeMemberSearch(query);
+  if(!normalized)return true;
+  const fields=(Array.isArray(values)?values:[values]).map(normalizeMemberSearch).filter(Boolean);
+  const words=normalized.split(/\s+/).filter(Boolean);
+  return words.every(word=>fields.some(field=>field.split(/\s+/).some(part=>part.startsWith(word)||part.includes(word))));
 }
 function filterMemberDirectory(){
   const query=normalizeMemberSearch($('memberDirectorySearch')?.value||'');
   const rows=[...($('memberRows')?.querySelectorAll('tr')||[])];
   let visible=0;
   rows.forEach(row=>{
-    const matches=!query||normalizeMemberSearch(row.textContent).includes(query);
+    const matches=memberSearchMatches(row.textContent,query);
     row.hidden=!matches;
     if(matches&&row.querySelector('[data-action="edit-member"]'))visible++;
   });
@@ -156,9 +163,14 @@ function renderContributionMemberSearch(value){
   if(!box)return;
   const query=normalizeMemberSearch(value);
   if(!query){box.innerHTML='';return;}
-  const members=(window._djqContributionMembers||[]).filter(member=>
-    normalizeMemberSearch([member.member_number,member.first_name,member.last_name].join(' ')).includes(query)
-  ).slice(0,10);
+  const members=(window._djqContributionMembers||[]).filter(member=>{
+    const fields=[member.member_number,member.first_name,member.last_name,(member.first_name||'')+' '+(member.last_name||''),(member.last_name||'')+' '+(member.first_name||'')];
+    const words=query.split(/\s+/).filter(Boolean);
+    return words.every(word=>fields.some(value=>normalizeMemberSearch(value).split(/\s+/).some(part=>part.startsWith(word))));
+  }).sort((a,b)=>{
+    const rank=member=>[member.member_number,member.first_name,member.last_name].some(value=>normalizeMemberSearch(value).startsWith(query))?0:1;
+    return rank(a)-rank(b)||String(a.last_name||'').localeCompare(String(b.last_name||''),'fr');
+  }).slice(0,15);
   box.innerHTML=members.length?members.map(member=>
     '<button type="button" class="member-search-result" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>'
   ).join(''):'<div class="member-search-empty">Aucun membre actif trouvé.</div>';
@@ -1097,13 +1109,13 @@ async function loadContributions(){
   renderContributionRows(rows);
 }
 function renderContributionRows(sourceRows){
-  const search=($('contributionSearch')?.value||'').toLowerCase().trim();
+  const search=$('contributionSearch')?.value||'';
   const month=$('contributionHistoryMonth')?.value||'';
   const category=$('contributionHistoryCategory')?.value||'';
   const status=$('contributionHistoryStatus')?.value||'';
   const rows=(sourceRows||[]).filter(x=>{
-    const name=((x.members?.member_number||'')+' '+(x.members?.first_name||'')+' '+(x.members?.last_name||'')).toLowerCase();
-    return (!search||name.includes(search))
+    const name=[x.members?.member_number,x.members?.first_name,x.members?.last_name];
+    return memberSearchMatches(name,search)
       &&(!month||String(x.payment_month||'').startsWith(month))
       &&(!category||x.category===category)
       &&(!status||x.status===status);
@@ -1890,8 +1902,8 @@ async function loadUnpaidTracker(){
     paidMap[x.member_id]=(paidMap[x.member_id]||0)+Number(x.amount||0);
   });
 
-  const search=($("unpaidSearch")?.value||"").toLowerCase().trim();
-  const filtered=members.filter(m=>(!search||(`${m.member_number||""} ${m.first_name||""} ${m.last_name||""}`).toLowerCase().includes(search)));
+  const search=$("unpaidSearch")?.value||"";
+  const filtered=members.filter(m=>memberSearchMatches([m.member_number,m.first_name,m.last_name],search));
 
   const paid=members.filter(m=>paidMap[m.id]>0).length;
   $("paidMembersCount").textContent=paid;
