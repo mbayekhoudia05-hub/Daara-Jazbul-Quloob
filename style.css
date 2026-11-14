@@ -2111,3 +2111,14 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 #contributions .member-search-result strong{min-width:52px;color:var(--primary,#176b43)}
 #contributions .member-search-empty{padding:10px 12px;color:var(--muted,#66756b)}
 #contributions .contribution-member-select-label{margin-top:8px}
+
+/* Sélecteur alphabétique de membres pour la saisie rapide des cotisations */
+#contributions .contribution-member-select-label{display:none!important}
+#contributions .contribution-alphabet-nav{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+#contributions .contribution-letter{min-width:32px;padding:7px 9px;border:1px solid var(--djq-line,#dce6dd);border-radius:7px;background:#fff;color:var(--text,#183b29);font-weight:700;cursor:pointer}
+#contributions .contribution-letter.active{background:var(--primary,#176b43);border-color:var(--primary,#176b43);color:#fff}
+#contributions .contribution-letter-paging{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;color:var(--text,#183b29)}
+#contributions .contribution-letter-paging strong{font-size:13px;text-align:center}
+#contributions .contribution-letter-paging button:disabled{opacity:.4;cursor:not-allowed}
+#contributions .contribution-member-results-list{display:grid;gap:5px;max-height:300px;overflow:auto}
+@media(max-width:600px){#contributions .contribution-letter{min-width:29px;padding:6px}#contributions .contribution-letter-paging{flex-wrap:wrap}}
