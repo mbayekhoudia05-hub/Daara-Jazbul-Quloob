@@ -133,7 +133,36 @@ function formatPhoneInput(value){
 }
 document.addEventListener('input',event=>{
   if(['requestPhone','memberPhone'].includes(event.target?.id))event.target.value=formatPhoneInput(event.target.value);
+  if(event.target?.id==='memberDirectorySearch')filterMemberDirectory();
+  if(event.target?.id==='contributionMemberSearch')renderContributionMemberSearch(event.target.value);
 });
+function normalizeMemberSearch(value){
+  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+function filterMemberDirectory(){
+  const query=normalizeMemberSearch($('memberDirectorySearch')?.value||'');
+  const rows=[...($('memberRows')?.querySelectorAll('tr')||[])];
+  let visible=0;
+  rows.forEach(row=>{
+    const matches=!query||normalizeMemberSearch(row.textContent).includes(query);
+    row.hidden=!matches;
+    if(matches&&row.querySelector('[data-action="edit-member"]'))visible++;
+  });
+  const count=$('memberDirectorySearchCount');
+  if(count)count.textContent=query?visible+' résultat(s)':'';
+}
+function renderContributionMemberSearch(value){
+  const box=$('contributionMemberSearchResults');
+  if(!box)return;
+  const query=normalizeMemberSearch(value);
+  if(!query){box.innerHTML='';return;}
+  const members=(window._djqContributionMembers||[]).filter(member=>
+    normalizeMemberSearch([member.member_number,member.first_name,member.last_name].join(' ')).includes(query)
+  ).slice(0,10);
+  box.innerHTML=members.length?members.map(member=>
+    '<button type="button" class="member-search-result" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>'
+  ).join(''):'<div class="member-search-empty">Aucun membre actif trouvé.</div>';
+}
 function esc(s){
   return String(s??'').replace(/[&<>"']/g,m=>({
     '&':'&amp;',
@@ -1029,8 +1058,11 @@ async function loadContributionMembers(){
     .order('first_name',{ascending:true});
   if(r.error){msg('contributionMessage',r.error.message);return}
   const active=(r.data||[]).filter(m=>m.status==='active');
+  window._djqContributionMembers=active;
   $('contributionMember').innerHTML='<option value="">Sélectionner un membre</option>'+
     active.map(m=>`<option value="${esc(m.id)}">${esc(m.member_number)} — ${esc(m.first_name)} ${esc(m.last_name)}</option>`).join('');
+  if($('contributionMemberSearch'))$('contributionMemberSearch').value='';
+  if($('contributionMemberSearchResults'))$('contributionMemberSearchResults').innerHTML='';
 }
 
 async function loadContributions(){
@@ -1414,6 +1446,7 @@ async function loadMembers(){
   $('totalMemberCount').textContent=String(rows.length);
   $('memberCount').textContent=String(rows.filter(x=>x.status==='active').length);
   box.innerHTML=rows.length?rows.map(x=>'<tr><td><strong>'+esc(x.member_number)+'</strong></td><td><div class="member-mini"><img src="'+esc(x.photo_url||'logo.jpeg')+'" alt=""><span>'+esc(x.first_name)+' '+esc(x.last_name)+'</span></div></td><td>'+esc(commissionNames[x.commission_id]||'Non affecté')+'</td><td>'+esc(formatPhoneDisplay(x.phone))+'</td><td>'+esc(x.membership_date||'—')+'</td><td><span class="status '+(x.status==='active'?'active':'inactive')+'">'+(x.status==='active'?'Actif':'Inactif')+'</span></td><td><button class="table-btn" data-action="edit-member" data-id="'+esc(x.id)+'">Modifier</button> <button class="table-btn" data-action="show-member-card" data-id="'+esc(x.id)+'">Voir carte</button> <button class="table-btn" data-action="toggle-member-status" data-status="'+esc(x.status||'active')+'" data-id="'+esc(x.id)+'">'+(x.status==='active'?'Désactiver':'Réactiver')+'</button> <button class="table-btn danger-btn" data-action="delete-member" data-id="'+esc(x.id)+'">Supprimer</button></td></tr>').join(''):'<tr><td colspan="7">Aucun membre enregistré dans la base.</td></tr>';
+  filterMemberDirectory();
   msg('memberMessage',rows.length+' membre(s) chargé(s).'+(cr.error?' Les commissions n’ont pas pu être récupérées : '+cr.error.message:''),!cr.error);
  }catch(err){
   box.innerHTML='<tr><td colspan="7">Erreur inattendue : '+esc(err?.message||String(err))+'</td></tr>';
@@ -2727,6 +2760,16 @@ document.addEventListener('change', function(e) {
 
 // Actions de tableaux : aucun JavaScript utilisateur n'est injecté dans les attributs HTML.
 document.addEventListener('click', async function(e) {
+  const memberPick=e.target.closest('[data-contribution-member-pick]');
+  if(memberPick){
+    const member=(window._djqContributionMembers||[]).find(item=>String(item.id)===String(memberPick.dataset.contributionMemberPick));
+    if(member){
+      $('contributionMember').value=member.id;
+      $('contributionMemberSearch').value=(member.member_number||'')+' — '+(member.first_name||'')+' '+(member.last_name||'');
+      $('contributionMemberSearchResults').innerHTML='';
+    }
+    return;
+  }
   const button = e.target.closest('[data-action]');
   if (!button) return;
   const id = button.dataset.id;

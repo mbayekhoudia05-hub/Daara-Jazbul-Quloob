@@ -2059,3 +2059,55 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .general-leader-card strong{display:block;font-size:1.35rem;color:var(--text,#183b29)}
 .general-leader-card p{margin:9px 0 0;color:var(--muted,#66756b);font-size:.92rem}
 .commission-directory-heading{margin-top:28px}
+
+
+/* Recherche rapide des membres dans l'administration */
+.member-search-label{
+  display:grid;
+  gap:7px;
+  max-width:560px;
+  margin:0 0 14px;
+  color:var(--text,#183b29);
+  font-weight:700;
+}
+.member-search-label input,
+#contributionMemberSearch{
+  width:100%;
+  min-height:44px;
+  box-sizing:border-box;
+  padding:10px 13px;
+  border:1px solid var(--djq-line,#dce6dd);
+  border-radius:10px;
+  background:#fff;
+  color:var(--text,#183b29);
+  font:inherit;
+}
+#memberRows tr[hidden]{display:none}
+#contributions .member-search-results{
+  display:grid;
+  gap:5px;
+  max-height:260px;
+  overflow:auto;
+  margin-top:6px;
+}
+#contributions .member-search-result{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--djq-line,#dce6dd);
+  border-radius:9px;
+  background:#fff;
+  color:var(--text,#183b29);
+  text-align:left;
+  cursor:pointer;
+}
+#contributions .member-search-result:hover,
+#contributions .member-search-result:focus-visible{
+  border-color:var(--primary,#176b43);
+  background:rgba(31,112,69,.06);
+}
+#contributions .member-search-result strong{min-width:52px;color:var(--primary,#176b43)}
+#contributions .member-search-empty{padding:10px 12px;color:var(--muted,#66756b)}
+#contributions .contribution-member-select-label{margin-top:8px}
