@@ -165,7 +165,7 @@ function renderContributionMemberSearch(value){
       (member.last_name||'')+' '+(member.first_name||'')
     ].map(normalizeMemberSearch).filter(Boolean);
     // Suggestions par début de numéro, prénom ou nom (y compris chaque mot d'un nom composé).
-    return fields.some(field=>field.startsWith(query)||field.split(/\\s+/).some(part=>part.startsWith(query)));
+    return fields.some(field=>field.startsWith(query)||field.split(/\s+/).some(part=>part.startsWith(query)));
   }).sort((a,b)=>{
     const rank=member=>{
       const fields=[member.member_number,member.first_name,member.last_name].map(normalizeMemberSearch);
