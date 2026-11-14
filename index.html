@@ -326,11 +326,11 @@
     <h3>Ajouter une cotisation</h3>
     <div class="form-row">
       <label>Rechercher le membre à cotiser
-        <input id="contributionMemberSearch" type="search" placeholder="Saisir un nom ou un numéro" autocomplete="off">
+        <input id="contributionMemberSearch" type="search" placeholder="Tape un nom ou choisis une lettre ci-dessous" autocomplete="off">
         <div id="contributionMemberSearchResults" class="member-search-results" role="listbox" aria-label="Résultats de recherche des membres"></div>
       </label>
-      <label class="contribution-member-select-label">Membre
-        <select id="contributionMember" required>
+      <label class="contribution-member-select-label" hidden>Membre
+        <select id="contributionMember">
           <option value="">Sélectionner un membre</option>
         </select>
       </label>
