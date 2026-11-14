@@ -162,18 +162,22 @@ function renderContributionMemberSearch(value){
   const box=$('contributionMemberSearchResults');
   if(!box)return;
   const query=normalizeMemberSearch(value);
-  if(!query){box.innerHTML='';return;}
+  const letter=window._djqContributionLetter||'A';
   const members=(window._djqContributionMembers||[]).filter(member=>{
-    const fields=[member.member_number,member.first_name,member.last_name,(member.first_name||'')+' '+(member.last_name||''),(member.last_name||'')+' '+(member.first_name||'')];
-    const words=query.split(/\s+/).filter(Boolean);
-    return words.every(word=>fields.some(value=>normalizeMemberSearch(value).split(/\s+/).some(part=>part.startsWith(word))));
-  }).sort((a,b)=>{
-    const rank=member=>[member.member_number,member.first_name,member.last_name].some(value=>normalizeMemberSearch(value).startsWith(query))?0:1;
-    return rank(a)-rank(b)||String(a.last_name||'').localeCompare(String(b.last_name||''),'fr');
-  }).slice(0,15);
-  box.innerHTML=members.length?members.map(member=>
-    '<button type="button" class="member-search-result" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>'
-  ).join(''):'<div class="member-search-empty">Aucun membre actif trouvé.</div>';
+    const first=normalizeMemberSearch(member.first_name||'');
+    const last=normalizeMemberSearch(member.last_name||'');
+    if(query){
+      const fields=[member.member_number,member.first_name,member.last_name,(member.first_name||'')+' '+(member.last_name||''),(member.last_name||'')+' '+(member.first_name||'')];
+      const words=query.split(/\s+/).filter(Boolean);
+      return words.every(word=>fields.some(value=>normalizeMemberSearch(value).split(/\s+/).some(part=>part.startsWith(word))));
+    }
+    return (last||first).startsWith(letter.toLowerCase());
+  }).sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'fr',{sensitivity:'base'})||String(a.first_name||'').localeCompare(String(b.first_name||''),'fr',{sensitivity:'base'}));
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const nav='<div class="contribution-alphabet-nav" aria-label="Filtrer les membres par initiale">'+alphabet.map(ch=>'<button type="button" class="contribution-letter'+(!query&&ch===letter?' active':'')+'" data-contribution-letter="'+ch+'" aria-pressed="'+(!query&&ch===letter)+'">'+ch+'</button>').join('')+'</div>';
+  const paging='<div class="contribution-letter-paging"><button type="button" class="secondary" data-contribution-letter-step="-1" '+(letter==='A'?'disabled':'')+'>← Précédent</button><strong>'+(query?'Résultats de recherche':'Noms commençant par '+letter)+'</strong><button type="button" class="secondary" data-contribution-letter-step="1" '+(letter==='Z'?'disabled':'')+'>Suivant →</button></div>';
+  const results=members.length?members.map(member=>'<button type="button" class="member-search-result" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>').join(''):'<div class="member-search-empty">'+(query?'Aucun membre actif trouvé.':'Aucun membre actif dont le nom commence par '+letter+'.')+'</div>';
+  box.innerHTML=nav+paging+'<div class="contribution-member-results-list">'+results+'</div>';
 }
 function esc(s){
   return String(s??'').replace(/[&<>"']/g,m=>({
@@ -1074,7 +1078,8 @@ async function loadContributionMembers(){
   $('contributionMember').innerHTML='<option value="">Sélectionner un membre</option>'+
     active.map(m=>`<option value="${esc(m.id)}">${esc(m.member_number)} — ${esc(m.first_name)} ${esc(m.last_name)}</option>`).join('');
   if($('contributionMemberSearch'))$('contributionMemberSearch').value='';
-  if($('contributionMemberSearchResults'))$('contributionMemberSearchResults').innerHTML='';
+  window._djqContributionLetter='A';
+  renderContributionMemberSearch('');
 }
 
 async function loadContributions(){
@@ -2772,6 +2777,23 @@ document.addEventListener('change', function(e) {
 
 // Actions de tableaux : aucun JavaScript utilisateur n'est injecté dans les attributs HTML.
 document.addEventListener('click', async function(e) {
+  const letterPick=e.target.closest('[data-contribution-letter]');
+  if(letterPick){
+    window._djqContributionLetter=letterPick.dataset.contributionLetter;
+    if($('contributionMemberSearch'))$('contributionMemberSearch').value='';
+    renderContributionMemberSearch('');
+    return;
+  }
+  const letterStep=e.target.closest('[data-contribution-letter-step]');
+  if(letterStep){
+    const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const current=letters.indexOf(window._djqContributionLetter||'A');
+    const next=Math.max(0,Math.min(25,current+Number(letterStep.dataset.contributionLetterStep||0)));
+    window._djqContributionLetter=letters[next];
+    if($('contributionMemberSearch'))$('contributionMemberSearch').value='';
+    renderContributionMemberSearch('');
+    return;
+  }
   const memberPick=e.target.closest('[data-contribution-member-pick]');
   if(memberPick){
     const member=(window._djqContributionMembers||[]).find(item=>String(item.id)===String(memberPick.dataset.contributionMemberPick));
