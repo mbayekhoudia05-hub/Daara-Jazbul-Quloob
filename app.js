@@ -137,7 +137,7 @@ document.addEventListener('input',event=>{
   if(event.target?.id==='contributionMemberSearch')renderContributionMemberSearch(event.target.value);
 });
 function normalizeMemberSearch(value){
-  return String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 function filterMemberDirectory(){
   const query=normalizeMemberSearch($('memberDirectorySearch')?.value||'');
