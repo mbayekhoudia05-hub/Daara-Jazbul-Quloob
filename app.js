@@ -156,11 +156,25 @@ function renderContributionMemberSearch(value){
   if(!box)return;
   const query=normalizeMemberSearch(value);
   if(!query){box.innerHTML='';return;}
-  const members=(window._djqContributionMembers||[]).filter(member=>
-    normalizeMemberSearch([member.member_number,member.first_name,member.last_name].join(' ')).includes(query)
-  ).slice(0,10);
+  const members=(window._djqContributionMembers||[]).filter(member=>{
+    const fields=[
+      member.member_number,
+      member.first_name,
+      member.last_name,
+      (member.first_name||'')+' '+(member.last_name||''),
+      (member.last_name||'')+' '+(member.first_name||'')
+    ].map(normalizeMemberSearch).filter(Boolean);
+    // Suggestions par début de numéro, prénom ou nom (y compris chaque mot d'un nom composé).
+    return fields.some(field=>field.startsWith(query)||field.split(/\\s+/).some(part=>part.startsWith(query)));
+  }).sort((a,b)=>{
+    const rank=member=>{
+      const fields=[member.member_number,member.first_name,member.last_name].map(normalizeMemberSearch);
+      return fields.some(field=>field.startsWith(query))?0:1;
+    };
+    return rank(a)-rank(b)||String(a.last_name||'').localeCompare(String(b.last_name||''),'fr');
+  }).slice(0,15);
   box.innerHTML=members.length?members.map(member=>
-    '<button type="button" class="member-search-result" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>'
+    '<button type="button" class="member-search-result" role="option" data-contribution-member-pick="'+esc(member.id)+'"><strong>'+esc(member.member_number||'')+'</strong><span>'+esc((member.first_name||'')+' '+(member.last_name||''))+'</span></button>'
   ).join(''):'<div class="member-search-empty">Aucun membre actif trouvé.</div>';
 }
 function esc(s){
