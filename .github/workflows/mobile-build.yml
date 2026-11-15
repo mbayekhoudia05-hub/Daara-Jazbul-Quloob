@@ -72,11 +72,11 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
       - name: Build for iOS Simulator
-        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
       - name: Package simulator app
         run: |
           mkdir -p build/ios
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path '*/Build/Products/Debug-iphonesimulator/App.app' -print -quit)
+          APP_PATH='build/DerivedData/Build/Products/Debug-iphonesimulator/App.app'
           test -n "$APP_PATH"
           ditto "$APP_PATH" build/ios/DaaraJazbulQuluub.app
       - name: Upload iOS simulator app
