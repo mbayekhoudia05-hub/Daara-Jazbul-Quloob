@@ -276,6 +276,28 @@ async function auth(e){
   }
 }
 
+function showForgotPassword(){
+  $('authTitle').textContent='Réinitialiser le mot de passe';$('authForm').classList.add('hidden');$('switchAuth').classList.add('hidden');$('forgotPasswordBtn').classList.add('hidden');$('passwordResetRequest').classList.remove('hidden');$('passwordUpdateForm').classList.add('hidden');$('passwordResetMessage').textContent='';$('resetEmail').value=$('email').value.trim().toLowerCase();$('resetEmail').focus();
+}
+function restoreAuthForm(){
+  $('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authForm').classList.remove('hidden');$('switchAuth').classList.remove('hidden');$('forgotPasswordBtn').classList.toggle('hidden',signupMode);$('passwordResetRequest').classList.add('hidden');$('passwordUpdateForm').classList.add('hidden');$('passwordResetMessage').textContent='';
+}
+async function requestPasswordReset(event){
+  event.preventDefault();const email=$('resetEmail').value.trim().toLowerCase();const button=$('sendPasswordResetBtn');const previous=button.textContent;if(!email){$('passwordResetMessage').textContent='Saisis ton adresse e-mail.';return;}button.disabled=true;button.textContent='Envoi en cours…';
+  try{const redirectTo=window.location.origin+window.location.pathname;const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;$('passwordResetMessage').style.color='#08733a';$('passwordResetMessage').textContent='Si un compte correspond à cette adresse, un lien de réinitialisation vient d’être envoyé. Vérifie aussi les courriers indésirables.';}
+  catch(error){console.error('Erreur de récupération du mot de passe:',error);$('passwordResetMessage').style.color='#a52d2d';$('passwordResetMessage').textContent='Impossible d’envoyer le lien pour le moment. Vérifie l’adresse et réessaie plus tard.';}
+  finally{button.disabled=false;button.textContent=previous;}
+}
+function showPasswordUpdate(){
+  $('authTitle').textContent='Choisir un nouveau mot de passe';$('authForm').classList.add('hidden');$('switchAuth').classList.add('hidden');$('forgotPasswordBtn').classList.add('hidden');$('passwordResetRequest').classList.add('hidden');$('passwordUpdateForm').classList.remove('hidden');$('passwordUpdateMessage').textContent='';openAuth();$('newPassword').focus();
+}
+async function updateRecoveredPassword(event){
+  event.preventDefault();const password=$('newPassword').value;const confirmation=$('confirmNewPassword').value;const button=$('updatePasswordBtn');if(password.length<6){$('passwordUpdateMessage').textContent='Le mot de passe doit contenir au moins 6 caractères.';return;}if(password!==confirmation){$('passwordUpdateMessage').textContent='Les deux mots de passe ne correspondent pas.';return;}const previous=button.textContent;button.disabled=true;button.textContent='Enregistrement…';
+  try{const {error}=await sb.auth.updateUser({password});if(error)throw error;$('passwordUpdateMessage').style.color='#08733a';$('passwordUpdateMessage').textContent='Mot de passe modifié avec succès. Tu peux maintenant te connecter avec ton nouveau mot de passe.';$('passwordUpdateForm').reset();await sb.auth.signOut();signupMode=false;$('email').value='';$('password').value='';$('passwordUpdateForm').classList.add('hidden');$('authForm').classList.remove('hidden');$('switchAuth').classList.remove('hidden');$('forgotPasswordBtn').classList.remove('hidden');$('authTitle').textContent='Connexion';msg('authMessage','Mot de passe modifié. Connecte-toi avec ton nouveau mot de passe.',true);}
+  catch(error){console.error('Erreur de mise à jour du mot de passe:',error);$('passwordUpdateMessage').style.color='#a52d2d';$('passwordUpdateMessage').textContent='Le lien a peut-être expiré. Demande un nouveau lien de réinitialisation.';}
+  finally{button.disabled=false;button.textContent=previous;}
+}
+
 async function load(){
   if(!sb)return;
   const r=await sb.from('contents')
@@ -684,7 +706,11 @@ function initPosterGenerator(){const form=$('posterForm');if(!form)return;poster
 async function init(){
  const c=window.DJQ_CONFIG;
  $('loginBtn').onclick=openAuth;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
- $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit'};
+ $('switchAuth').onclick=()=>{signupMode=!signupMode;$('authTitle').textContent=signupMode?'Créer un compte gratuit':'Connexion';$('authSubmit').textContent=signupMode?'Créer mon compte':'Se connecter';$('switchAuth').textContent=signupMode?'J’ai déjà un compte':'Créer un compte gratuit';$('forgotPasswordBtn').classList.toggle('hidden',signupMode)};
+  $('forgotPasswordBtn').onclick=showForgotPassword;
+  $('cancelPasswordResetBtn').onclick=restoreAuthForm;
+  $('passwordResetRequest').onsubmit=requestPasswordReset;
+  $('passwordUpdateForm').onsubmit=updateRecoveredPassword;
  $('closeMemberFinance').onclick=()=>closeAccessibleModal('memberFinanceModal');
  initPosterGenerator();
  $('printCardBtn').onclick=()=>void printSelectedMemberCard();
@@ -738,6 +764,7 @@ if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   $('memberReportForm').onsubmit=submitMemberReport;
 }
  sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY'){showPasswordUpdate();return;}
   if(event!=='SIGNED_IN'&&event!=='SIGNED_OUT')return;
   setTimeout(()=>{
     void setUser(session?.user||null).catch(error=>{
