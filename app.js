@@ -1982,20 +1982,20 @@ async function loadUnpaidTracker(){
   const search=$("unpaidSearch")?.value||"";
   const filtered=members.filter(m=>memberSearchMatches([m.member_number,m.first_name,m.last_name],search));
 
-  const paid=members.filter(m=>paidMap[m.id]>0).length;
-  $("paidMembersCount").textContent=paid;
-  $("unpaidMembersCount").textContent=members.length-paid;
+  const withPayment=members.filter(m=>paidMap[m.id]>0).length;
+  $("paidMembersCount").textContent=withPayment;
+  $("unpaidMembersCount").textContent=members.length-withPayment;
   $("checkedMembersCount").textContent=members.length;
 
   $("unpaidRows").innerHTML=filtered.length?filtered.map(m=>{
-    const amount=paidMap[m.id]||0, ok=amount>0;
+    const amount=paidMap[m.id]||0, hasPayment=amount>0;
     return `<tr>
       <td><strong>${esc(m.member_number||"")}</strong><br>${esc((m.first_name||"")+" "+(m.last_name||""))}</td>
       <td>${esc(month)}</td>
-      <td><span class="status-pill ${ok?"paid-pill":"unpaid-pill"}">${ok?"🟢 PAYÉ":"🔴 NON PAYÉ"}</span></td>
-      <td>${esc(ok?formatMoney(amount):"0 FCFA")}</td>
+      <td><span class="status-pill ${hasPayment?"paid-pill":"unpaid-pill"}">${hasPayment?"🟢 VERSEMENT REÇU":"🔴 AUCUN VERSEMENT"}</span></td>
+      <td>${esc(formatMoney(amount))}</td>
       <td><button class="table-btn" data-action="member-history" data-id="${esc(m.id)}">Historique</button>
-      ${!ok?`<button class="table-btn" data-action="prefill-contribution" data-id="${esc(m.id)}" data-month="${esc(month)}">➕ Ajouter</button>`:""}</td>
+      <button class="table-btn" data-action="prefill-contribution" data-id="${esc(m.id)}" data-month="${esc(month)}">➕ Ajouter</button></td>
     </tr>`;
   }).join(""):'<tr><td colspan="5">Aucun membre trouvé.</td></tr>';
 }
