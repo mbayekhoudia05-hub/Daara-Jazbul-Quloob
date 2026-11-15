@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#075b35">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./pwa-icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./pwa-icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Daara Jazbul">
   <title>Installer l'application – Daara Jazbul Quluub</title>
@@ -31,10 +31,10 @@
   <header>
     <div class="tag">DAARA JAZBUL QULUUB · CELLULE DAKAR</div>
     <h1>Installer l'application sur votre téléphone</h1>
-    <p>Installation gratuite sur les téléphones Android et iPhone compatibles. Aucun passage par Play Store ou App Store n’est nécessaire.</p>
+    <p>Installation gratuite sur Android et iPhone : ajoutez Daara Jazbul Quluub à votre écran d’accueil pour l’utiliser comme une application. Aucun passage par Play Store ou App Store n’est nécessaire.</p>
     <a class="button" href="./">Ouvrir la plateforme</a>
     <button class="button" id="installAppBtn" type="button" hidden>Installer l’application maintenant</button>
-    <p id="installStatus" role="status" aria-live="polite">Sur Android, le bouton lance la fenêtre d’installation lorsqu’elle est proposée par le navigateur. Sur iPhone, utilisez les étapes du menu Partager.</p>
+    <p id="installStatus" role="status" aria-live="polite">Choisissez les étapes correspondant à votre téléphone. Sur iPhone, l’installation se fait depuis le menu Partager puis « Ajouter à l’écran d’accueil ».</p>
   </header>
   <section class="guide">
     <h2>Sur tous les téléphones Android</h2>
@@ -49,14 +49,15 @@
     <p class="note"><strong>Autres navigateurs Android :</strong> selon le navigateur et sa version, ouvrez son menu puis cherchez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Si cette option n’apparaît pas, essayez avec Google Chrome à jour. Sur certains appareils sans services Google, Android ajoute un raccourci web plutôt qu’une application WebAPK complète : il ouvre néanmoins la plateforme depuis une icône.</p>
     <p class="note"><strong>Vous avez ouvert le lien depuis Gmail, WhatsApp ou Facebook ?</strong> Ouvrez le menu de la page et choisissez « Ouvrir dans Chrome » avant de procéder à l’installation. Le bouton d’installation directe apparaît uniquement lorsque le navigateur prend en charge cette fonction.</p>
   </section>
-  <section class="guide">
-    <h2>Sur iPhone</h2>
+  <section class="guide" id="iphoneInstallGuide">
+    <h2>Installer sur iPhone (sans App Store)</h2>
+    <p><strong>Oui, l’application fonctionne sur iPhone.</strong> Il faut l’ajouter à l’écran d’accueil : iOS ne propose pas un téléchargement direct comme un fichier Android.</p>
     <ol>
-      <li>Ouvrez cette page dans le navigateur <strong>Safari</strong>.</li>
+      <li>Ouvrez la plateforme avec <strong>Safari</strong> (méthode recommandée). Si vous êtes dans WhatsApp, Gmail ou un autre navigateur, utilisez « Ouvrir dans Safari » si cette option est proposée.</li>
       <li>Appuyez sur le bouton <strong>Partager</strong> (carré avec une flèche vers le haut).</li>
-      <li>Faites défiler puis choisissez <strong>Sur l'écran d'accueil</strong> ou <strong>Ajouter à l'écran d'accueil</strong>.</li>
-      <li>Activez <strong>Ouvrir comme app web</strong> si cette option apparaît, puis appuyez sur <strong>Ajouter</strong>.</li>
-      <li>L'icône apparaîtra sur l'écran d'accueil de votre iPhone.</li>
+      <li>Faites défiler les actions et choisissez <strong>Sur l’écran d’accueil</strong> ou <strong>Ajouter à l’écran d’accueil</strong>.</li>
+      <li>Si l’option <strong>Ouvrir comme app web</strong> apparaît, activez-la, puis appuyez sur <strong>Ajouter</strong>.</li>
+      <li>Revenez à l’écran d’accueil : l’icône <strong>Daara Jazbul</strong> apparaît. Touchez-la pour ouvrir l’application.</li>
     </ol>
   </section>
   <section class="guide">
