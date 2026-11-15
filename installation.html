@@ -28,20 +28,23 @@
   <header>
     <div class="tag">DAARA JAZBUL QULUUB · CELLULE DAKAR</div>
     <h1>Installer l'application sur votre téléphone</h1>
-    <p>Cette installation est gratuite. Aucun téléchargement depuis une boutique n'est nécessaire.</p>
+    <p>Installation gratuite sur les téléphones Android et iPhone compatibles. Aucun passage par Play Store ou App Store n’est nécessaire.</p>
     <a class="button" href="./">Ouvrir la plateforme</a>
     <button class="button" id="installAppBtn" type="button" hidden>Installer sur cet appareil</button>
-    <p id="installStatus" role="status" aria-live="polite">L’installation se fait séparément sur chaque téléphone depuis son navigateur.</p>
+    <p id="installStatus" role="status" aria-live="polite">Si le bouton « Installer sur cet appareil » apparaît, appuyez dessus. Sinon, suivez les étapes correspondant à votre téléphone.</p>
   </header>
   <section class="guide">
-    <h2>Sur Android (Samsung, Tecno, Infinix, etc.)</h2>
+    <h2>Sur tous les téléphones Android</h2>
+    <p>Cette application n’est pas réservée à Samsung. Elle est conçue pour les téléphones Android compatibles, notamment <strong>Samsung, Tecno, Infinix, Itel, Xiaomi, Redmi, Oppo, Realme, Vivo, Motorola</strong> et les autres marques Android.</p>
     <ol>
-      <li>Ouvrez cette page dans <strong>Google Chrome</strong>.</li>
-      <li>Appuyez sur le menu <strong>⋮</strong> en haut à droite.</li>
-      <li>Choisissez <strong>Installer l'application</strong> ou <strong>Ajouter à l'écran d'accueil</strong>.</li>
-      <li>Confirmez avec <strong>Installer</strong> ou <strong>Ajouter</strong>.</li>
-      <li>L'icône Daara Jazbul Quluub apparaîtra sur votre téléphone.</li>
+      <li>Ouvrez cette page dans le navigateur <strong>Google Chrome</strong> (méthode recommandée).</li>
+      <li>Appuyez sur le menu <strong>⋮</strong> en haut à droite de Chrome.</li>
+      <li>Choisissez <strong>Installer l'application</strong> ou <strong>Ajouter à l'écran d'accueil</strong>, selon l’option affichée.</li>
+      <li>Appuyez sur <strong>Installer</strong> ou <strong>Ajouter</strong> pour confirmer.</li>
+      <li>L’icône Daara Jazbul Quluub apparaîtra sur l’écran d’accueil.</li>
     </ol>
+    <p class="note"><strong>Autres navigateurs Android :</strong> selon le navigateur et sa version, ouvrez son menu puis cherchez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Si cette option n’apparaît pas, essayez avec Google Chrome à jour.</p>
+    <p class="note"><strong>Vous avez ouvert le lien depuis Gmail, WhatsApp ou Facebook ?</strong> Ouvrez le menu de la page et choisissez « Ouvrir dans Chrome » avant de procéder à l’installation. Le bouton d’installation directe apparaît uniquement lorsque le navigateur prend en charge cette fonction.</p>
   </section>
   <section class="guide">
     <h2>Sur iPhone</h2>
@@ -79,10 +82,10 @@ window.addEventListener("beforeinstallprompt",event=>{
   event.preventDefault();
   deferredInstallPrompt=event;
   installButton.hidden=false;
-  installStatus.textContent="Votre navigateur permet l’installation directe sur cet appareil.";
+  installStatus.textContent="Installation directe disponible sur cet appareil. Appuyez sur « Installer sur cet appareil ».";
 });
 installButton.addEventListener("click",async()=>{
-  if(!deferredInstallPrompt){installStatus.textContent="Ouvrez la plateforme dans Chrome (Android) ou Safari (iPhone), puis suivez les étapes ci-dessous.";return;}
+  if(!deferredInstallPrompt){installStatus.textContent="Votre navigateur ne propose pas l’installation directe. Sur Android, ouvrez cette page dans Chrome et utilisez le menu ⋮ ; sur iPhone, utilisez le menu Partager.";return;}
   deferredInstallPrompt.prompt();
   const choice=await deferredInstallPrompt.userChoice;
   installStatus.textContent=choice.outcome==="accepted"?"Installation confirmée sur cet appareil.":"Installation non terminée. Vous pouvez réessayer depuis le menu du navigateur.";
