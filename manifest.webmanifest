@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "Daara Jazbul Quluub – Cellule Dakar",
+  "short_name": "Daara Jazbul",
+  "description": "Application officielle du Daara Jazbul Quluub – Cellule Dakar.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#075b35",
+  "theme_color": "#075b35",
+  "prefer_related_applications": false,
+  "categories": ["education", "lifestyle", "social"],
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
