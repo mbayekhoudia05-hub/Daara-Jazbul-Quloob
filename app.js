@@ -1,3 +1,13 @@
+// À chaque nouvelle ouverture de l'application, repartir de l'accueil.
+// Les liens directs vers une rubrique et les cartes publiques restent respectés.
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+window.addEventListener('pageshow',event=>{
+  const hasPublicMember=new URLSearchParams(location.search).has('member');
+  if(!event.persisted&&!location.hash&&!hasPublicMember){
+    window.scrollTo({top:0,left:0,behavior:'instant'});
+  }
+});
+
 let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
 let paymentCategories=[];
 let galleryPreviewUrl=null;
@@ -304,16 +314,21 @@ function renderAdminCharters(rows){
       pdf?'<a class="pdf-download" href="'+esc(pdf)+(pdf.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇ Télécharger le PDF original</a>':'',
       external?'<a href="'+esc(external)+'" target="_blank" rel="noopener">Ouvrir le lien complémentaire</a>':''
     ].filter(Boolean).join(' ');
-    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+(pdf?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(pdf)+'#view=FitH" loading="lazy"></iframe>':'')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
+    return '<article class="card admin-charter-card"><span class="tag">📜 Charte publiée</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+(x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'<p class="loading">Le texte intégral n’est pas encore renseigné.</p>')+(pdf?charterPdfMarkup(pdf,x.title):'')+'<div class="charter-pdf-actions">'+(actions||'<span>Document PDF non joint.</span>')+'</div></article>';
   }).join('');
 }
 
+function charterPdfMarkup(url,title){
+  if(!url)return '';
+  return '<div class="charter-pdf-lazy"><button type="button" class="secondary charter-pdf-toggle" data-charter-pdf-src="'+esc(url)+'" data-charter-pdf-title="'+esc(title)+'">📄 Lire le PDF</button><div class="charter-pdf-lazy-frame"></div></div>';
+}
 function contentCard(x){
   const icon={khasside:'📖',audio:'🎧',video:'🎥',cours:'📚',annonce:'📢',information:'ℹ️',charte:'📜'}[x.type]||'📄';
   const external=(x.external_url||'').match(/^https?:\/\//i)?'<a target="_blank" rel="noopener" href="'+esc(x.external_url)+'">Ouvrir le lien →</a>':'';
-  const pdf=(x.file_url||'').match(/^https?:\/\//i)?'<a class="pdf-download" href="'+esc(x.file_url)+(x.file_url.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇️ Télécharger le PDF original</a>':'';
+  const pdfUrl=(x.file_url||'').match(/^https?:\/\//i)?x.file_url:'';
+  const pdf=pdfUrl?'<a class="pdf-download" href="'+esc(pdfUrl)+(pdfUrl.includes('?')?'&':'?')+'download=Reglement-Daara-Jazbul-Qulub.pdf">⬇️ Télécharger le PDF original</a>':'';
   const charterText=x.type==='charte'&&x.charter_text?'<div class="charter-full-text" aria-label="Texte intégral du règlement">'+esc(x.charter_text)+'</div>':'';
-  const charterPdf=x.type==='charte'&&(x.file_url||'').match(/^https?:\/\//i)?'<iframe class="charter-pdf-viewer" title="Lecture de '+esc(x.title)+'" src="'+esc(x.file_url)+'#view=FitH" loading="lazy"></iframe>':'';
+  const charterPdf=x.type==='charte'?charterPdfMarkup(pdfUrl,x.title):'';
   return '<article class="card"><span class="tag">'+icon+' '+esc(contentTypeLabel(x.type))+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+charterText+charterPdf+pdf+external+'</article>';
 }
 function contentTypeLabel(type){
@@ -1011,7 +1026,7 @@ async function loadConnectedMemberDashboard(member){
           <h4>📜 ${esc(x.title)}</h4>
           <p>${esc(x.description||'')}</p>
           ${x.charter_text?`<div class="charter-full-text" aria-label="Texte intégral du règlement">${esc(x.charter_text)}</div>`:''}
-          ${pdfUrl?`<iframe class="charter-pdf-viewer" title="Lecture de ${esc(x.title)}" src="${esc(pdfUrl)}#view=FitH" loading="lazy"></iframe>`:''}
+          ${pdfUrl?charterPdfMarkup(pdfUrl,x.title):''}
           ${url?`<p><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir le lien complémentaire ↗</a></p>`:''}
           ${pdfUrl?`<div class="charter-pdf-actions">
             <a class="pdf-download" href="${esc(downloadUrl)}">⬇️ Télécharger le PDF original</a>
@@ -1191,6 +1206,21 @@ async function deleteContribution(id){
   msg('contributionMessage','Cotisation supprimée.',true);
   await loadContributions();
 }
+
+document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-charter-pdf-src]');
+  if(!button)return;
+  const frameHost=button.parentElement?.querySelector('.charter-pdf-lazy-frame');
+  if(!frameHost)return;
+  const frame=document.createElement('iframe');
+  frame.className='charter-pdf-viewer';
+  frame.title='Lecture de '+(button.dataset.charterPdfTitle||'la charte');
+  frame.loading='lazy';
+  frame.src=button.dataset.charterPdfSrc+'#view=FitH';
+  frameHost.replaceChildren(frame);
+  button.textContent='PDF ouvert';
+  button.disabled=true;
+});
 
 addEventListener('DOMContentLoaded',init);
 

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#075b35">
+  <link rel="manifest" href="./manifest.webmanifest">
   <title>Installer l'application – Daara Jazbul Quluub</title>
   <style>
     :root{color-scheme:light;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#183329;background:#f4f7f5}
@@ -16,6 +17,7 @@
     p{line-height:1.6;margin:8px 0}
     li{line-height:1.65;margin:8px 0}
     .tag{font-size:.78rem;font-weight:700;letter-spacing:.08em;color:#547265}
+    .button[hidden]{display:none}
     .button{display:inline-block;margin-top:12px;padding:12px 18px;border-radius:10px;background:#075b35;color:white;text-decoration:none;font-weight:700}
     .note{background:#eef6f0;border-radius:12px;padding:13px}
     footer{text-align:center;color:#63756b;font-size:.85rem;padding:12px}
@@ -28,6 +30,8 @@
     <h1>Installer l'application sur votre téléphone</h1>
     <p>Cette installation est gratuite. Aucun téléchargement depuis une boutique n'est nécessaire.</p>
     <a class="button" href="./">Ouvrir la plateforme</a>
+    <button class="button" id="installAppBtn" type="button" hidden>Installer sur cet appareil</button>
+    <p id="installStatus" role="status" aria-live="polite">L’installation se fait séparément sur chaque téléphone depuis son navigateur.</p>
   </header>
   <section class="guide">
     <h2>Sur Android (Samsung, Tecno, Infinix, etc.)</h2>
@@ -56,5 +60,26 @@
   </section>
   <footer>© 2026 Daara Jazbul Quluub – Cellule Dakar</footer>
 </main>
+<script>
+let deferredInstallPrompt=null;
+const installButton=document.getElementById("installAppBtn");
+const installStatus=document.getElementById("installStatus");
+window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  installButton.hidden=false;
+  installStatus.textContent="Votre navigateur permet l’installation directe sur cet appareil.";
+});
+installButton.addEventListener("click",async()=>{
+  if(!deferredInstallPrompt){installStatus.textContent="Ouvrez la plateforme dans Chrome (Android) ou Safari (iPhone), puis suivez les étapes ci-dessous.";return;}
+  deferredInstallPrompt.prompt();
+  const choice=await deferredInstallPrompt.userChoice;
+  installStatus.textContent=choice.outcome==="accepted"?"Installation confirmée sur cet appareil.":"Installation non terminée. Vous pouvez réessayer depuis le menu du navigateur.";
+  deferredInstallPrompt=null;
+  installButton.hidden=true;
+});
+window.addEventListener("appinstalled",()=>{installStatus.textContent="Daara Jazbul Quluub est installé sur cet appareil.";installButton.hidden=true;});
+if("serviceWorker" in navigator && location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
 </body>
 </html>
