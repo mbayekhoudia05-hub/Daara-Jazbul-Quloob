@@ -314,11 +314,11 @@
     </div>
     <div class="stat">
       <strong id="contributionPaidCount">0</strong>
-      <span>Membres ayant payé ce mois</span>
+      <span>Membres avec versement ce mois</span>
     </div>
     <div class="stat">
       <strong id="contributionUnpaidCount">0</strong>
-      <span>Membres actifs non payés</span>
+      <span>Membres actifs sans versement</span>
     </div>
   </div>
 
@@ -509,14 +509,14 @@
 <section id="unpaidMembers" class="section hidden">
   <div class="head"><span>ESPACE ADMINISTRATEUR</span>
   <h2>📅 Suivi des cotisations</h2>
-  <p>Vérifie les membres ayant payé ou non pour un mois donné.</p></div>
+  <p>Repère les membres avec ou sans versement enregistré pour le mois choisi. Le montant dû par membre n’étant pas paramétré, ce tableau ne certifie pas qu’une cotisation est entièrement réglée.</p></div>
   <div class="member-form"><div class="form-row">
     <label>Mois à contrôler<input type="month" id="unpaidMonth"></label>
     <label>Recherche<input type="text" id="unpaidSearch" placeholder="Nom ou numéro membre"></label>
   </div></div>
   <div class="stats contribution-stats">
-    <div class="stat"><strong id="paidMembersCount">0</strong><span>À jour</span></div>
-    <div class="stat"><strong id="unpaidMembersCount">0</strong><span>Non payés</span></div>
+    <div class="stat"><strong id="paidMembersCount">0</strong><span>Avec versement</span></div>
+    <div class="stat"><strong id="unpaidMembersCount">0</strong><span>Sans versement</span></div>
     <div class="stat"><strong id="checkedMembersCount">0</strong><span>Membres actifs</span></div>
   </div>
   <div class="member-table-wrap"><table><thead><tr>
@@ -643,7 +643,7 @@
     <a href="#memberNotificationsPanel">Notifications</a>
     <a href="#memberProfilePanel">Mon profil</a>
     <a href="#memberCommissionPanel">Ma commission</a>
-    <a href="#memberPaymentPanel">Paiements</a>
+    <a href="#memberTransactionsPanel">Paiements</a>
     <a href="#memberContributionsPanel">Cotisations</a>
     <a href="#memberTransactionsPanel">Transactions</a>
     <a href="#memberSupportPanel">Assistance</a>
@@ -679,7 +679,7 @@
   </div>
 
   <div class="member-dashboard-group-title"><span>SUIVI FINANCIER</span><h3>Mes paiements et cotisations</h3><p>Retrouvez les informations de paiement et l’historique associé à votre compte.</p></div>
-  <div id="memberPaymentPanel" class="card member-dashboard-card">
+  <div id="memberPaymentPanel" class="card member-dashboard-card hidden" aria-hidden="true">
     <h3>💳 Effectuer un paiement Wave</h3>
     <p>Tu peux payer pour toi-même ou pour un autre membre. Le versement sera attribué au bénéficiaire choisi après vérification par l’administrateur.</p>
     <form id="memberPaymentForm" class="member-form">

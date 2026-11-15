@@ -40,6 +40,11 @@ jobs:
           packages: 'platform-tools'
       - name: Install dependencies
         run: npm install
+      - name: Validate web app and PWA files
+        run: |
+          node --check app.js
+          node --check sw.js
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); if(!m.name || !m.start_url || !m.scope || m.display!=='standalone' || !m.icons?.some(i=>i.type==='image/svg+xml' && i.sizes==='any' && fs.existsSync(i.src.replace(/^\\.\\//,'')))) process.exit(1); for (const f of ['index.html','installation.html']) if(!fs.readFileSync(f,'utf8').includes('manifest.webmanifest')) process.exit(1); console.log('PWA manifest and linked files are valid.');"
       - name: Prepare web assets
         run: npm run build:mobile
       - name: Generate Android project

@@ -8,7 +8,8 @@ window.addEventListener('pageshow',event=>{
   }
 });
 
-let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,signupMode=false;
+let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,isFinance=false,signupMode=false;
+function canManageFinance(){return isAdmin||isFinance;}
 let paymentCategories=[];
 let galleryPreviewUrl=null;
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
@@ -69,6 +70,7 @@ function closeAuth(){closeAccessibleModal('authModal')}
 function setAdminUI(){
   const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
   const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','postersNav','eventsNav','galleryNav','notificationsNav'];
+  const financeNavs=['contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
@@ -76,13 +78,19 @@ function setAdminUI(){
     show('adminNavigationGroup');
     show('adminDashboard');
     updateAdminDashboard();
+  }else if(isFinance){
+    financeNavs.forEach(show);
+    show('adminNavigationGroup');
+    show('financeDashboard');
   }
 }
 function showAdminSection(id){
-  if(!isAdmin)return;
-  const allowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
+  if(!isAdmin&&!isFinance)return;
+  const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
+  const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const allowed=isAdmin?adminAllowed:financeAllowed;
   if(!allowed.includes(id))return;
-  allowed.forEach(hide);
+  adminAllowed.forEach(hide);
   show(id);
   const link=document.querySelector('[data-admin-target="'+id+'"]');
   document.querySelectorAll('.app-sidebar nav a').forEach(a=>a.classList.remove('active'));
@@ -94,6 +102,10 @@ function showAdminSection(id){
   if(id==='adminEvents')void loadAdminEvents();
   if(id==='adminGallery')void loadAdminGallery();
   if(id==='adminNotifications')void loadAdminNotifications();
+  if(id==='contributions')void loadContributions();
+  if(id==='paymentTransactions')void loadPaymentTransactions();
+  if(id==='unpaidMembers')void loadUnpaidTracker();
+  if(id==='financeDashboard')void loadFinanceDashboard();
 }
 async function updatePendingMembershipCount(){
   if(!sb||!isAdmin)return;
@@ -119,7 +131,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[data-admin-target]');
-  if(!a||!isAdmin)return;
+  if(!a||(!isAdmin&&!isFinance))return;
   e.preventDefault();
   showAdminSection(a.dataset.adminTarget);
   if(window.innerWidth<=800){
@@ -785,6 +797,7 @@ async function setUser(u){
   if(!u){
     currentMemberRecord=null;
     isAdmin=false;
+    isFinance=false;
     setAdminUI();
     await loadPublicCommissionDirectory();
     hide('logoutBtn');
@@ -815,6 +828,7 @@ async function setUser(u){
   }
 
   isAdmin=r.data.role==='admin';
+  isFinance=r.data.role==='finance';
   setAdminUI();
   await loadPublicCommissionDirectory();
 
@@ -845,7 +859,7 @@ async function setUser(u){
     mr.data.commissions=commissionResult.data||null;
   }
 
-  if(mr.data && mr.data.status!=='active' && !isAdmin){
+  if(mr.data && mr.data.status!=='active' && !isAdmin && !isFinance){
     alert("Ton accès à l’espace membre a été suspendu par l’administration. Contacte le responsable du Daara.");
     await sb.auth.signOut();
     hide('memberDashboard');
@@ -854,11 +868,11 @@ async function setUser(u){
     show('membershipFormSection');
     return;
   }
-  if(mr.data && mr.data.status==='active' && !isAdmin){
+  if(mr.data && mr.data.status==='active' && !isAdmin && !isFinance){
     currentMemberRecord=mr.data;
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
-  }else if(isAdmin){
+  }else if(isAdmin||isFinance){
     currentMemberRecord=mr.data?.status==='active'?mr.data:null;
     hide('memberDashboard');
     hide('membershipFormSection');
@@ -880,6 +894,12 @@ async function setUser(u){
     await initPaymentTransactions();
     await load();
     updateAdminDashboard();
+  }else if(isFinance){
+    await loadContributions();
+    await loadFinanceDashboard();
+    await loadUnpaidTracker();
+    await initPaymentTransactions();
+    showAdminSection('financeDashboard');
   }
 }
 async function loadConnectedMemberDashboard(member){
@@ -894,7 +914,7 @@ async function loadConnectedMemberDashboard(member){
   $('myMemberDate').textContent=member.membership_date||'—';
   $('myMemberStatus').textContent=member.status==='active'?'Actif':'Inactif';
 
-  await loadMemberPaymentForm(member);
+  // Les membres consultent leurs paiements et cotisations ; aucune demande de paiement depuis leur espace.
 
   // Commission personnelle : relire directement la commission liée à la fiche membre.
   // Cela évite de dépendre d'une ancienne relation ou d'un objet incomplet transmis à la fonction.
@@ -1106,7 +1126,7 @@ async function submitMemberReport(e){
   });
 }
 async function loadContributionMembers(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   const r=await sb.from('members')
     .select('id,member_number,first_name,last_name,status')
     .order('first_name',{ascending:true});
@@ -1120,7 +1140,7 @@ async function loadContributionMembers(){
 }
 
 async function loadContributions(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   await loadContributionMembers();
 
   const r=await sb.from('contributions')
@@ -1181,7 +1201,7 @@ function renderContributionRows(sourceRows){
 
 async function addContribution(e){
   e.preventDefault();
-  if(!isAdmin||!currentUser)return;
+  if(!canManageFinance()||!currentUser)return;
 
   const memberId=$('contributionMember').value;
   const paymentDate=$('contributionPaymentDate')?.value||'';
@@ -1227,7 +1247,7 @@ async function addContribution(e){
 }
 
 async function deleteContribution(id){
-  if(!isAdmin||!confirm('Supprimer cette cotisation ?'))return;
+  if(!canManageFinance()||!confirm('Supprimer cette cotisation ?'))return;
   const r=await sb.from('contributions').delete().eq('id',id);
   if(r.error){msg('contributionMessage','Erreur : '+r.error.message);return}
   msg('contributionMessage','Cotisation supprimée.',true);
@@ -1276,7 +1296,7 @@ document.addEventListener('click', function(e) {
 
 
 async function loadFinanceDashboard(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
 
   const r=await sb.from('contributions')
     .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
@@ -1338,7 +1358,7 @@ async function renderFinanceRows(rows){
 }
 
 async function exportFinanceCSV(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   const r=await sb.from('contributions')
     .select('member_id,amount,payment_month,payment_date,payment_method,category,status,reference,paid_at,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
@@ -1910,7 +1930,7 @@ async function updateExistingMember(e){
 
 
 async function viewMemberContributions(member){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   const r=await sb.from('contributions')
     .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
     .eq('member_id',member.id)
@@ -1945,7 +1965,7 @@ function currentYM(){
 }
 
 async function loadUnpaidTracker(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   const month=$("unpaidMonth")?.value||currentYM();
   if($("unpaidMonth") && !$("unpaidMonth").value) $("unpaidMonth").value=month;
 
@@ -1962,20 +1982,20 @@ async function loadUnpaidTracker(){
   const search=$("unpaidSearch")?.value||"";
   const filtered=members.filter(m=>memberSearchMatches([m.member_number,m.first_name,m.last_name],search));
 
-  const paid=members.filter(m=>paidMap[m.id]>0).length;
-  $("paidMembersCount").textContent=paid;
-  $("unpaidMembersCount").textContent=members.length-paid;
+  const withPayment=members.filter(m=>paidMap[m.id]>0).length;
+  $("paidMembersCount").textContent=withPayment;
+  $("unpaidMembersCount").textContent=members.length-withPayment;
   $("checkedMembersCount").textContent=members.length;
 
   $("unpaidRows").innerHTML=filtered.length?filtered.map(m=>{
-    const amount=paidMap[m.id]||0, ok=amount>0;
+    const amount=paidMap[m.id]||0, hasPayment=amount>0;
     return `<tr>
       <td><strong>${esc(m.member_number||"")}</strong><br>${esc((m.first_name||"")+" "+(m.last_name||""))}</td>
       <td>${esc(month)}</td>
-      <td><span class="status-pill ${ok?"paid-pill":"unpaid-pill"}">${ok?"🟢 PAYÉ":"🔴 NON PAYÉ"}</span></td>
-      <td>${esc(ok?formatMoney(amount):"0 FCFA")}</td>
+      <td><span class="status-pill ${hasPayment?"paid-pill":"unpaid-pill"}">${hasPayment?"🟢 VERSEMENT REÇU":"🔴 AUCUN VERSEMENT"}</span></td>
+      <td>${esc(formatMoney(amount))}</td>
       <td><button class="table-btn" data-action="member-history" data-id="${esc(m.id)}">Historique</button>
-      ${!ok?`<button class="table-btn" data-action="prefill-contribution" data-id="${esc(m.id)}" data-month="${esc(month)}">➕ Ajouter</button>`:""}</td>
+      <button class="table-btn" data-action="prefill-contribution" data-id="${esc(m.id)}" data-month="${esc(month)}">➕ Ajouter</button></td>
     </tr>`;
   }).join(""):'<tr><td colspan="5">Aucun membre trouvé.</td></tr>';
 }
@@ -2001,10 +2021,10 @@ async function loadPaymentCategories(){
   if(active.some(c=>c.id===selected))el.value=selected;
  });
  const box=$('paymentCategoryRows');
- if(box&&isAdmin)box.innerHTML=paymentCategories.map(c=>'<div class="payment-category-row"><input type="text" maxlength="80" value="'+esc(c.label)+'" data-category-label="'+esc(c.id)+'"><span class="status-pill '+(c.is_active?'paid-pill':'unpaid-pill')+'">'+(c.is_active?'Active':'Désactivée')+'</span><button type="button" class="table-btn" data-category-toggle="'+esc(c.id)+'" data-active="'+(c.is_active?'true':'false')+'">'+(c.is_active?'Désactiver':'Réactiver')+'</button></div>').join('')||'<p>Aucune catégorie.</p>';
+ if(box&&canManageFinance())box.innerHTML=paymentCategories.map(c=>'<div class="payment-category-row"><input type="text" maxlength="80" value="'+esc(c.label)+'" data-category-label="'+esc(c.id)+'"><span class="status-pill '+(c.is_active?'paid-pill':'unpaid-pill')+'">'+(c.is_active?'Active':'Désactivée')+'</span><button type="button" class="table-btn" data-category-toggle="'+esc(c.id)+'" data-active="'+(c.is_active?'true':'false')+'">'+(c.is_active?'Désactiver':'Réactiver')+'</button></div>').join('')||'<p>Aucune catégorie.</p>';
 }
 async function addPaymentCategory(e){
- e.preventDefault();if(!isAdmin)return;const label=$('newPaymentCategoryLabel').value.trim();if(!label)return;
+ e.preventDefault();if(!canManageFinance())return;const label=$('newPaymentCategoryLabel').value.trim();if(!label)return;
  const id=label.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,48);
  if(!id||paymentCategories.some(c=>c.id===id)){alert('Nom invalide ou catégorie déjà existante.');return;}
  const r=await sb.from('payment_categories').insert({id,label,sort_order:paymentCategories.length*10+10,is_active:true});
@@ -2012,7 +2032,7 @@ async function addPaymentCategory(e){
  $('newPaymentCategoryLabel').value='';await loadPaymentCategories();
 }
 async function handlePaymentCategoryRename(e){
- const input=e.target.closest('[data-category-label]');if(!input||!isAdmin)return;
+ const input=e.target.closest('[data-category-label]');if(!input||!canManageFinance())return;
  const id=input.dataset.categoryLabel,label=input.value.trim(),old=paymentCategories.find(c=>c.id===id);
  if(!label||!old||old.label===label)return;
  const r=await sb.from('payment_categories').update({label}).eq('id',id);
@@ -2020,7 +2040,7 @@ async function handlePaymentCategoryRename(e){
  await loadPaymentCategories();
 }
 async function handlePaymentCategoryAction(e){
- const b=e.target.closest('[data-category-toggle]');if(!b||!isAdmin)return;
+ const b=e.target.closest('[data-category-toggle]');if(!b||!canManageFinance())return;
  const r=await sb.from('payment_categories').update({is_active:b.dataset.active!=='true'}).eq('id',b.dataset.categoryToggle);
  if(r.error){alert('Mise à jour impossible : '+r.error.message);return;}await loadPaymentCategories();
 }
@@ -2055,7 +2075,7 @@ async function submitMemberPayment(e){
 }
 
 async function initPaymentTransactions(){
-  if(!sb||!isAdmin)return;
+  if(!sb||!canManageFinance())return;
   renderDahiraWaveQr();
   const d=new Date();
   if($("paymentMonth")) $("paymentMonth").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
@@ -2072,6 +2092,7 @@ async function initPaymentTransactions(){
 
 async function savePaymentTransaction(e){
   e.preventDefault();
+  if(!canManageFinance())return;
   const member_id=$("paymentMember").value;
   const amount=Number($("paymentAmount").value);
   const payment_method=$("paymentMethod").value;
@@ -2096,6 +2117,7 @@ async function savePaymentTransaction(e){
 }
 
 async function loadPaymentTransactions(){
+  if(!canManageFinance())return;
   const r=await sb.from("payment_transactions")
     .select("id,member_id,payer_member_id,payer_name,amount,payment_method,category,reference,payment_month,payment_date,status,note,created_at,confirmed_at,members!payment_transactions_member_id_fkey(member_number,first_name,last_name)")
     .order("created_at",{ascending:false});
@@ -2135,7 +2157,7 @@ async function loadPaymentTransactions(){
 
 
 async function confirmPaymentTransaction(x) {
-  if (!sb || !isAdmin) {
+  if (!sb || !canManageFinance()) {
     alert("Action réservée à l'administrateur.");
     return;
   }
@@ -2187,7 +2209,7 @@ async function confirmPaymentTransaction(x) {
 
 
 async function cancelPaymentTransaction(id){
-  if(!sb||!isAdmin||!confirm("Annuler cette transaction en attente ?"))return;
+  if(!sb||!canManageFinance()||!confirm("Annuler cette transaction en attente ?"))return;
   const r=await sb.from("payment_transactions").update({status:"cancelled"}).eq("id",id).eq("status","pending").select("id").maybeSingle();
   if(r.error){alert(r.error.message);return;}
   if(!r.data){alert("Cette transaction n'est plus en attente. Actualise la liste.");}
@@ -2843,8 +2865,9 @@ document.addEventListener('click', async function(e) {
   if (!button) return;
   const id = button.dataset.id;
   if (!id) return;
-  if (!isAdmin) {
-    alert("Action réservée à l'administrateur.");
+  const financeActions=new Set(['print-receipt','delete-contribution','member-history','prefill-contribution','confirm-payment','cancel-payment']);
+  if (!isAdmin && !(isFinance && financeActions.has(button.dataset.action))) {
+    alert("Action réservée à l'administration ou à la gestion financière.");
     return;
   }
   if(['toggle-event','toggle-gallery','delete-event','delete-gallery','delete-notification'].includes(button.dataset.action)){await handlePortalAdminAction(button);return;}

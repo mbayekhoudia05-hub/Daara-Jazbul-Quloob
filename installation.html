@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#075b35">
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./logo.jpeg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Daara Jazbul">
   <title>Installer l'application – Daara Jazbul Quluub</title>
   <style>
     :root{color-scheme:light;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#183329;background:#f4f7f5}
@@ -31,7 +34,7 @@
     <p>Installation gratuite sur les téléphones Android et iPhone compatibles. Aucun passage par Play Store ou App Store n’est nécessaire.</p>
     <a class="button" href="./">Ouvrir la plateforme</a>
     <button class="button" id="installAppBtn" type="button" hidden>Installer l’application maintenant</button>
-    <p id="installStatus" role="status" aria-live="polite">Si le bouton « Installer l’application maintenant » apparaît, appuyez dessus. Sinon, suivez les étapes correspondant à votre téléphone.</p>
+    <p id="installStatus" role="status" aria-live="polite">Sur Android, le bouton lance la fenêtre d’installation lorsqu’elle est proposée par le navigateur. Sur iPhone, utilisez les étapes du menu Partager.</p>
   </header>
   <section class="guide">
     <h2>Sur tous les téléphones Android</h2>
@@ -43,7 +46,7 @@
       <li>Appuyez sur <strong>Installer</strong> ou <strong>Ajouter</strong> pour confirmer.</li>
       <li>L’icône Daara Jazbul Quluub apparaîtra sur l’écran d’accueil.</li>
     </ol>
-    <p class="note"><strong>Autres navigateurs Android :</strong> selon le navigateur et sa version, ouvrez son menu puis cherchez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Si cette option n’apparaît pas, essayez avec Google Chrome à jour.</p>
+    <p class="note"><strong>Autres navigateurs Android :</strong> selon le navigateur et sa version, ouvrez son menu puis cherchez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Si cette option n’apparaît pas, essayez avec Google Chrome à jour. Sur certains appareils sans services Google, Android ajoute un raccourci web plutôt qu’une application WebAPK complète : il ouvre néanmoins la plateforme depuis une icône.</p>
     <p class="note"><strong>Vous avez ouvert le lien depuis Gmail, WhatsApp ou Facebook ?</strong> Ouvrez le menu de la page et choisissez « Ouvrir dans Chrome » avant de procéder à l’installation. Le bouton d’installation directe apparaît uniquement lorsque le navigateur prend en charge cette fonction.</p>
   </section>
   <section class="guide">
@@ -65,7 +68,7 @@
       <li>Vérifiez le nom <strong>Daara Jazbul Quluub</strong>, puis appuyez sur <strong>Ajouter</strong>.</li>
       <li>Revenez à l'écran d'accueil : l'icône de la plateforme doit y apparaître.</li>
     </ol>
-    <p class="note">Avec Chrome sur iPhone, cette opération ajoute une icône de lancement. Selon iOS et le comportement du site, elle peut ouvrir la plateforme comme une app web ou comme un raccourci dans le navigateur. Pour l'affichage en mode application autonome, utilisez de préférence Safari et activez « Ouvrir comme app web » lorsque l'option est proposée.</p>
+    <p class="note">Sur iOS 16.4 et versions ultérieures, le menu de partage de Safari et de plusieurs autres navigateurs peut proposer l’ajout à l’écran d’accueil. Safari reste la méthode recommandée pour vérifier l’option « Ouvrir comme app web ». Sur les versions plus anciennes d’iOS, utilisez Safari.</p>
   </section>
   <section class="guide">
     <h2>À retenir</h2>
@@ -105,7 +108,7 @@ installButton.addEventListener("click",async()=>{
   const choice=await deferredInstallPrompt.userChoice;
   installStatus.textContent=choice.outcome==="accepted"?"Installation confirmée sur cet appareil.":"Installation non terminée. Vous pouvez réessayer depuis le menu du navigateur.";
   deferredInstallPrompt=null;
-  installButton.hidden=true;
+  installButton.hidden=choice.outcome==="accepted";
 });
 window.addEventListener("appinstalled",()=>{installStatus.textContent="Daara Jazbul Quluub est installé sur cet appareil.";installButton.hidden=true;});
 if("serviceWorker" in navigator && location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
