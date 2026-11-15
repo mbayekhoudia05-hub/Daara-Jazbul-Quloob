@@ -878,7 +878,7 @@ async function setUser(u){
     show('membershipFormSection');
     return;
   }
-  if(mr.data && mr.data.status==='active' && !isAdmin && !isFinance){
+  if(mr.data && mr.data.status==='active' && !isAdmin && !isFinance && !isContentManager){
     currentMemberRecord=mr.data;
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
