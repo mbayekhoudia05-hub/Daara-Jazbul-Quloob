@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'pwa-icon.svg'
+      - 'manifest.webmanifest'
+      - 'index.html'
+      - 'installation.html'
       - 'scripts/generate-pwa-icons.py'
       - '.github/workflows/generate-pwa-icons.yml'
   workflow_dispatch:
@@ -25,6 +28,25 @@ jobs:
         run: python -m pip install --upgrade pip cairosvg
       - name: Generate 180, 192 and 512 pixel icons
         run: python scripts/generate-pwa-icons.py
+      - name: Validate PWA manifest and icon files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          assert manifest.get("name") and manifest.get("start_url") and manifest.get("scope")
+          assert manifest.get("display") == "standalone"
+          icons = manifest.get("icons", [])
+          for size, filename in (("192x192", "pwa-icon-192.png"), ("512x512", "pwa-icon-512.png")):
+              assert any(icon.get("sizes") == size and icon.get("type") == "image/png" for icon in icons), f"Missing {size} PNG manifest icon"
+              assert Path(filename).is_file(), f"Missing {filename}"
+          assert any(icon.get("sizes") == "any" and icon.get("type") == "image/svg+xml" for icon in icons)
+          for page in ("index.html", "installation.html"):
+              html = Path(page).read_text(encoding="utf-8")
+              assert "manifest.webmanifest" in html and "pwa-icon-180.png" in html
+          assert Path("pwa-icon-180.png").is_file()
+          print("PWA manifest, iOS icon and Android 192/512 icons are valid.")
+          PY
       - name: Commit generated icons
         run: |
           git config user.name "github-actions[bot]"
