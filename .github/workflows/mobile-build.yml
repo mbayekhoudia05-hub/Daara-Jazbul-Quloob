@@ -13,6 +13,9 @@ on:
       - 'capacitor.config.json'
       - 'scripts/**'
       - '.github/workflows/mobile-build.yml'
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
