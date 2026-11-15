@@ -11,10 +11,14 @@
   "background_color": "#075b35",
   "theme_color": "#075b35",
   "prefer_related_applications": false,
-  "categories": ["education", "lifestyle", "social"],
+  "categories": [
+    "education",
+    "lifestyle",
+    "social"
+  ],
   "icons": [
     {
-      "src": "./favicon.svg",
+      "src": "./pwa-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
