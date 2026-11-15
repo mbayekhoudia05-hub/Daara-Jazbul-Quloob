@@ -44,7 +44,7 @@ jobs:
         run: |
           node --check app.js
           node --check sw.js
-          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); if(!m.name || !m.start_url || !m.scope || m.display!=='standalone' || !m.icons?.some(i=>i.type==='image/svg+xml' && i.sizes==='any' && fs.existsSync(i.src.replace(/^\\.\\//,'')))) process.exit(1); for (const f of ['index.html','installation.html']) if(!fs.readFileSync(f,'utf8').includes('manifest.webmanifest')) process.exit(1); console.log('PWA manifest and linked files are valid.');"
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); const has=(size,file)=>m.icons?.some(i=>i.sizes===size && i.type==='image/png' && fs.existsSync(file)); if(!m.name || !m.start_url || !m.scope || m.display!=='standalone' || !has('192x192','pwa-icon-192.png') || !has('512x512','pwa-icon-512.png') || !m.icons?.some(i=>i.type==='image/svg+xml' && i.sizes==='any' && fs.existsSync('pwa-icon.svg'))) process.exit(1); for (const f of ['index.html','installation.html']) { const h=fs.readFileSync(f,'utf8'); if(!h.includes('manifest.webmanifest') || !h.includes('pwa-icon-180.png')) process.exit(1); } if(!fs.existsSync('pwa-icon-180.png')) process.exit(1); console.log('PWA manifest, 180/192/512 icons and linked pages are valid.');"
       - name: Prepare web assets
         run: npm run build:mobile
       - name: Generate Android project
