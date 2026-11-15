@@ -30,8 +30,8 @@
     <h1>Installer l'application sur votre téléphone</h1>
     <p>Installation gratuite sur les téléphones Android et iPhone compatibles. Aucun passage par Play Store ou App Store n’est nécessaire.</p>
     <a class="button" href="./">Ouvrir la plateforme</a>
-    <button class="button" id="installAppBtn" type="button" hidden>Installer sur cet appareil</button>
-    <p id="installStatus" role="status" aria-live="polite">Si le bouton « Installer sur cet appareil » apparaît, appuyez dessus. Sinon, suivez les étapes correspondant à votre téléphone.</p>
+    <button class="button" id="installAppBtn" type="button" hidden>Installer l’application maintenant</button>
+    <p id="installStatus" role="status" aria-live="polite">Si le bouton « Installer l’application maintenant » apparaît, appuyez dessus. Sinon, suivez les étapes correspondant à votre téléphone.</p>
   </header>
   <section class="guide">
     <h2>Sur tous les téléphones Android</h2>
@@ -78,14 +78,29 @@
 let deferredInstallPrompt=null;
 const installButton=document.getElementById("installAppBtn");
 const installStatus=document.getElementById("installStatus");
+const isAndroid=/Android/i.test(navigator.userAgent);
+const isStandalone=window.matchMedia("(display-mode: standalone)").matches || navigator.standalone===true;
+if(isAndroid && !isStandalone){
+  installButton.hidden=false;
+  installStatus.textContent="Appuyez sur « Installer l’application maintenant ». Si votre navigateur ne permet pas l’installation directe, les étapes adaptées s’afficheront.";
+}
+if(isStandalone){
+  installButton.hidden=true;
+  installStatus.textContent="Daara Jazbul Quluub est déjà installé sur cet appareil.";
+}
 window.addEventListener("beforeinstallprompt",event=>{
   event.preventDefault();
   deferredInstallPrompt=event;
   installButton.hidden=false;
-  installStatus.textContent="Installation directe disponible sur cet appareil. Appuyez sur « Installer sur cet appareil ».";
+  installStatus.textContent="Installation directe disponible sur cet appareil. Appuyez sur « Installer l’application maintenant ».";
 });
 installButton.addEventListener("click",async()=>{
-  if(!deferredInstallPrompt){installStatus.textContent="Votre navigateur ne propose pas l’installation directe. Sur Android, ouvrez cette page dans Chrome et utilisez le menu ⋮ ; sur iPhone, utilisez le menu Partager.";return;}
+  if(!deferredInstallPrompt){
+    installStatus.textContent=isAndroid
+      ?"L’installation directe n’est pas proposée par ce navigateur pour le moment. Ouvrez cette page dans Google Chrome, appuyez sur le menu ⋮ puis choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil »."
+      :"Sur iPhone, appuyez sur Partager puis « Ajouter à l’écran d’accueil ». Pour Android, ouvrez cette page dans Chrome.";
+    return;
+  }
   deferredInstallPrompt.prompt();
   const choice=await deferredInstallPrompt.userChoice;
   installStatus.textContent=choice.outcome==="accepted"?"Installation confirmée sur cet appareil.":"Installation non terminée. Vous pouvez réessayer depuis le menu du navigateur.";
