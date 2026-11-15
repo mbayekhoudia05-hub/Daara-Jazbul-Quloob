@@ -12,7 +12,7 @@ let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,isFinance=fa
 function canManageFinance(){return isAdmin||isFinance;}
 function canManageContent(){return isAdmin||isContentManager;}
 let paymentCategories=[];
-let galleryPreviewUrl=null;
+let galleryPreviewUrls=[];
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
 function configureDahiraWaveLinks(){
  ['memberWavePayLink','adminWavePayLink'].forEach(id=>{const linkEl=$(id);if(linkEl)linkEl.href=DAHIRA_WAVE_PAYMENT_URL;});
@@ -777,7 +777,7 @@ if($('financeMonthFilter')){
  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadGeneralLeadership();void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
  $('adminEventForm')?.addEventListener('submit',createAdminEvent);
  $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
- $('galleryImageFile')?.addEventListener('change',()=>{const file=$('galleryImageFile').files?.[0],preview=$('galleryImagePreview');if(galleryPreviewUrl){URL.revokeObjectURL(galleryPreviewUrl);galleryPreviewUrl=null;}if(!preview)return;if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');$('galleryImageFile').value='';preview.classList.add('hidden');return;}galleryPreviewUrl=URL.createObjectURL(file);preview.src=galleryPreviewUrl;preview.classList.remove('hidden');});
+ $('galleryImageFile')?.addEventListener('change',()=>{const input=$('galleryImageFile'),preview=$('galleryMediaPreview');galleryPreviewUrls.forEach(url=>URL.revokeObjectURL(url));galleryPreviewUrls=[];if(!preview)return;preview.innerHTML='';const files=Array.from(input.files||[]);if(!files.length){preview.classList.add('hidden');return;}const invalid=files.find(file=>{const kind=getGalleryMediaKind(file);return !kind||file.size>(kind==='video'?50:8)*1024*1024;});if(invalid){msg('galleryMessage','Fichier non accepté ou trop volumineux : photos 8 Mo maximum, vidéos 50 Mo maximum (JPG, PNG, WebP, MP4, WebM, MOV).');input.value='';preview.classList.add('hidden');return;}files.forEach(file=>{const url=URL.createObjectURL(file);galleryPreviewUrls.push(url);const item=document.createElement('div');item.className='gallery-preview-item';const media=document.createElement(getGalleryMediaKind(file)==='video'?'video':'img');media.src=url;if(media.tagName==='VIDEO'){media.controls=true;media.muted=true;media.playsInline=true;}else media.alt=file.name;const caption=document.createElement('small');caption.textContent=file.name;item.append(media,caption);preview.append(item);});preview.classList.remove('hidden');msg('galleryMessage',files.length+' média(s) sélectionné(s).',true);});
  $('adminNotificationForm')?.addEventListener('submit',createAdminNotification);$('generalLeaderForm')?.addEventListener('submit',saveGeneralLeadership);$('requestCommission')?.addEventListener('focus',()=>void loadPublicCommissions());$('authForm').onsubmit=auth;$('contentForm').onsubmit=publish;$('cancelContentEditBtn').onclick=resetContentForm;$('memberForm').onsubmit=addMember;$('commissionForm').onsubmit=saveCommission;const requestForm = $('membershipRequestForm');
 if (requestForm) requestForm.onsubmit = submitMembershipRequest;
   if($('memberReportForm')){
@@ -2406,12 +2406,18 @@ async function loadPublicEvents(){
   const rows=r.data||[];
   box.innerHTML=rows.length?rows.map(x=>'<article class="card event-card"><span class="tag">AGENDA DU DAHIRA</span><h3>'+esc(x.title)+'</h3><p class="event-date">'+esc(formatPortalDate(x.starts_at))+(x.ends_at?' – '+esc(formatPortalDate(x.ends_at)):'')+'</p>'+(x.location?'<p><b>Lieu :</b> '+esc(x.location)+'</p>':'')+'<p>'+esc(x.description||'')+'</p></article>').join(''):'<div class="loading">Aucune activité publiée pour le moment.</div>';
 }
+function getGalleryMediaKind(fileOrUrl){
+  const value=typeof fileOrUrl==='string'?fileOrUrl:(fileOrUrl?.type||fileOrUrl?.name||'');
+  if(/^video\\//i.test(value)||/\\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(value))return 'video';
+  if(/^image\\//i.test(value)||/\\.(jpe?g|png|webp)(?:[?#]|$)/i.test(value))return 'image';
+  return '';
+}
 async function loadPublicGallery(){
   const box=$('publicGalleryGrid');if(!box||!sb)return;
   const r=await sb.from('dahira_gallery').select('id,title,description,image_url,event_date').eq('is_published',true).order('event_date',{ascending:false}).order('created_at',{ascending:false}).limit(60);
   if(r.error){box.innerHTML='<div class="loading">Galerie temporairement indisponible.</div>';console.warn(r.error.message);return;}
   const rows=r.data||[];
-  box.innerHTML=rows.length?rows.map(x=>'<article class="card gallery-card"><img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'" loading="lazy"><div><h3>'+esc(x.title)+'</h3>'+(x.event_date?'<small>'+esc(formatPortalDate(x.event_date,false))+'</small>':'')+'<p>'+esc(x.description||'')+'</p></div></article>').join(''):'<div class="loading">Aucune photo publiée pour le moment.</div>';
+  box.innerHTML=rows.length?rows.map(x=>{const media=getGalleryMediaKind(x.image_url)==='video'?'<video src="'+esc(x.image_url)+'" controls playsinline preload="metadata"></video>':'<img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'" loading="lazy">';return '<article class="card gallery-card">'+media+'<div><h3>'+esc(x.title)+'</h3>'+(x.event_date?'<small>'+esc(formatPortalDate(x.event_date,false))+'</small>':'')+'<p>'+esc(x.description||'')+'</p></div></article>';}).join(''):'<div class="loading">Aucune photo ou vidéo publiée pour le moment.</div>';
 }
 async function loadMemberNotifications(){
   const box=$('memberNotificationsList');if(!box||!currentMemberRecord||!sb)return;
@@ -2433,7 +2439,7 @@ async function loadAdminGallery(){
   const r=await sb.from('dahira_gallery').select('*').order('created_at',{ascending:false});
   if(r.error){box.innerHTML='<p class="loading">Erreur : '+esc(r.error.message)+'</p>';return;}
   const rows=r.data||[];
-  box.innerHTML=rows.length?rows.map(x=>'<article class="admin-module-row gallery-admin-row"><img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'"><div><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn" data-action="toggle-gallery" data-id="'+esc(x.id)+'" data-published="'+String(x.is_published)+'">'+(x.is_published?'Masquer':'Publier')+'</button><button type="button" class="table-btn danger-btn" data-action="delete-gallery" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<p class="loading">Aucune photo enregistrée.</p>';
+  box.innerHTML=rows.length?rows.map(x=>{const media=getGalleryMediaKind(x.image_url)==='video'?'<video src="'+esc(x.image_url)+'" controls playsinline preload="metadata"></video>':'<img src="'+esc(x.image_url)+'" alt="'+esc(x.title)+'">';return '<article class="admin-module-row gallery-admin-row">'+media+'<div><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn" data-action="toggle-gallery" data-id="'+esc(x.id)+'" data-published="'+String(x.is_published)+'">'+(x.is_published?'Masquer':'Publier')+'</button><button type="button" class="table-btn danger-btn" data-action="delete-gallery" data-id="'+esc(x.id)+'">Supprimer</button></div></article>';}).join(''):'<p class="loading">Aucun média enregistré.</p>';
 }
 async function loadAdminNotifications(){
   if(!sb||!isAdmin)return;const box=$('adminNotificationRows');if(!box)return;
@@ -2454,33 +2460,41 @@ async function createAdminEvent(e){
 }
 async function createAdminGalleryItem(e){
   e.preventDefault();if(!sb||!canManageContent()||!currentUser)return;
-  const file=$('galleryImageFile')?.files?.[0]||null;
+  const files=Array.from($('galleryImageFile')?.files||[]);
   const imageUrl=$('galleryImageUrl').value.trim();
-  if(!file&&!imageUrl){msg('galleryMessage','Choisis une photo depuis ton téléphone ou ajoute un lien direct.');return;}
-  if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)){
-    msg('galleryMessage','Format accepté : JPG, PNG ou WebP. Taille maximale : 8 Mo.');return;
+  if(!files.length&&!imageUrl){msg('galleryMessage','Choisis au moins une photo ou une vidéo depuis ton appareil, ou ajoute un lien direct.');return;}
+  if(imageUrl&&!/^https?:\\/\\//i.test(imageUrl)){msg('galleryMessage','Le lien doit commencer par https:// ou http://.');return;}
+  for(const file of files){
+    const kind=getGalleryMediaKind(file);
+    if(!kind||file.size>(kind==='video'?50:8)*1024*1024){msg('galleryMessage','Format ou taille invalide : photos 8 Mo maximum, vidéos 50 Mo maximum.');return;}
   }
-  if(!file&&imageUrl&&!/^https?:\/\//i.test(imageUrl)){msg('galleryMessage','Le lien doit commencer par https:// ou http://.');return;}
   const submit=$('gallerySubmitBtn');if(submit){submit.disabled=true;submit.textContent='Enregistrement…';}
-  let uploadedPath=null,finalImageUrl=imageUrl;
+  const uploadedPaths=[];let saved=0;
   try{
-    if(file){
-      const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'-').slice(-70);
-      uploadedPath='gallery/'+currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+(safeName||'photo');
-      const upload=await sb.storage.from('dahira-gallery').upload(uploadedPath,file,{upsert:false,contentType:file.type,cacheControl:'3600'});
-      if(upload.error)throw upload.error;
-      finalImageUrl=sb.storage.from('dahira-gallery').getPublicUrl(uploadedPath).data.publicUrl;
+    const items=files.length?files:[null];
+    for(const file of items){
+      let finalUrl=imageUrl;
+      if(file){
+        const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'-').slice(-70);
+        const path='gallery/'+currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+(safeName||'media');
+        const upload=await sb.storage.from('dahira-gallery').upload(path,file,{upsert:false,contentType:file.type||undefined,cacheControl:'3600'});
+        if(upload.error)throw upload.error;
+        uploadedPaths.push(path);
+        finalUrl=sb.storage.from('dahira-gallery').getPublicUrl(path).data.publicUrl;
+      }
+      const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:finalUrl,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id});
+      if(r.error)throw r.error;
+      saved++;
     }
-    const r=await sb.from('dahira_gallery').insert({title:$('galleryTitle').value.trim(),description:$('galleryDescription').value.trim(),image_url:finalImageUrl,event_date:$('galleryEventDate').value||null,is_published:$('galleryPublished').checked,created_by:currentUser.id}).select('id').single();
-    if(r.error)throw r.error;
     $('adminGalleryForm').reset();$('galleryPublished').checked=true;
-    if(galleryPreviewUrl){URL.revokeObjectURL(galleryPreviewUrl);galleryPreviewUrl=null;}const preview=$('galleryImagePreview');if(preview){preview.removeAttribute('src');preview.classList.add('hidden');}
-    msg('galleryMessage','Photo ajoutée à la galerie.',true);await loadAdminGallery();await loadPublicGallery();
+    galleryPreviewUrls.forEach(url=>URL.revokeObjectURL(url));galleryPreviewUrls=[];
+    const preview=$('galleryMediaPreview');if(preview){preview.innerHTML='';preview.classList.add('hidden');}
+    msg('galleryMessage',saved+' média(s) enregistré(s) dans la galerie.',true);await loadAdminGallery();await loadPublicGallery();
   }catch(err){
-    if(uploadedPath)await sb.storage.from('dahira-gallery').remove([uploadedPath]);
-    msg('galleryMessage','Ajout impossible : '+(err?.message||String(err)));
+    msg('galleryMessage',saved? saved+' média(s) enregistré(s), mais la suite a échoué : '+(err?.message||String(err)):'Ajout impossible : '+(err?.message||String(err)));
+    await loadAdminGallery();await loadPublicGallery();
   }finally{
-    if(submit){submit.disabled=false;submit.textContent='Ajouter à la galerie';}
+    if(submit){submit.disabled=false;submit.textContent='Enregistrer les médias';}
   }
 }
 async function createAdminNotification(e){
