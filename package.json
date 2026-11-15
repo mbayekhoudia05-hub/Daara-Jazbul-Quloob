@@ -1,0 +1,23 @@
+{
+  "name": "daara-jazbul-quluub-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application mobile Daara Jazbul Quluub – Cellule Dakar",
+  "scripts": {
+    "build:mobile": "node scripts/build-mobile.mjs",
+    "cap:sync": "npm run build:mobile && cap sync",
+    "cap:sync:android": "npm run build:mobile && cap sync android",
+    "cap:sync:ios": "npm run build:mobile && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/ios": "8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
