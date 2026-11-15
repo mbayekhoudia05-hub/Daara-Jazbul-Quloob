@@ -2111,3 +2111,10 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 #contributions .member-search-result strong{min-width:52px;color:var(--primary,#176b43)}
 #contributions .member-search-empty{padding:10px 12px;color:var(--muted,#66756b)}
 #contributions .contribution-member-select-label{margin-top:8px}
+
+/* Les PDF ne sont chargés qu'après une demande explicite : plus rapide sur mobile. */
+.charter-pdf-lazy{margin-top:12px}
+.charter-pdf-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 16px;border:1px solid #075b35;border-radius:9px;background:#eef6f0;color:#075b35;font-weight:800;cursor:pointer}
+.charter-pdf-toggle:disabled{opacity:.7;cursor:default}
+.charter-pdf-lazy-frame:empty{display:none}
+.charter-pdf-lazy-frame:not(:empty){margin-top:12px}
