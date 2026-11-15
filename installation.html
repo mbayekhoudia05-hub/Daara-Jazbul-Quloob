@@ -108,7 +108,7 @@ installButton.addEventListener("click",async()=>{
   const choice=await deferredInstallPrompt.userChoice;
   installStatus.textContent=choice.outcome==="accepted"?"Installation confirmée sur cet appareil.":"Installation non terminée. Vous pouvez réessayer depuis le menu du navigateur.";
   deferredInstallPrompt=null;
-  installButton.hidden=true;
+  installButton.hidden=choice.outcome==="accepted";
 });
 window.addEventListener("appinstalled",()=>{installStatus.textContent="Daara Jazbul Quluub est installé sur cet appareil.";installButton.hidden=true;});
 if("serviceWorker" in navigator && location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
