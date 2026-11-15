@@ -8,8 +8,9 @@ window.addEventListener('pageshow',event=>{
   }
 });
 
-let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,isFinance=false,signupMode=false;
+let sb=null,currentUser=null,currentMemberRecord=null,isAdmin=false,isFinance=false,isContentManager=false,signupMode=false;
 function canManageFinance(){return isAdmin||isFinance;}
+function canManageContent(){return isAdmin||isContentManager;}
 let paymentCategories=[];
 let galleryPreviewUrl=null;
 const DAHIRA_WAVE_PAYMENT_URL='https://qr.wave.com/iVVNfc25fc3ZJOTlSbDlxcnlW/Bq8E-h/B_HnCU/p';
@@ -78,6 +79,11 @@ function setAdminUI(){
     show('adminNavigationGroup');
     show('adminDashboard');
     updateAdminDashboard();
+  }else if(isContentManager){
+    show('adminNav');
+    show('galleryNav');
+    show('adminNavigationGroup');
+    show('admin');
   }else if(isFinance){
     financeNavs.forEach(show);
     show('adminNavigationGroup');
@@ -85,10 +91,11 @@ function setAdminUI(){
   }
 }
 function showAdminSection(id){
-  if(!isAdmin&&!isFinance)return;
+  if(!isAdmin&&!isFinance&&!isContentManager)return;
   const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
   const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard'];
-  const allowed=isAdmin?adminAllowed:financeAllowed;
+  const contentManagerAllowed=['admin','adminGallery'];
+  const allowed=isAdmin?adminAllowed:isContentManager?contentManagerAllowed:financeAllowed;
   if(!allowed.includes(id))return;
   adminAllowed.forEach(hide);
   show(id);
@@ -131,7 +138,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[data-admin-target]');
-  if(!a||(!isAdmin&&!isFinance))return;
+  if(!a||(!isAdmin&&!isFinance&&!isContentManager))return;
   e.preventDefault();
   showAdminSection(a.dataset.adminTarget);
   if(window.innerWidth<=800){
@@ -317,7 +324,7 @@ async function load(){
     .order('created_at',{ascending:false});
 
   if(r.error){
-    if(isAdmin){
+    if(canManageContent()){
       const box=$('adminContentRows');
       if(box)box.innerHTML='<div class="loading">Erreur de chargement : '+esc(r.error.message)+'</div>';
       msg('formMessage',"Chargement des contenus impossible : "+r.error.message);
@@ -326,7 +333,7 @@ async function load(){
   }
   const rows=r.data||[];
   render(rows.filter(x=>x.published));
-  if(isAdmin){
+  if(canManageContent()){
     window._djqContentRows=rows;
     renderAdminContents(rows);
     renderAdminCharters(rows);
@@ -402,7 +409,7 @@ function renderAdminContents(rows){
       event.preventDefault();
       event.stopPropagation();
       const id=button.dataset.contentDelete;
-      if(!isAdmin||!currentUser){alert("Connecte-toi avec le compte administrateur.");return;}
+      if(!canManageContent()||!currentUser){alert("Connecte-toi avec un compte autorisé à gérer les contenus.");return;}
       if(!confirm('Supprimer définitivement ce contenu ?'))return;
       button.disabled=true;
       const removed=await sb.from('contents').delete().eq('id',id).select('id').maybeSingle();
@@ -420,6 +427,7 @@ function resetContentForm(){
   hide('cancelContentEditBtn');
 }
 function startEditContent(id){
+  if(!canManageContent())return;
   const x=window._djqContentRows?.find(row=>String(row.id)===String(id));
   if(!x){
     msg('formMessage',"Impossible de retrouver ce contenu. Actualise la page puis réessaie.");
@@ -445,7 +453,7 @@ async function publish(e){
   const button=$('contentSubmitBtn');
   if(!sb){msg('formMessage',"Connexion à la base de données indisponible.");return;}
   if(!currentUser){msg('formMessage',"Votre session a expiré. Reconnecte-toi puis réessaie.");return;}
-  if(!isAdmin){msg('formMessage',"Ton compte est connecté, mais son rôle administrateur n'est pas reconnu. Ne ferme pas la session; vérifie le rôle du profil.");return;}
+  if(!canManageContent()){msg('formMessage',"Ton compte n'est pas autorisé à gérer les contenus.");return;}
   const id=$('editingContentId').value;
   const title=$('title').value.trim();
   if(!title){msg('formMessage',"Le titre est obligatoire.");$('title').focus();return;}
@@ -798,6 +806,7 @@ async function setUser(u){
     currentMemberRecord=null;
     isAdmin=false;
     isFinance=false;
+    isContentManager=false;
     setAdminUI();
     await loadPublicCommissionDirectory();
     hide('logoutBtn');
@@ -829,6 +838,7 @@ async function setUser(u){
 
   isAdmin=r.data.role==='admin';
   isFinance=r.data.role==='finance';
+  isContentManager=r.data.role==='content_manager';
   setAdminUI();
   await loadPublicCommissionDirectory();
 
@@ -859,7 +869,7 @@ async function setUser(u){
     mr.data.commissions=commissionResult.data||null;
   }
 
-  if(mr.data && mr.data.status!=='active' && !isAdmin && !isFinance){
+  if(mr.data && mr.data.status!=='active' && !isAdmin && !isFinance && !isContentManager){
     alert("Ton accès à l’espace membre a été suspendu par l’administration. Contacte le responsable du Daara.");
     await sb.auth.signOut();
     hide('memberDashboard');
@@ -872,7 +882,7 @@ async function setUser(u){
     currentMemberRecord=mr.data;
     hide('membershipFormSection');
     await loadConnectedMemberDashboard(mr.data);
-  }else if(isAdmin||isFinance){
+  }else if(isAdmin||isFinance||isContentManager){
     currentMemberRecord=mr.data?.status==='active'?mr.data:null;
     hide('memberDashboard');
     hide('membershipFormSection');
@@ -894,6 +904,10 @@ async function setUser(u){
     await initPaymentTransactions();
     await load();
     updateAdminDashboard();
+  }else if(isContentManager){
+    await load();
+    await loadAdminGallery();
+    showAdminSection('admin');
   }else if(isFinance){
     await loadContributions();
     await loadFinanceDashboard();
@@ -2415,7 +2429,7 @@ async function loadAdminEvents(){
   box.innerHTML=rows.length?rows.map(x=>'<article class="admin-module-row"><div><h3>'+esc(x.title)+'</h3><p>'+esc(formatPortalDate(x.starts_at))+' · '+esc(x.location||'Lieu à préciser')+'</p><p>'+esc(x.description||'')+'</p>'+adminStatusToggle('',x.is_published)+'</div><div class="admin-module-actions"><button type="button" class="table-btn" data-action="toggle-event" data-id="'+esc(x.id)+'" data-published="'+String(x.is_published)+'">'+(x.is_published?'Masquer':'Publier')+'</button><button type="button" class="table-btn danger-btn" data-action="delete-event" data-id="'+esc(x.id)+'">Supprimer</button></div></article>').join(''):'<p class="loading">Aucune activité enregistrée.</p>';
 }
 async function loadAdminGallery(){
-  if(!sb||!isAdmin)return;const box=$('adminGalleryRows');if(!box)return;
+  if(!sb||!canManageContent())return;const box=$('adminGalleryRows');if(!box)return;
   const r=await sb.from('dahira_gallery').select('*').order('created_at',{ascending:false});
   if(r.error){box.innerHTML='<p class="loading">Erreur : '+esc(r.error.message)+'</p>';return;}
   const rows=r.data||[];
@@ -2439,7 +2453,7 @@ async function createAdminEvent(e){
   $('adminEventForm').reset();$('eventPublished').checked=true;msg('eventMessage','Activité enregistrée.',true);await loadAdminEvents();await loadPublicEvents();
 }
 async function createAdminGalleryItem(e){
-  e.preventDefault();if(!sb||!isAdmin||!currentUser)return;
+  e.preventDefault();if(!sb||!canManageContent()||!currentUser)return;
   const file=$('galleryImageFile')?.files?.[0]||null;
   const imageUrl=$('galleryImageUrl').value.trim();
   if(!file&&!imageUrl){msg('galleryMessage','Choisis une photo depuis ton téléphone ou ajoute un lien direct.');return;}
@@ -2487,7 +2501,8 @@ async function initPortalAdminModules(){
   await Promise.all([loadAdminEvents(),loadAdminGallery(),loadAdminNotifications()]);
 }
 async function handlePortalAdminAction(button){
-  if(!sb||!isAdmin)return;const id=button.dataset.id,action=button.dataset.action;
+  if(!sb||!canManageContent())return;const id=button.dataset.id,action=button.dataset.action;
+  if(!isAdmin&&!['toggle-gallery','delete-gallery'].includes(action))return;
   if(action==='toggle-event'||action==='toggle-gallery'){
     const table=action==='toggle-event'?'dahira_events':'dahira_gallery';
     const r=await sb.from(table).update({is_published:button.dataset.published!=='true',updated_at:new Date().toISOString()}).eq('id',id);
@@ -2866,7 +2881,8 @@ document.addEventListener('click', async function(e) {
   const id = button.dataset.id;
   if (!id) return;
   const financeActions=new Set(['print-receipt','delete-contribution','member-history','prefill-contribution','confirm-payment','cancel-payment']);
-  if (!isAdmin && !(isFinance && financeActions.has(button.dataset.action))) {
+  const contentManagerActions=new Set(['edit-content','delete-content','toggle-gallery','delete-gallery']);
+  if (!isAdmin && !(isFinance && financeActions.has(button.dataset.action)) && !(isContentManager && contentManagerActions.has(button.dataset.action))) {
     alert("Action réservée à l'administration ou à la gestion financière.");
     return;
   }
