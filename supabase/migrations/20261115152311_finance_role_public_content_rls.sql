@@ -1,5 +1,5 @@
 -- Separate public published-content reads from administrator-only profile checks.
--- Add a finance-only role without changing member or administrator records beyond the two named accounts.
+-- Add a finance-only role and its access policies. Account role assignments are handled separately.
 ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 ALTER TABLE public.profiles
   ADD CONSTRAINT profiles_role_check
