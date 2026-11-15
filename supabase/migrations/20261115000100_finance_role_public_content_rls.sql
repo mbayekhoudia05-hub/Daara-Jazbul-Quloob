@@ -122,28 +122,3 @@ $function$;
 -- Member payment submission is disabled in the member portal; preserve historical rows.
 REVOKE EXECUTE ON FUNCTION public.submit_member_payment(uuid,numeric,text,date,text,text) FROM authenticated;
 REVOKE EXECUTE ON FUNCTION public.get_payment_beneficiaries() FROM authenticated;
-
-DO $$
-DECLARE target_profiles integer;
-BEGIN
-  SELECT count(*) INTO target_profiles
-  FROM public.profiles p
-  JOIN auth.users u ON u.id = p.id
-  WHERE lower(u.email) IN (
-    'ndeyastoudiouf1717@gmail.com',
-    'khoudiambaye594@gmail.com'
-  );
-  IF target_profiles <> 2 THEN
-    RAISE EXCEPTION 'Expected exactly two finance manager profiles; found %.', target_profiles;
-  END IF;
-END
-$$;
-
-UPDATE public.profiles p
-SET role = 'finance'
-FROM auth.users u
-WHERE p.id = u.id
-  AND lower(u.email) IN (
-    'ndeyastoudiouf1717@gmail.com',
-    'khoudiambaye594@gmail.com'
-  );
