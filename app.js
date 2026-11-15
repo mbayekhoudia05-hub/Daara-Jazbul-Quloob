@@ -2408,8 +2408,8 @@ async function loadPublicEvents(){
 }
 function getGalleryMediaKind(fileOrUrl){
   const value=typeof fileOrUrl==='string'?fileOrUrl:(fileOrUrl?.type||fileOrUrl?.name||'');
-  if(/^video\\//i.test(value)||/\\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(value))return 'video';
-  if(/^image\\//i.test(value)||/\\.(jpe?g|png|webp)(?:[?#]|$)/i.test(value))return 'image';
+  if(/^video\//i.test(value)||/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(value))return 'video';
+  if(/^image\//i.test(value)||/\.(jpe?g|png|webp)(?:[?#]|$)/i.test(value))return 'image';
   return '';
 }
 async function loadPublicGallery(){
@@ -2463,7 +2463,7 @@ async function createAdminGalleryItem(e){
   const files=Array.from($('galleryImageFile')?.files||[]);
   const imageUrl=$('galleryImageUrl').value.trim();
   if(!files.length&&!imageUrl){msg('galleryMessage','Choisis au moins une photo ou une vidéo depuis ton appareil, ou ajoute un lien direct.');return;}
-  if(imageUrl&&!/^https?:\\/\\//i.test(imageUrl)){msg('galleryMessage','Le lien doit commencer par https:// ou http://.');return;}
+  if(imageUrl&&!/^https?:\/\//i.test(imageUrl)){msg('galleryMessage','Le lien doit commencer par https:// ou http://.');return;}
   for(const file of files){
     const kind=getGalleryMediaKind(file);
     if(!kind||file.size>(kind==='video'?50:8)*1024*1024){msg('galleryMessage','Format ou taille invalide : photos 8 Mo maximum, vidéos 50 Mo maximum.');return;}
