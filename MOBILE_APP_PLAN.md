@@ -4,7 +4,7 @@
 
 L'application mobile est préparée avec Capacitor 8 afin de réutiliser l'application web existante (HTML, CSS et JavaScript) dans des conteneurs natifs Android et iOS.
 
-- Identifiant mobile : sn.daarajazquluub.celluledakar
+- Identifiant mobile : sn.daarajazbulquluub.celluledakar
 - Nom affiché : Daara Jazbul Quluub
 - Ressources web embarquées : www/
 - Backend conservé : projet Supabase existant
