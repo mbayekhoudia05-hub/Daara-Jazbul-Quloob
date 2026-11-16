@@ -113,8 +113,14 @@ for select to authenticated using (
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
 drop policy if exists "Finance and admins manage cash funds" on public.cash_funds;
-create policy "Finance and admins manage cash funds" on public.cash_funds
-for all to authenticated using (
+drop policy if exists "Finance and admins insert cash funds" on public.cash_funds;
+create policy "Finance and admins insert cash funds" on public.cash_funds
+for insert to authenticated with check (
+  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
+);
+drop policy if exists "Finance and admins update cash funds" on public.cash_funds;
+create policy "Finance and admins update cash funds" on public.cash_funds
+for update to authenticated using (
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 ) with check (
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
@@ -126,10 +132,6 @@ for select to authenticated using (
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
 drop policy if exists "Finance and admins insert cash movements" on public.cash_movements;
-create policy "Finance and admins insert cash movements" on public.cash_movements
-for insert to authenticated with check (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
-);
 
 drop policy if exists "Finance and admins view cash expenses" on public.cash_expense_requests;
 create policy "Finance and admins view cash expenses" on public.cash_expense_requests
@@ -178,9 +180,9 @@ for select to authenticated using (
 create or replace function public.log_cash_record_change()
 returns trigger
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare
   v_id uuid;
 begin
@@ -217,9 +219,9 @@ create or replace function public.record_cash_opening_balance(
   p_fund_id uuid, p_amount numeric, p_date date, p_note text
 ) returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare v_id uuid;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -231,8 +233,9 @@ begin
   if exists (select 1 from public.cash_movements where fund_id = p_fund_id and movement_type = 'opening_balance') then
     raise exception 'Le solde initial de cette caisse est déjà enregistré.';
   end if;
+  if p_amount = 0 then return null; end if;
   insert into public.cash_movements(fund_id,movement_type,amount,movement_date,category,description,created_by)
-  values (p_fund_id,'opening_balance',greatest(p_amount,0.01),p_date,'solde_initial',coalesce(nullif(btrim(p_note),''),'Solde initial de caisse'),auth.uid())
+  values (p_fund_id,'opening_balance',p_amount,p_date,'solde_initial',coalesce(nullif(btrim(p_note),''),'Solde initial de caisse'),auth.uid())
   returning id into v_id;
   return v_id;
 end;
@@ -241,9 +244,9 @@ $$;
 create or replace function public.approve_cash_expense(p_expense_id uuid, p_approve boolean, p_reason text default null)
 returns jsonb
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare v public.cash_expense_requests%rowtype;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -315,9 +318,9 @@ $$;
 create or replace function public.approve_cash_transfer(p_transfer_id uuid,p_approve boolean,p_reason text default null)
 returns jsonb
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare v public.cash_transfers%rowtype; v_balance numeric;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -346,9 +349,9 @@ $$;
 create or replace function public.sync_paid_contribution_to_cash()
 returns trigger
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare v_fund uuid; v_old_amount numeric; v_new_amount numeric;
 begin
   select id into v_fund from public.cash_funds where fund_type='general' limit 1;
@@ -387,6 +390,8 @@ create trigger contributions_cash_ledger_sync
 after insert or update of status, amount on public.contributions
 for each row execute function public.sync_paid_contribution_to_cash();
 
+revoke all on function public.log_cash_record_change() from public;
+revoke all on function public.sync_paid_contribution_to_cash() from public;
 revoke all on function public.record_cash_opening_balance(uuid,numeric,date,text) from public;
 revoke all on function public.approve_cash_expense(uuid,boolean,text) from public;
 revoke all on function public.pay_cash_expense(uuid,date) from public;
