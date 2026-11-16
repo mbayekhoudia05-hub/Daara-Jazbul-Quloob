@@ -468,6 +468,24 @@
       const note=document.createElement('p');note.className='development-note';note.textContent='Les outils de registre et de gestion restent communs au dossier principal. Cette copie présente uniquement la simulation financière alternative et ne crée pas de second registre de caisse.';
       copy.querySelector('#alt-dev-section-12')?.appendChild(note);
       renderSundayAlternative(p,copy);
+      // La copie alternative conserve toutes les sections du projet principal.
+      // On ne modifie que les formulations liées à la cotisation des membres.
+      const alternativeTextWalker=document.createTreeWalker(copy,NodeFilter.SHOW_TEXT);
+      let alternativeTextNode;
+      while((alternativeTextNode=alternativeTextWalker.nextNode())){
+        alternativeTextNode.nodeValue=alternativeTextNode.nodeValue
+          .replace(/500 FCFA par participant et par mois/gi,'500 FCFA par participant chaque dimanche')
+          .replace(/500 FCFA une fois par mois/gi,'500 FCFA chaque dimanche')
+          .replace(/500 FCFA par mois/gi,'500 FCFA chaque dimanche')
+          .replace(/500 F par mois/gi,'500 F chaque dimanche')
+          .replace(/cotisations mensuelles/gi,'cotisations dominicales')
+          .replace(/cotisation mensuelle/gi,'cotisation dominicale')
+          .replace(/cotisations par mois/gi,'cotisations chaque dimanche')
+          .replace(/cotisation par mois/gi,'cotisation chaque dimanche')
+          .replace(/mensualités/gi,'cotisations dominicales')
+          .replace(/mensualité/gi,'cotisation dominicale')
+          .replace(/proposition principale/gi,'formule dominicale');
+      }
       const altObjectives=copy.querySelector('#alt-dev-section-1 ul');
       if(altObjectives?.children[0])altObjectives.children[0].textContent='Mobiliser 30 à 50 participants volontaires autour de la cotisation de 500 FCFA chaque dimanche.';
       const altLaunch=copy.querySelector('#alt-dev-section-8 p');
