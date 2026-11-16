@@ -22,8 +22,9 @@
     const p=data.plan;
     const income=data.ledger.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
     const expenses=data.ledger.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
-    const rentalGross=data.rentals.reduce((s,x)=>s+Number(x.amount||0),0);
-    const rentalCosts=data.rentals.reduce((s,x)=>s+Number(x.costs||0),0);
+    const completedRentals=data.rentals.filter(x=>x.status==='completed');
+    const rentalGross=completedRentals.reduce((s,x)=>s+Number(x.amount||0),0);
+    const rentalCosts=completedRentals.reduce((s,x)=>s+Number(x.costs||0),0);
     const rentalNet=rentalGross-rentalCosts;
     const content=$('privateDevelopmentProjectContent');
     content.innerHTML=`
