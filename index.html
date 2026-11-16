@@ -38,6 +38,10 @@
         <a href="#cashManagement" id="cashNav" class="hidden" data-admin-target="cashManagement">🏦 <span>Gestion de caisse</span></a>
       </div>
       <div class="sidebar-subgroup">
+        <div class="sidebar-subgroup-title">Projet personnel</div>
+        <a href="#privateDevelopmentProject" id="privateDevelopmentProjectNav" class="hidden" data-admin-target="privateDevelopmentProject">🔒 <span>Mon projet de développement</span></a>
+      </div>
+      <div class="sidebar-subgroup">
         <div class="sidebar-subgroup-title">Communication et contenus</div>
         <a href="#admin" id="adminNav" class="hidden" data-admin-target="admin">⚙ <span>Gérer les contenus</span></a>
         <a href="#adminEvents" id="eventsNav" class="hidden" data-admin-target="adminEvents">▦ <span>Gérer l’agenda</span></a>
@@ -222,6 +226,11 @@
       <a href="#admin" class="dashboard-action" data-admin-target="admin"><span class="dashboard-action-icon">⚙</span><span><strong>Gérer les contenus</strong><small>Ressources, annonces et chartes</small></span><b>›</b></a>
     </div>
   </div>
+</section>
+
+<section id="privateDevelopmentProject" class="section hidden" aria-label="Projet de développement privé">
+  <div class="head"><span>ESPACE PERSONNEL CONFIDENTIEL</span><h2>Mon projet de développement du Dahira</h2><p>Ce dossier est chargé depuis un espace privé après vérification de ton compte.</p></div>
+  <div id="privateDevelopmentProjectContent" class="admin-module-list"><p class="loading">Chargement du dossier privé…</p></div>
 </section>
 
 <section id="adminEvents" class="section hidden">
@@ -881,4 +890,5 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 }
 </script>
 <script defer src="cash-management.js?v=20261116-cash-v1"></script>
+<script defer src="development-project.js?v=20261116-private-v1"></script>
 </body></html>
