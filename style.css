@@ -2227,3 +2227,16 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .development-funding-alert h3{margin:0 0 8px;color:#74551b}
 .development-funding-alert p{margin:8px 0;line-height:1.6}
 @media print{.development-funding-alert{break-inside:avoid;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+
+/* Business plan privé : présentation claire vert et blanc */
+.development-equipment-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.development-equipment-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:130px;padding:16px;border:1px solid #d6e7dc;border-radius:12px;background:#f5faf7;text-align:center;color:#174d34}
+.development-equipment-icon{font-size:34px;line-height:1.2}
+.development-equipment-card b{font-size:15px;color:#075b35}
+.development-equipment-card span{font-size:12px;color:#53685b}
+.development-process{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:18px 0}
+.development-process>div{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border-radius:10px;background:#edf6f0;border:1px solid #d5e7da;text-align:center;color:#174d34}
+.development-process b{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#075b35;color:white;font-size:16px}
+.development-process span{font-size:13px;font-weight:600}
+@media print{.development-equipment-grid,.development-process{break-inside:avoid}.development-equipment-card,.development-process>div{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
