@@ -30,12 +30,13 @@ async function loadCashManagement(){
   if(!sb||!canManageFinance())return;
   const fundsBox=$('cashFundsRows');
   if(fundsBox)fundsBox.innerHTML='<tr><td colspan="4">Chargement…</td></tr>';
-  const [fr,mr,er]=await Promise.all([
+  const [fr,mr,er,cr]=await Promise.all([
     sb.from('cash_funds').select('id,name,fund_type,parent_fund_id,description,is_active,created_at').order('fund_type').order('name'),
-    sb.from('cash_movements').select('id,fund_id,movement_type,amount,movement_date,category,description,created_at,cash_funds(name)').order('movement_date',{ascending:false}).order('created_at',{ascending:false}).limit(1000),
-    sb.from('cash_expense_requests').select('id,fund_id,amount,category,description,beneficiary,status,requested_by,requested_at,approved_by,approved_at,paid_at').order('requested_at',{ascending:false}).limit(150)
+    sb.from('cash_movements').select('id,fund_id,movement_type,amount,movement_date,category,description,contribution_id,created_at,cash_funds(name)').order('movement_date',{ascending:false}).order('created_at',{ascending:false}).limit(1000),
+    sb.from('cash_expense_requests').select('id,fund_id,amount,category,description,beneficiary,status,requested_by,requested_at,approved_by,approved_at,paid_at').order('requested_at',{ascending:false}).limit(150),
+    sb.from('contributions').select('id,amount,category').eq('status','paid').limit(10000)
   ]);
-  const error=[fr,mr,er].find(x=>x.error);
+  const error=[fr,mr,er,cr].find(x=>x.error);
   if(error){if(fundsBox)fundsBox.innerHTML='<tr><td colspan="4">Erreur : '+esc(error.error.message)+'</td></tr>';return;}
   cashFundsCache=fr.data||[];
   cashMovementsCache=mr.data||[];
@@ -55,6 +56,12 @@ async function loadCashManagement(){
     if(m.movement_type==='income'||m.movement_type==='adjustment_in')totals[key]+=Number(m.amount||0);
     if(m.movement_type==='adjustment_out')totals[key]-=Number(m.amount||0);
   });
+  const alreadySynced=new Set(cashMovementsCache.filter(m=>m.contribution_id&&m.movement_type==='income').map(m=>m.contribution_id));
+  (cr.data||[]).filter(c=>!alreadySynced.has(c.id)).forEach(c=>{
+    totals[cashCategoryKey(c.category)]+=Number(c.amount||0);
+  });
+  const totalReceipts=Object.values(totals).reduce((sum,value)=>sum+value,0);
+  if($('cashTotalIncome'))$('cashTotalIncome').textContent=cashMoney(totalReceipts);
   if($('cashSubcashRows'))$('cashSubcashRows').innerHTML=names.map(name=>'<tr><td><strong>'+esc(name)+'</strong></td><td>'+cashMoney(totals[name])+'</td><td>Sous-caisse de suivi — fonds conservés dans la caisse générale</td></tr>').join('');
   const fundMap=new Map(cashFundsCache.map(f=>[f.id,f.name]));
   const monthFilter=$('cashMovementMonthFilter')?.value||'';
