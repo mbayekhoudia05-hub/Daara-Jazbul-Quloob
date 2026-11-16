@@ -26,7 +26,7 @@ create table if not exists public.cash_movements (
     'opening_balance','income','expense','transfer_in','transfer_out',
     'adjustment_in','adjustment_out'
   )),
-  amount numeric(14,2) not null check (amount > 0),
+  amount numeric(14,2) not null check (amount >= 0),
   movement_date date not null default current_date,
   category text not null default 'divers',
   description text not null default '',
@@ -141,7 +141,8 @@ for select to authenticated using (
 drop policy if exists "Finance can submit cash expenses" on public.cash_expense_requests;
 create policy "Finance can submit cash expenses" on public.cash_expense_requests
 for insert to authenticated with check (
-  requested_by = (select auth.uid()) and
+  requested_by = (select auth.uid()) and status = 'pending' and
+  approved_by is null and approved_at is null and paid_by is null and paid_at is null and movement_id is null and
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
 drop policy if exists "Admins can review cash expenses" on public.cash_expense_requests;
@@ -160,7 +161,7 @@ for select to authenticated using (
 drop policy if exists "Finance can request cash transfers" on public.cash_transfers;
 create policy "Finance can request cash transfers" on public.cash_transfers
 for insert to authenticated with check (
-  requested_by = (select auth.uid()) and
+  requested_by = (select auth.uid()) and status = 'pending' and approved_by is null and approved_at is null and posted_at is null and
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
 drop policy if exists "Admins can review cash transfers" on public.cash_transfers;
