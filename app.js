@@ -1158,7 +1158,7 @@ async function loadContributions(){
   await loadContributionMembers();
 
   const r=await sb.from('contributions')
-    .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,members(member_number,first_name,last_name)')
+    .select('id,member_id,amount,payment_month,payment_date,payment_method,category,status,reference,note,paid_at,payment_transaction_id,members(member_number,first_name,last_name)')
     .order('paid_at',{ascending:false});
 
   if(r.error){
@@ -1206,6 +1206,7 @@ function renderContributionRows(sourceRows){
         <td>${esc(x.reference||'—')}</td>
         <td>${esc(x.payment_date?new Date(x.payment_date+'T00:00:00').toLocaleDateString('fr-FR'):'—')}</td>
         <td>
+          <button class="table-btn" data-action="edit-contribution" data-id="${esc(x.id)}">✏️ Modifier</button>
           <button class="table-btn" data-action="print-receipt" data-id="${esc(x.id)}">🧾 Reçu</button>
           <button class="table-btn danger-btn" data-action="delete-contribution" data-id="${esc(x.id)}">Supprimer</button>
         </td>
@@ -2088,6 +2089,91 @@ async function submitMemberPayment(e){
  $('memberPaymentForm').reset();await loadMemberPaymentForm(currentMemberRecord);await loadConnectedMemberDashboard(currentMemberRecord);
 }
 
+
+async function openPaymentEdit(kind,id){
+  if(!sb||!canManageFinance())return;
+  const table=kind==='transaction'?'payment_transactions':'contributions';
+  const columns=kind==='transaction'
+    ? 'id,member_id,amount,payment_method,category,reference,payment_month,payment_date,note,status'
+    : 'id,member_id,amount,payment_method,category,reference,payment_month,payment_date,note,payment_transaction_id';
+  const result=await sb.from(table).select(columns).eq('id',id).maybeSingle();
+  if(result.error||!result.data){alert('Paiement introuvable : '+(result.error?.message||''));return;}
+  const row=result.data;
+  const memberSource=$(kind==='transaction'?'paymentMember':'contributionMember');
+  const categorySource=$(kind==='transaction'?'paymentCategory':'contributionCategory');
+  const memberSelect=$('editPaymentMember');
+  const categorySelect=$('editPaymentCategory');
+  memberSelect.innerHTML=memberSource?.innerHTML||'<option value="">Choisir un membre</option>';
+  if(!Array.from(memberSelect.options).some(o=>o.value===row.member_id)){
+    const memberResult=await sb.from('members').select('id,member_number,first_name,last_name').eq('id',row.member_id).maybeSingle();
+    if(memberResult.data){
+      const option=document.createElement('option');
+      option.value=memberResult.data.id;
+      option.textContent=(memberResult.data.member_number||'')+' — '+(memberResult.data.first_name||'')+' '+(memberResult.data.last_name||'');
+      memberSelect.append(option);
+    }
+  }
+  categorySelect.innerHTML=categorySource?.innerHTML||'<option value="mensualite">Mensualité</option>';
+  if(!Array.from(categorySelect.options).some(o=>o.value===row.category)){
+    const option=document.createElement('option');option.value=row.category;option.textContent=contributionCategoryLabel(row.category);categorySelect.append(option);
+  }
+  memberSelect.value=row.member_id;
+  $('editPaymentAmount').value=row.amount;
+  $('editPaymentMethod').value=row.payment_method;
+  categorySelect.value=row.category;
+  $('editPaymentReference').value=row.reference||'';
+  $('editPaymentMonth').value=String(row.payment_month||'').slice(0,7);
+  $('editPaymentDate').value=row.payment_date||new Date().toISOString().slice(0,10);
+  $('editPaymentNote').value=row.note||'';
+  $('paymentEditKind').value=kind;
+  $('paymentEditId').value=id;
+  $('paymentEditTitle').textContent=kind==='transaction'?'Modifier la transaction':'Modifier la cotisation';
+  $('paymentEditMessage').textContent=kind==='transaction'&&row.status==='confirmed'
+    ? 'Cette transaction est confirmée : sa cotisation associée sera également mise à jour.'
+    : kind==='contribution'&&row.payment_transaction_id
+      ? 'Cette cotisation est liée à une transaction : les deux enregistrements seront synchronisés.'
+      : 'Les informations d’origine (date de création et statut) seront conservées.';
+  openAccessibleModal('paymentEditModal','#editPaymentMember');
+}
+
+async function savePaymentEdit(event){
+  event.preventDefault();
+  if(!canManageFinance())return;
+  const kind=$('paymentEditKind').value;
+  const id=$('paymentEditId').value;
+  const amount=Number($('editPaymentAmount').value);
+  const month=$('editPaymentMonth').value;
+  const payment_date=$('editPaymentDate').value;
+  if(!id||!$('editPaymentMember').value||!Number.isFinite(amount)||amount<=0||!month||!payment_date){
+    $('paymentEditMessage').textContent='Vérifie le membre, le montant, le mois et la date.';
+    return;
+  }
+  const button=$('savePaymentEdit');
+  button.disabled=true;
+  button.textContent='Enregistrement…';
+  const result=await sb.rpc('update_payment_record',{
+    p_record_type:kind,
+    p_record_id:id,
+    p_member_id:$('editPaymentMember').value,
+    p_amount:amount,
+    p_payment_method:$('editPaymentMethod').value,
+    p_category:$('editPaymentCategory').value,
+    p_reference:$('editPaymentReference').value.trim()||null,
+    p_payment_month:month+'-01',
+    p_payment_date:payment_date,
+    p_note:$('editPaymentNote').value.trim()||null
+  });
+  button.disabled=false;
+  button.textContent='Enregistrer les modifications';
+  if(result.error){
+    $('paymentEditMessage').textContent='Modification impossible : '+result.error.message;
+    return;
+  }
+  closeAccessibleModal('paymentEditModal');
+  alert('Paiement modifié. Aucun enregistrement n’a été supprimé.');
+  await Promise.all([loadContributions(),loadPaymentTransactions(),loadFinanceDashboard(),loadUnpaidTracker()]);
+}
+
 async function initPaymentTransactions(){
   if(!sb||!canManageFinance())return;
   renderDahiraWaveQr();
@@ -2159,6 +2245,7 @@ async function loadPaymentTransactions(){
       <td>${status}</td>
       <td>${esc(x.payment_date?new Date(x.payment_date+"T00:00:00").toLocaleDateString("fr-FR"):"—")}</td>
       <td>
+        <button class="table-btn" data-action="edit-payment" data-id="${esc(x.id)}">✏️ Modifier</button>
         ${x.status==="pending"?`<button class="table-btn" data-action="confirm-payment" data-id="${esc(x.id)}">✅ Confirmer</button>
         <button class="table-btn danger-btn" data-action="cancel-payment" data-id="${esc(x.id)}">❌ Annuler</button>`:""}
       </td>
@@ -2894,7 +2981,7 @@ document.addEventListener('click', async function(e) {
   if (!button) return;
   const id = button.dataset.id;
   if (!id) return;
-  const financeActions=new Set(['print-receipt','delete-contribution','member-history','prefill-contribution','confirm-payment','cancel-payment']);
+  const financeActions=new Set(['print-receipt','delete-contribution','edit-contribution','edit-payment','member-history','prefill-contribution','confirm-payment','cancel-payment']);
   const contentManagerActions=new Set(['edit-content','delete-content','toggle-gallery','delete-gallery']);
   if (!isAdmin && !(isFinance && financeActions.has(button.dataset.action)) && !(isContentManager && contentManagerActions.has(button.dataset.action))) {
     alert("Action réservée à l'administration ou à la gestion financière.");
@@ -2919,6 +3006,8 @@ document.addEventListener('click', async function(e) {
       break;
     }
     case 'delete-contribution': deleteContribution(id); break;
+    case 'edit-contribution': await openPaymentEdit('contribution',id); break;
+    case 'edit-payment': await openPaymentEdit('transaction',id); break;
     case 'edit-member': editMember(id); break;
     case 'toggle-member-status': toggleMemberStatus(id,button.dataset.status==='active'?'inactive':'active'); break;
     case 'delete-member': deleteMemberPermanently(id); break;
@@ -2976,6 +3065,7 @@ document.addEventListener('click', async function(e) {
 
 // Démarrer l'application après le chargement du DOM.
 // Sans cet appel, les boutons (dont « Connexion ») ne reçoivent aucun gestionnaire.
+$('paymentEditForm')?.addEventListener('submit',savePaymentEdit);
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     void init().catch(error => {
