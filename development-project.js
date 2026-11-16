@@ -18,9 +18,9 @@
     $('privateDevelopmentProject')?.classList.add('hidden');
   }
 
-  function buildMonthlyProjection(p) {
+  function buildMonthlyProjection(p, participantsOverride) {
     const cfg = p.financialPlan || {};
-    const participants = Number(cfg.participants || 40);
+    const participants = Number(participantsOverride || cfg.participants || 40);
     const monthlyContribution = Number(cfg.monthlyContribution || 500);
     const monthlyDonation = Number(cfg.monthlyDonationTarget || 200000);
     const donationMonths = Number(cfg.donationMonths || 5);
@@ -74,6 +74,11 @@
     const fmtDate=x=>String(x.month).padStart(2,'0')+'/'+x.year;
     const purchases=projection.purchaseDates;
     const purchaseRows=purchases.length?purchases.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${fmtDate(x)}</td><td>${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="3">Aucun achat atteint dans la simulation.</td></tr>';
+    const scenarioRows=[30,40,50].map(n=>{
+      const q=buildMonthlyProjection(p,n);
+      const when=name=>{const found=q.purchaseDates.find(x=>x.name===name);return found?fmtDate(found):'Après 2031';};
+      return `<tr><td>${n}</td><td>${money(n*500)}</td><td>${when('Chaises — phase 1 (30 VIP + 60 plastiques)')}</td><td>${when('Chaises — phase 2 (20 VIP + 40 plastiques)')}</td><td>${when('Bâche 4×5 m ouverte')}</td><td>${when('Bâche 8×5 m ouverte')}</td><td>${when('Tables pliantes')}</td></tr>`;
+    }).join('');
     const monthlyRows=projection.rows.map((x,i)=>`<tr><td>${String(x.month).padStart(2,'0')}/${x.year}</td><td>${money(x.contributions)}</td><td>${money(x.donations)}</td><td>${money(x.soundIncome)}</td><td>${x.thursdays} / ${x.paidSundays}</td><td>${x.purchases.length?x.purchases.map(y=>escapeHtml(y.name)+' : '+money(y.amount)).join('<br>'):'—'}</td><td>${money(x.closing)}</td><td>${escapeHtml(x.objective)}</td></tr>`).join('');
     const sequenceRows=(cfg.equipmentSequence||[]).map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.quantityLabel||'—')}</td><td>${escapeHtml(x.priceDisplay||money(x.unitPrice||0))}</td><td>${money(x.total||0)}</td><td>${escapeHtml(x.priceNote||'Prix indicatif à confirmer par devis')}</td></tr>`).join('');
     const annualRows=[2027,2028,2029,2030,2031].map(y=>{
@@ -130,6 +135,9 @@
       </section>
       <section class="development-section">
         <h2>6. Dates prévisionnelles d’achat</h2>
+        <h3>Comparaison selon le nombre de participants</h3>
+        <p>La collecte spéciale de 1 000 000 F reste identique dans les trois scénarios ; seule la mensualité totale change. Les dates sont calculées avant charges d'exploitation.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations / mois</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 4×5</th><th>Bâche 8×5</th><th>4 tables</th></tr></thead><tbody>${scenarioRows}</tbody></table></div>
         <div class="member-table-wrap"><table><thead><tr><th>Projet / achat</th><th>Mois théorique</th><th>Enveloppe</th></tr></thead><tbody>${purchaseRows}</tbody></table></div>
         <p>Si une recette n’est pas encaissée, si le nombre de participants diminue ou si des frais sont engagés, l’achat est reporté au mois où le solde réel atteint le seuil. Les dates ne sont pas des engagements fournisseurs.</p>
         <h3>Objectifs annuels de suivi</h3>
