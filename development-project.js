@@ -463,6 +463,10 @@
       const note=document.createElement('p');note.className='development-note';note.textContent='Les outils de registre et de gestion restent communs au dossier principal. Cette copie présente uniquement la simulation financière alternative et ne crée pas de second registre de caisse.';
       copy.querySelector('#alt-dev-section-12')?.appendChild(note);
       renderSundayAlternative(p,copy);
+      const altObjectives=copy.querySelector('#alt-dev-section-1 ul');
+      if(altObjectives?.children[0])altObjectives.children[0].textContent='Mobiliser 30 à 50 participants volontaires autour de la cotisation de 500 FCFA chaque dimanche.';
+      const altLaunch=copy.querySelector('#alt-dev-section-8 p');
+      if(altLaunch)altLaunch.textContent='Le lancement est organisé autour de la collecte spéciale de cinq mois et de la cotisation de 500 FCFA chaque dimanche. Chaque mois, le responsable compare les dons, les cotisations dominicales réellement encaissées et les justificatifs.';
       alternative.appendChild(cover);
       alternative.appendChild(copy);
       const label=document.createElement('div');label.className='development-document-heading';label.innerHTML='<span>DEUXIÈME PROPOSITION — OPTION ALTERNATIVE</span><h2>Projet complet financé par une cotisation dominicale</h2><p>Copie du projet principal avec une seule modification : 500 FCFA chaque dimanche à la place de 500 FCFA par mois.</p>';
