@@ -69,9 +69,9 @@ function openAuth(){openAccessibleModal('authModal','#email')}
 function closeAuth(){closeAccessibleModal('authModal')}
 
 function setAdminUI(){
-  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
-  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','postersNav','eventsNav','galleryNav','notificationsNav'];
-  const financeNavs=['contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav'];
+  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications'];
+  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','cashNav','postersNav','eventsNav','galleryNav','notificationsNav'];
+  const financeNavs=['contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','cashNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
@@ -92,8 +92,8 @@ function setAdminUI(){
 }
 function showAdminSection(id){
   if(!isAdmin&&!isFinance&&!isContentManager)return;
-  const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','posters','adminEvents','adminGallery','adminNotifications'];
-  const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard'];
+  const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications'];
+  const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement'];
   const contentManagerAllowed=['admin','adminGallery'];
   const allowed=isAdmin?adminAllowed:isContentManager?contentManagerAllowed:financeAllowed;
   if(!allowed.includes(id))return;
@@ -113,6 +113,7 @@ function showAdminSection(id){
   if(id==='paymentTransactions')void loadPaymentTransactions();
   if(id==='unpaidMembers')void loadUnpaidTracker();
   if(id==='financeDashboard')void loadFinanceDashboard();
+  if(id==='cashManagement')void loadCashManagement();
 }
 async function updatePendingMembershipCount(){
   if(!sb||!isAdmin)return;
