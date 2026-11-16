@@ -2268,3 +2268,105 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .development-simple-card>strong{display:block;color:#075b35;font-size:15px;margin-bottom:7px}
 .development-simple-card>div{display:flex;flex-wrap:wrap;gap:6px 18px}
 .development-simple-card span{font-size:13px;line-height:1.5;color:#294b38}
+
+
+/* Business plan : tableaux entièrement lisibles sur téléphone */
+@media screen and (max-width:650px){
+  #privateDevelopmentProjectContent,
+  .development-document,
+  .development-section,
+  .development-section .member-table-wrap{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  .development-document{overflow-wrap:anywhere}
+  .development-section .member-table-wrap{
+    overflow:visible!important;
+    margin:12px 0 18px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  .development-section .member-table-wrap table{
+    display:block;
+    width:100%!important;
+    min-width:0!important;
+    border-collapse:separate;
+    border-spacing:0;
+    font-size:13px;
+  }
+  .development-section .member-table-wrap thead{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    padding:0!important;
+    margin:-1px!important;
+    overflow:hidden!important;
+    clip:rect(0,0,0,0)!important;
+    white-space:nowrap!important;
+    border:0!important;
+  }
+  .development-section .member-table-wrap tbody{
+    display:grid;
+    gap:10px;
+    width:100%;
+  }
+  .development-section .member-table-wrap tbody tr{
+    display:block;
+    width:100%;
+    min-width:0;
+    padding:8px 12px;
+    border:1px solid #dce5de;
+    border-radius:11px;
+    background:#fff;
+    box-shadow:0 2px 8px rgba(7,59,27,.05);
+  }
+  .development-section .member-table-wrap tbody td,
+  .development-section .member-table-wrap tbody th[data-label]{
+    display:grid;
+    grid-template-columns:minmax(105px,38%) minmax(0,1fr);
+    align-items:start;
+    gap:8px;
+    width:100%;
+    min-width:0;
+    padding:8px 0;
+    border:0;
+    border-bottom:1px solid #edf1ed;
+    background:transparent;
+    color:#25372c;
+    font-size:13px;
+    line-height:1.45;
+    text-align:left;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+  .development-section .member-table-wrap tbody td::before,
+  .development-section .member-table-wrap tbody th[data-label]::before{
+    content:attr(data-label);
+    color:#52705d;
+    font-size:11px;
+    line-height:1.4;
+    font-weight:800;
+  }
+  .development-section .member-table-wrap tbody td:last-child,
+  .development-section .member-table-wrap tbody th[data-label]:last-child{
+    border-bottom:0;
+  }
+  .development-section .member-table-wrap tbody td[colspan]{
+    display:block;
+    border:0;
+  }
+  .development-section .member-table-wrap tbody td[colspan]::before{
+    content:none;
+  }
+  .development-section p,
+  .development-section li{
+    overflow-wrap:anywhere;
+  }
+  .development-section h2{
+    font-size:1.2rem;
+    line-height:1.35;
+  }
+}
