@@ -2178,7 +2178,9 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 @page{size:A4;margin:16mm 14mm}
 @media print{
   html,body{width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}
-  body> :not(#privateDevelopmentProject){display:none!important}
+  body> :not(main){display:none!important}
+  main#mainContent{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important}
+  main#mainContent> :not(#privateDevelopmentProject){display:none!important}
   #privateDevelopmentProject{display:block!important;position:static!important;inset:auto!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;visibility:visible!important}
   #privateDevelopmentProject *{visibility:visible!important}
   #privateDevelopmentProject>.head,.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}
