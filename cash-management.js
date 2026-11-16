@@ -24,7 +24,7 @@ async function loadCashManagement(){
   if(fundsBox)fundsBox.innerHTML='<tr><td colspan="4">Chargement…</td></tr>';
   const [fr,mr,er,tr]=await Promise.all([
     sb.from('cash_funds').select('id,name,fund_type,parent_fund_id,description,is_active,created_at').order('fund_type').order('name'),
-    sb.from('cash_movements').select('id,fund_id,movement_type,amount,movement_date,category,description,created_at,cash_funds(name)').order('movement_date',{ascending:false}).order('created_at',{ascending:false}).limit(300),
+    sb.from('cash_movements').select('id,fund_id,movement_type,amount,movement_date,category,description,created_at,cash_funds(name)').order('movement_date',{ascending:false}).order('created_at',{ascending:false}).limit(1000),
     sb.from('cash_expense_requests').select('id,fund_id,amount,category,description,beneficiary,status,requested_by,requested_at,approved_by,approved_at,paid_at').order('requested_at',{ascending:false}).limit(150),
     sb.from('cash_transfers').select('id,from_fund_id,to_fund_id,amount,reason,status,requested_by,requested_at,approved_by,approved_at').order('requested_at',{ascending:false}).limit(100)
   ]);
@@ -43,7 +43,9 @@ async function loadCashManagement(){
   if($('cashTotalOutflow'))$('cashTotalOutflow').textContent=cashMoney(expenses);
   if($('cashFundsRows'))$('cashFundsRows').innerHTML=cashFundsCache.length?cashFundsCache.map(f=>'<tr><td><strong>'+esc(f.name)+'</strong><br><small>'+(f.fund_type==='general'?'Caisse générale':'Sous-caisse activité')+'</small></td><td>'+cashMoney(cashBalanceForFund(f.id))+'</td><td>'+esc(f.description||'—')+'</td><td>'+(f.is_active?'Active':'Désactivée')+'</td></tr>').join(''):'<tr><td colspan="4">Aucune caisse.</td></tr>';
   const fundMap=new Map(cashFundsCache.map(f=>[f.id,f.name]));
-  if($('cashMovementRows'))$('cashMovementRows').innerHTML=cashMovementsCache.length?cashMovementsCache.map(m=>'<tr><td>'+new Date(m.movement_date+'T00:00:00').toLocaleDateString('fr-FR')+'</td><td>'+esc(fundMap.get(m.fund_id)||m.cash_funds?.name||'—')+'</td><td>'+esc(cashMovementLabel(m.movement_type))+'</td><td>'+cashMoney(m.amount)+'</td><td>'+esc(m.category||'—')+'</td><td>'+esc(m.description||'—')+'</td></tr>').join(''):'<tr><td colspan="6">Aucun mouvement. Les nouvelles cotisations confirmées seront ajoutées automatiquement.</td></tr>';
+  const monthFilter=$('cashMovementMonthFilter')?.value||'';
+  const visibleMovements=cashMovementsCache.filter(m=>!monthFilter||String(m.movement_date||'').startsWith(monthFilter));
+  if($('cashMovementRows'))$('cashMovementRows').innerHTML=visibleMovements.length?visibleMovements.map(m=>'<tr><td>'+new Date(m.movement_date+'T00:00:00').toLocaleDateString('fr-FR')+'</td><td>'+esc(fundMap.get(m.fund_id)||m.cash_funds?.name||'—')+'</td><td>'+esc(cashMovementLabel(m.movement_type))+'</td><td>'+cashMoney(m.amount)+'</td><td>'+esc(m.category||'—')+'</td><td>'+esc(m.description||'—')+'</td></tr>').join(''):'<tr><td colspan="6">Aucun mouvement pour cette période. Les nouvelles cotisations confirmées seront ajoutées automatiquement.</td></tr>';
   if($('cashExpenseRows'))$('cashExpenseRows').innerHTML=(er.data||[]).length?(er.data||[]).map(x=>'<tr><td>'+new Date(x.requested_at).toLocaleDateString('fr-FR')+'</td><td>'+esc(fundMap.get(x.fund_id)||'—')+'</td><td>'+esc(x.description)+'</td><td>'+cashMoney(x.amount)+'</td><td>'+esc(x.beneficiary||'—')+'</td><td>'+esc(cashStatusLabel(x.status))+'</td><td>'+cashExpenseActions(x)+'</td></tr>').join(''):'<tr><td colspan="7">Aucune dépense enregistrée.</td></tr>';
   if($('cashTransferRows'))$('cashTransferRows').innerHTML=(tr.data||[]).length?(tr.data||[]).map(x=>'<tr><td>'+new Date(x.requested_at).toLocaleDateString('fr-FR')+'</td><td>'+esc(fundMap.get(x.from_fund_id)||'—')+'</td><td>'+esc(fundMap.get(x.to_fund_id)||'—')+'</td><td>'+cashMoney(x.amount)+'</td><td>'+esc(x.reason)+'</td><td>'+esc(cashStatusLabel(x.status))+'</td><td>'+cashTransferActions(x)+'</td></tr>').join(''):'<tr><td colspan="7">Aucun transfert.</td></tr>';
   const fundSelects=['cashExpenseFund','cashTransferFrom','cashTransferTo'];
@@ -118,5 +120,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('cashTransferForm')?.addEventListener('submit',submitCashTransfer);
   $('cashExpenseRows')?.addEventListener('click',handleCashActions);
   $('cashTransferRows')?.addEventListener('click',handleCashActions);
+  $('cashMovementMonthFilter')?.addEventListener('change',()=>void loadCashManagement());
+  $('cashMovementMonthReset')?.addEventListener('click',()=>{if($('cashMovementMonthFilter'))$('cashMovementMonthFilter').value='';void loadCashManagement();});
   if($('cashOpeningDate'))$('cashOpeningDate').value=new Date().toISOString().slice(0,10);
 });
