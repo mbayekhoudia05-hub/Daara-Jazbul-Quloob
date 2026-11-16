@@ -188,19 +188,28 @@
       <div class="development-document">
         <div class="development-document-heading"><span>DAARA JAZBUL QULUUB · CELLULE DAKAR</span><h2>Guide de lecture et sommaire</h2><p>Le dossier commence par l’essentiel, explique ensuite le financement et les achats, puis présente l’organisation et les outils de suivi.</p></div>
         <ol class="development-toc">
-          <li><a href="#dev-section-1">Présentation du projet</a></li>
-          <li><a href="#dev-section-2">Les cinq axes de développement</a></li>
-          <li><a href="#dev-section-3">Stratégie de financement</a></li>
-          <li><a href="#dev-section-4">Matériel et budget</a></li>
-          <li><a href="#dev-section-5">Règles de cumul et d’achat</a></li>
-          <li><a href="#dev-section-6">Dates prévisionnelles et objectifs annuels</a></li>
-          <li><a href="#dev-section-7">Calendrier détaillé sur 60 mois</a></li>
-          <li><a href="#dev-section-8">Plan de lancement</a></li>
-          <li><a href="#dev-section-9">Responsabilités</a></li>
-          <li><a href="#dev-section-10">Règles financières et contrôles</a></li>
-          <li><a href="#dev-section-11">Résultats attendus et risques</a></li>
-          <li><a href="#dev-section-12">Registre privé de suivi</a></li>
-          <li><a href="#dev-section-13">Validation</a></li>
+          <li class="development-toc-group"><strong>PARTIE 1 — Comprendre le projet</strong><ol>
+            <li><a href="#dev-section-1">Présentation du projet</a></li>
+            <li><a href="#dev-section-2">Les cinq axes de développement</a></li>
+          </ol></li>
+          <li class="development-toc-group"><strong>PARTIE 2 — Financement et matériel</strong><ol>
+            <li><a href="#dev-section-3">Stratégie de financement</a></li>
+            <li><a href="#dev-section-4">Matériel et budget</a></li>
+            <li><a href="#dev-section-5">Règles de cumul et d’achat</a></li>
+            <li><a href="#dev-section-6">Dates prévisionnelles et objectifs annuels</a></li>
+            <li><a href="#dev-section-7">Calendrier détaillé sur 60 mois</a></li>
+          </ol></li>
+          <li class="development-toc-group"><strong>PARTIE 3 — Organisation et contrôle</strong><ol>
+            <li><a href="#dev-section-8">Plan de lancement</a></li>
+            <li><a href="#dev-section-9">Responsabilités</a></li>
+            <li><a href="#dev-section-10">Règles financières et contrôles</a></li>
+            <li><a href="#dev-section-11">Résultats attendus et risques</a></li>
+            <li><a href="#dev-section-12">Registre privé de suivi</a></li>
+            <li><a href="#dev-section-13">Validation</a></li>
+          </ol></li>
+          <li class="development-toc-group development-toc-alternative"><strong>PARTIE 4 — Solution de secours</strong><ol>
+            <li><a href="#dev-section-14">Proposition alternative : 500 FCFA chaque dimanche</a></li>
+          </ol></li>
         </ol>
         <section class="development-summary">
           <h2>Le projet en quelques minutes</h2>
@@ -305,6 +314,21 @@
         </section>
         <footer class="development-footer">DAARA JAZBUL QULUUB – CELLULE DAKAR · DOSSIER CONFIDENTIEL · PROGRAMME 2027–2031</footer>
       </div>`;
+    function prepareDevelopmentTablesForMobile(){
+      const tables=content.querySelectorAll('.development-section .member-table-wrap table');
+      tables.forEach(table=>{
+        const headers=[...table.querySelectorAll('thead th')].map(cell=>cell.textContent.trim().replace(/\s+/g,' '));
+        table.setAttribute('data-responsive-table','true');
+        table.querySelectorAll('tbody tr').forEach(row=>{
+          [...row.children].forEach((cell,index)=>{
+            if((cell.tagName==='TD'||cell.tagName==='TH')&&!cell.hasAttribute('colspan')&&headers[index]){
+              cell.setAttribute('data-label',headers[index]);
+            }
+          });
+        });
+      });
+    }
+    prepareDevelopmentTablesForMobile();
     function printDevelopmentProject(){
       const source=$('privateDevelopmentProject');
       if(!source)return;
