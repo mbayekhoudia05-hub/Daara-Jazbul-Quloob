@@ -99,12 +99,12 @@
         <h3>Enveloppe de sonorisation : 1 000 000 FCFA</h3>
         <p>Cette somme est un budget maximal à réunir, pas un devis fournisseur déjà accepté. Les annonces consultées à Dakar présentent notamment des packs complets autour de 515 000 FCFA et 760 000 FCFA selon les configurations. Le solde de l’enveloppe pourra couvrir, après devis, les accessoires manquants, câbles, protections, transport, installation et réserve initiale de maintenance. Aucun reliquat ne sera dépensé sans justificatif.</p>
         <h3>Recettes prévisionnelles après acquisition</h3>
-        <ul><li>Chaque jeudi d’utilisation payante : 2 500 FCFA.</li><li>Chaque dimanche d’utilisation payante : 3 500 FCFA.</li><li>Le dernier dimanche de chaque mois : activité au siège, sans encaissement de location.</li></ul>
+        <ul><li>Chaque jeudi d’utilisation payante : 2 500 FCFA.</li><li>Chaque dimanche d’utilisation payante : 3 500 FCFA.</li><li>Hypothèse de calcul à confirmer : le dernier dimanche de chaque mois est réservé au siège et ne génère pas de recette de location.</li></ul>
         <p>La simulation compte les jeudis et dimanches réellement présents dans chaque mois, à partir de juin 2027. Elle suppose que chaque activité payante a lieu et que le paiement est encaissé. Le revenu brut annuel de référence est d’environ 270 000 FCFA sur une année complète. Les recettes de location des chaises ne sont pas intégrées au calcul, car la fréquence des locations n’a pas encore été définie.</p>
       </section>
       <section class="development-section">
         <h2>4. Matériel à acquérir : quantités et prix unitaires</h2>
-        <p>Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
+        <p>Le budget de 3 435 000 FCFA couvre uniquement les équipements prioritaires de cette séquence ; le futur local, les activités et les autres projets feront l’objet d’un budget distinct. Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Matériel / étape</th><th>Quantité</th><th>Prix unitaire estimé</th><th>Enveloppe</th><th>Précision</th></tr></thead><tbody>
           <tr><td>Sonorisation complète</td><td>1 lot</td><td>—</td><td>${money(1000000)}</td><td>Budget plafond, configuration à choisir sur devis</td></tr>
           ${sequenceRows}
