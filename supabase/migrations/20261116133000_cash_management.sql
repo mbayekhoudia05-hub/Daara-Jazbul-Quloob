@@ -183,7 +183,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   v_id uuid;
 begin
@@ -222,7 +222,7 @@ create or replace function public.record_cash_opening_balance(
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare v_id uuid;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -247,7 +247,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare v public.cash_expense_requests%rowtype;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -321,7 +321,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare v public.cash_transfers%rowtype; v_balance numeric;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
@@ -352,7 +352,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare v_fund uuid; v_old_amount numeric; v_new_amount numeric;
 begin
   select id into v_fund from public.cash_funds where fund_type='general' limit 1;
