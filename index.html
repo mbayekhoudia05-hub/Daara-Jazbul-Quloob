@@ -35,6 +35,7 @@
         <a href="#unpaidMembers" id="unpaidNav" class="hidden" data-admin-target="unpaidMembers">◷ <span>Suivi des paiements</span></a>
         <a href="#paymentTransactions" id="paymentsNav" class="hidden" data-admin-target="paymentTransactions">▣ <span>Transactions</span></a>
         <a href="#financeWavePayment" id="financeWaveNav" class="hidden" data-admin-target="financeDashboard">🌊 <span>Paiement Wave</span></a>
+        <a href="#cashManagement" id="cashNav" class="hidden" data-admin-target="cashManagement">🏦 <span>Gestion de caisse</span></a>
       </div>
       <div class="sidebar-subgroup">
         <div class="sidebar-subgroup-title">Communication et contenus</div>
@@ -477,6 +478,76 @@
   </div>
 </section>
 
+<section id="cashManagement" class="section hidden">
+  <div class="head">
+    <span>TRÉSORERIE DU DAHIRA</span>
+    <h2>🏦 Gestion de caisse</h2>
+    <p>Une caisse générale, des sous-caisses par activité, un suivi des entrées et sorties et une validation des dépenses à deux personnes.</p>
+  </div>
+  <div class="stats contribution-stats">
+    <div class="stat"><strong id="cashTotalBalance">0 FCFA</strong><span>Solde total disponible</span></div>
+    <div class="stat"><strong id="cashGeneralBalance">0 FCFA</strong><span>Solde caisse générale</span></div>
+    <div class="stat"><strong id="cashTotalIncome">0 FCFA</strong><span>Total des entrées suivies</span></div>
+    <div class="stat"><strong id="cashTotalOutflow">0 FCFA</strong><span>Total des sorties suivies</span></div>
+  </div>
+  <div class="finance-dashboard-group-title"><span>CAISSES</span><h3>Vue par caisse</h3><p>Les transferts entre caisses déplacent l'argent sans le compter comme une nouvelle recette du Dahira.</p></div>
+  <div class="member-table-wrap"><table><thead><tr><th>Caisse</th><th>Solde actuel</th><th>Description</th><th>État</th></tr></thead><tbody id="cashFundsRows"><tr><td colspan="4">Chargement…</td></tr></tbody></table></div>
+  <div class="member-form">
+    <h3>Créer une sous-caisse d'activité</h3>
+    <form id="cashFundForm">
+      <div class="form-row">
+        <label>Nom de l'activité<input id="cashFundName" maxlength="100" placeholder="Ex. Chasse 2027" required></label>
+        <label>Rattachée à<select id="cashFundParent" required></select></label>
+      </div>
+      <label>Description<input id="cashFundDescription" maxlength="250" placeholder="Objet de cette sous-caisse"></label>
+      <button class="primary" type="submit">Créer la sous-caisse</button>
+    </form>
+  </div>
+  <div id="cashOpeningPanel" class="member-form">
+    <h3>Définir le solde de départ de la caisse générale</h3>
+    <p>À faire une seule fois après avoir compté l'argent réellement disponible. Les anciennes cotisations restent dans l'historique et ne sont pas ajoutées automatiquement au solde.</p>
+    <form id="cashOpeningForm">
+      <div class="form-row">
+        <label>Caisse<select id="cashOpeningFund" required></select></label>
+        <label>Argent réellement disponible (FCFA)<input id="cashOpeningAmount" type="number" min="0" step="1" required></label>
+        <label>Date de départ<input id="cashOpeningDate" type="date" required></label>
+      </div>
+      <label>Note / référence du comptage<input id="cashOpeningNote" maxlength="250" placeholder="Comptage physique validé"></label>
+      <button class="primary" type="submit">Enregistrer le solde initial</button>
+      <p id="cashOpeningRecorded" role="status"></p>
+    </form>
+  </div>
+  <div class="finance-dashboard-group-title"><span>DÉPENSES</span><h3>Demander une dépense</h3><p>La responsable financière enregistre la demande. L'administrateur principal la valide. Le solde ne diminue qu'après confirmation du paiement réel.</p></div>
+  <div class="member-form">
+    <form id="cashExpenseForm">
+      <div class="form-row">
+        <label>Caisse concernée<select id="cashExpenseFund" required></select></label>
+        <label>Montant (FCFA)<input id="cashExpenseAmount" type="number" min="1" step="1" required></label>
+        <label>Catégorie<select id="cashExpenseCategory"><option value="activite">Activité</option><option value="transport">Transport</option><option value="achat">Achat / matériel</option><option value="assistance">Assistance</option><option value="fonctionnement">Fonctionnement</option><option value="divers">Divers</option></select></label>
+      </div>
+      <label>Motif détaillé<input id="cashExpenseDescription" maxlength="250" placeholder="Ex. Achat des fournitures pour la chasse" required></label>
+      <label>Bénéficiaire / fournisseur<input id="cashExpenseBeneficiary" maxlength="150" placeholder="Nom du bénéficiaire"></label>
+      <button class="primary" type="submit">Soumettre à validation</button>
+    </form>
+  </div>
+  <div class="member-table-wrap"><table><thead><tr><th>Date demande</th><th>Caisse</th><th>Motif</th><th>Montant</th><th>Bénéficiaire</th><th>État</th><th>Actions</th></tr></thead><tbody id="cashExpenseRows"><tr><td colspan="7">Aucune dépense.</td></tr></tbody></table></div>
+  <div class="finance-dashboard-group-title"><span>TRANSFERTS INTERNES</span><h3>Transférer de l'argent vers une activité</h3><p>Un transfert validé débite la caisse générale et crédite la sous-caisse. Il ne constitue pas une dépense tant que l'argent n'est pas réellement dépensé.</p></div>
+  <div class="member-form">
+    <form id="cashTransferForm">
+      <div class="form-row">
+        <label>Depuis<select id="cashTransferFrom" required></select></label>
+        <label>Vers<select id="cashTransferTo" required></select></label>
+        <label>Montant (FCFA)<input id="cashTransferAmount" type="number" min="1" step="1" required></label>
+      </div>
+      <label>Motif du transfert<input id="cashTransferReason" maxlength="250" placeholder="Ex. Avance pour l'activité chasse" required></label>
+      <button class="primary" type="submit">Demander le transfert</button>
+    </form>
+  </div>
+  <div class="member-table-wrap"><table><thead><tr><th>Date</th><th>Depuis</th><th>Vers</th><th>Montant</th><th>Motif</th><th>État</th><th>Actions</th></tr></thead><tbody id="cashTransferRows"><tr><td colspan="7">Aucun transfert.</td></tr></tbody></table></div>
+  <div class="finance-dashboard-group-title"><span>JOURNAL DE CAISSE</span><h3>Historique de toutes les entrées et sorties</h3><p>Les cotisations confirmées après activation sont ajoutées automatiquement. Les mouvements sont conservés pour consultation et contrôle.</p></div>
+  <div class="member-table-wrap"><table><thead><tr><th>Date</th><th>Caisse</th><th>Opération</th><th>Montant</th><th>Catégorie</th><th>Détail</th></tr></thead><tbody id="cashMovementRows"><tr><td colspan="6">Chargement…</td></tr></tbody></table></div>
+</section>
+
 <section id="posters" class="section hidden">
  <div class="head"><span>COMMUNICATION</span><h2>🎨 Générateur d’affiches</h2><p>Le fond fourni est conservé. Personnalisez uniquement les photos et les écritures.</p></div>
  <div class="poster-maker-grid">
@@ -813,4 +884,5 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   });
 }
 </script>
+<script defer src="cash-management.js?v=20261116-cash-v1"></script>
 </body></html>
