@@ -2251,6 +2251,18 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .development-simple-row strong{font-size:14px;line-height:1.4;color:#075b35;text-align:right;white-space:normal}
 @media(max-width:560px){.development-simple-row{flex-direction:column;gap:4px}.development-simple-row strong{text-align:left}}
 
+/* Mobile: commandes faciles à toucher et menu latéral isolé des lecteurs d’écran. */
+@media (pointer:coarse){
+  button:not(.close),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select,
+  textarea,
+  .app-sidebar nav a{
+    min-height:44px;
+  }
+  .app-sidebar{overscroll-behavior:contain}
+}
+
 .development-simple-row{display:none}
 .development-simple-card{padding:13px 15px;border:1px solid #d8e8dd;border-left:4px solid #26734d;border-radius:8px;background:#f7fbf8;margin:8px 0}
 .development-simple-card>strong{display:block;color:#075b35;font-size:15px;margin-bottom:7px}
