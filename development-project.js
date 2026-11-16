@@ -22,7 +22,7 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const owner=()=>currentUser?.id===OWNER_ID;
   function note(t){return '<p class="development-note">'+t+'</p>';}
-  function table(head,rows){return '<div class="member-table-wrap"><table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
+  function table(head,rows){return '<div class="development-simple-list">'+rows.map((row,i)=>'<div class="development-simple-row"><span>'+esc(row[0])+'</span><strong>'+esc(row[row.length-1])+'</strong></div>').join('')+'</div>';}
   function render(){
     if(!owner()||!data.plan)return;
     const income=data.ledger.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
