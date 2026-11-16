@@ -2128,3 +2128,71 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .gallery-card video{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#101810}
 .gallery-admin-row>video{width:104px;height:84px;object-fit:cover;border-radius:10px;flex:0 0 auto;background:#101810}
 @media(max-width:650px){.gallery-admin-row>video{width:82px;height:72px}}
+
+
+/* Dossier privé de développement : présentation écran et édition A4. */
+.development-print-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+.development-confidential-note{margin:0;color:#7b3e14;font-size:.9rem;font-weight:700}
+.development-cover{min-height:620px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;margin:0 0 26px;padding:58px 34px;border:2px solid #075b35;border-radius:18px;background:linear-gradient(145deg,#f4faf5,#fff 58%,#edf5ef);text-align:center;color:#153d29}
+.development-cover-mark{font-size:1.05rem;font-weight:900;letter-spacing:.16em;color:#075b35}
+.development-cover-rule{width:130px;height:3px;background:#b18b42}
+.development-cover-kicker{margin:0;color:#557564;font-size:.85rem;font-weight:800;letter-spacing:.22em}
+.development-cover h1{max-width:760px;margin:0;font-size:clamp(1.8rem,4vw,3rem);line-height:1.2;color:#075b35}
+.development-cover-subtitle{margin:0;font-size:1.25rem;font-weight:700}
+.development-cover-objective{display:grid;gap:8px;margin:18px 0;padding:20px 34px;border:1px solid rgba(7,91,53,.25);border-radius:14px;background:#fff}
+.development-cover-objective span{font-size:.75rem;font-weight:800;letter-spacing:.12em;color:#557564}
+.development-cover-objective strong{font-size:2rem;color:#075b35}
+.development-cover-meta{display:grid;gap:8px;margin-top:22px;color:#52685a;font-size:.9rem}
+.development-cover-motto{max-width:620px;margin:4px 0 0;font-style:italic;color:#315a42}
+.development-document{max-width:100%;color:#25372c}
+.development-document-heading{margin:0 0 20px;padding-bottom:12px;border-bottom:2px solid #075b35}
+.development-document-heading span{font-size:.72rem;font-weight:800;letter-spacing:.12em;color:#47735a}
+.development-document-heading h2{margin:8px 0 0;color:#075b35}
+.development-toc{display:grid;grid-template-columns:1fr 1fr;gap:8px 28px;margin:0 0 28px;padding:20px 24px 20px 42px;border:1px solid #dce8df;border-radius:12px;background:#f8fbf8}
+.development-section{margin:26px 0;padding:0 0 18px;border-bottom:1px solid #e1e9e3;scroll-margin-top:20px}
+.development-section h2{margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid #e1e9e3;color:#075b35;font-size:1.35rem}
+.development-section h3{margin:18px 0 7px;color:#174b30;font-size:1.03rem}
+.development-section p,.development-section li{line-height:1.65}
+.development-section li{margin:5px 0}
+.development-section .member-table-wrap{overflow-x:auto;margin:12px 0}
+.development-section table{width:100%;border-collapse:collapse;font-size:.92rem}
+.development-section th,.development-section td{padding:10px 11px;border:1px solid #dce5de;text-align:left;vertical-align:top}
+.development-section thead th{background:#edf5ef;color:#174b30}
+.development-section tbody tr:nth-child(even){background:#fafcfb}
+.development-year{margin:12px 0;padding:12px 16px;border-left:4px solid #0b7545;border-radius:0 9px 9px 0;background:#f5f9f6}
+.development-year h3{margin:0 0 6px}
+.development-year p{margin:0}
+.development-note{padding:12px 14px;border-left:3px solid #b18b42;background:#fbf8f0;color:#5c5138}
+.development-signatures{display:grid;grid-template-columns:1fr 1fr;gap:34px 24px;margin:28px 0}
+.development-signatures div{min-height:78px;font-weight:700}
+.development-signatures span{display:block;margin-top:42px;border-bottom:1px solid #64776b}
+.development-footer{margin:28px 0 0;padding:14px 0;border-top:2px solid #075b35;color:#567261;font-size:.75rem;font-weight:800;letter-spacing:.07em;text-align:center}
+@media(max-width:650px){
+  .development-cover{min-height:520px;padding:34px 18px}
+  .development-cover h1{font-size:1.75rem}
+  .development-toc{grid-template-columns:1fr;padding-left:38px}
+  .development-signatures{grid-template-columns:1fr}
+  .development-print-actions{align-items:stretch}
+  .development-print-actions button{width:100%}
+}
+@page{size:A4;margin:16mm 14mm}
+@media print{
+  html,body{width:100%!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}
+  body *{visibility:hidden!important}
+  #privateDevelopmentProject,#privateDevelopmentProject *{visibility:visible!important}
+  #privateDevelopmentProject{display:block!important;position:absolute!important;inset:0 auto auto 0!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important}
+  #privateDevelopmentProject>.head,.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}
+  #privateDevelopmentProjectContent,.development-document{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+  .development-cover{min-height:255mm!important;height:255mm!important;margin:0!important;padding:20mm 12mm!important;border:2px solid #075b35!important;border-radius:0!important;break-after:page!important;page-break-after:always!important;box-shadow:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .development-cover h1{font-size:27pt!important}
+  .development-cover-objective,.development-toc,.development-year,.development-note,.development-section thead th{ -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .development-section{break-inside:auto!important;page-break-inside:auto!important;margin:0 0 12mm!important;padding-bottom:6mm!important}
+  .development-section h2,.development-section h3{break-after:avoid!important;page-break-after:avoid!important}
+  .development-section p,.development-section li{orphans:3;widows:3}
+  .development-section table{width:100%!important;font-size:9pt!important;break-inside:auto!important}
+  .development-section tr{break-inside:avoid!important;page-break-inside:avoid!important}
+  .development-section th,.development-section td{padding:6px 7px!important}
+  .development-signatures{break-inside:avoid!important;page-break-inside:avoid!important}
+  .development-footer{margin-top:10mm!important}
+  a{color:inherit!important;text-decoration:none!important}
+}
