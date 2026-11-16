@@ -35,8 +35,8 @@ async function loadCashManagement(){
   const general=cashFundsCache.find(f=>f.fund_type==='general');
   const total=cashFundsCache.reduce((s,f)=>s+cashBalanceForFund(f.id),0);
   const generalBalance=general?cashBalanceForFund(general.id):0;
-  const expenses=cashMovementsCache.filter(m=>['expense','transfer_out','adjustment_out'].includes(m.movement_type)).reduce((s,m)=>s+Number(m.amount||0),0);
-  const incomes=cashMovementsCache.filter(m=>['income','opening_balance','transfer_in','adjustment_in'].includes(m.movement_type)).reduce((s,m)=>s+Number(m.amount||0),0);
+  const expenses=cashMovementsCache.filter(m=>['expense','adjustment_out'].includes(m.movement_type)).reduce((s,m)=>s+Number(m.amount||0),0);
+  const incomes=cashMovementsCache.filter(m=>['income','opening_balance','adjustment_in'].includes(m.movement_type)).reduce((s,m)=>s+Number(m.amount||0),0);
   if($('cashTotalBalance'))$('cashTotalBalance').textContent=cashMoney(total);
   if($('cashGeneralBalance'))$('cashGeneralBalance').textContent=cashMoney(generalBalance);
   if($('cashTotalIncome'))$('cashTotalIncome').textContent=cashMoney(incomes);
