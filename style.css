@@ -2370,3 +2370,41 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
     line-height:1.35;
   }
 }
+
+
+/* Sommaire organisé en grandes parties pour faciliter le repérage */
+.development-toc>.development-toc-group{
+  display:block;
+  min-width:0;
+  padding:12px 14px;
+  border:1px solid #dce8df;
+  border-radius:10px;
+  background:#fff;
+  list-style:none;
+}
+.development-toc-group>strong{
+  display:block;
+  margin-bottom:8px;
+  color:#075b35;
+  font-size:.78rem;
+  letter-spacing:.035em;
+}
+.development-toc-group>ol{
+  display:grid;
+  gap:6px;
+  margin:0;
+  padding-left:22px;
+}
+.development-toc-group>ol li{
+  padding-left:2px;
+  line-height:1.45;
+}
+.development-toc-alternative{
+  border-color:#d8c18e!important;
+  background:#fffaf0!important;
+}
+.development-toc-alternative>strong{color:#76551b}
+@media screen and (max-width:650px){
+  .development-toc{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 14px}
+  .development-toc>.development-toc-group{padding:12px}
+}
