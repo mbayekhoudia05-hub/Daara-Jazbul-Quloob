@@ -77,7 +77,7 @@
     const scenarioRows=[30,40,50].map(n=>{
       const q=buildMonthlyProjection(p,n);
       const when=name=>{const found=q.purchaseDates.find(x=>x.name===name);return found?fmtDate(found):'Après 2031';};
-      return `<tr><td>${n}</td><td>${money(n*500)}</td><td>${when('Chaises — phase 1 (30 VIP + 60 plastiques)')}</td><td>${when('Chaises — phase 2 (20 VIP + 40 plastiques)')}</td><td>${when('Bâche 4×5 m ouverte')}</td><td>${when('Bâche 8×5 m ouverte')}</td><td>${when('Tables pliantes')}</td></tr>`;
+      return `<tr><td>${n}</td><td>${money(n*500)}</td><td>${when('Chaises — phase 1 (30 VIP + 60 plastiques)')}</td><td>${when('Chaises — phase 2 (20 VIP + 40 plastiques)')}</td><td>${when('Bâche 8×6 m ouverte')}</td><td>${when('Bâche 12×7 m ouverte')}</td><td>${when('Tables pliantes')}</td></tr>`;
     }).join('');
     const monthlyRows=projection.rows.map((x,i)=>`<tr><td>${String(x.month).padStart(2,'0')}/${x.year}</td><td>${money(x.contributions)}</td><td>${money(x.donations)}</td><td>${money(x.soundIncome)}</td><td>${x.thursdays} / ${x.paidSundays}</td><td>${x.purchases.length?x.purchases.map(y=>escapeHtml(y.name)+' : '+money(y.amount)).join('<br>'):'—'}</td><td>${money(x.closing)}</td><td>${escapeHtml(x.objective)}</td></tr>`).join('');
     const sequenceRows=(cfg.equipmentSequence||[]).map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.quantityLabel||'—')}</td><td>${escapeHtml(x.priceDisplay||money(x.unitPrice||0))}</td><td>${money(x.total||0)}</td><td>${escapeHtml(x.priceNote||'Prix indicatif à confirmer par devis')}</td></tr>`).join('');
@@ -104,17 +104,17 @@
       </section>
       <section class="development-section">
         <h2>4. Matériel à acquérir : quantités et prix unitaires</h2>
-        <p>Le budget de 3 435 000 FCFA couvre uniquement les équipements prioritaires de cette séquence ; le futur local, les activités et les autres projets feront l’objet d’un budget distinct. Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
+        <p>Le budget révisé de 4 115 000 FCFA couvre uniquement les équipements prioritaires de cette séquence ; le futur local, les activités et les autres projets feront l’objet d’un budget distinct. Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Matériel / étape</th><th>Quantité</th><th>Prix unitaire estimé</th><th>Enveloppe</th><th>Précision</th></tr></thead><tbody>
           <tr><td>Sonorisation complète</td><td>1 lot</td><td>—</td><td>${money(1000000)}</td><td>Budget plafond, configuration à choisir sur devis</td></tr>
           ${sequenceRows}
         </tbody></table></div>
         <p><strong>Chaises — phase 1 :</strong> 30 VIP à 15 000 F et 60 plastiques à 7 000 F = 870 000 F, plus provision de 10 % (87 000 F), soit 957 000 F.</p>
         <p><strong>Chaises — phase 2 :</strong> 20 VIP à 15 000 F et 40 plastiques à 7 000 F = 580 000 F, plus provision de 10 % (58 000 F), soit 638 000 F. Total visé : 50 VIP et 100 plastiques.</p>
-        <p>La bâche 4×5 m ouverte est estimée à 270 000 F ; la bâche 8×5 m ouverte à 450 000 F. Les tables pliantes sont estimées à 30 000 F l’unité, quantité initiale de quatre. Ces montants ne constituent pas des commandes.</p>
+        <p>La bâche 8×6 m ouverte est estimée à 550 000 F (estimation provisoire, à confirmer par devis) ; la bâche 12×7 m ouverte à 850 000 F. Les tables pliantes sont estimées à 30 000 F l’unité, quantité initiale de quatre. Ces montants ne constituent pas des commandes.</p>
         <h3>Sources de prix consultées</h3>
         <ul>
-          <li><a href="https://www.dakarvente.com/fr/annonce/vente-de-baches-sur-mesure-chaises-et-packs-pour-vos-evenements" target="_blank" rel="noopener">DakarVente — bâches et chaises</a> : bâche 4×5 ouverte 270 000 F ; 8×5 ouverte 450 000 F ; prix affichés pour chaises VIP et plastiques.</li>
+          <li><a href="https://www.dakarvente.com/fr/annonce/vente-de-baches-sur-mesure-chaises-et-packs-pour-vos-evenements" target="_blank" rel="noopener">DakarVente — bâches et chaises</a> : bâche 8×6 ouverte 270 000 F ; 12×7 ouverte 450 000 F ; prix affichés pour chaises VIP et plastiques.</li>
           <li><a href="https://www.senemarket.sn/public/vente-de-chaises-de-qualite/19597" target="_blank" rel="noopener">SeneMarket — chaises à Dakar</a> : VIP 1re qualité 16 500 F, VIP 2e qualité 13 000 F, plastique 6 500 F.</li>
           <li><a href="https://dakarvente.com/fr/annonce/table-pliante-multi-usage" target="_blank" rel="noopener">DakarVente — table pliante</a> : 30 000 F à l’unité, prix de détail affiché.</li>
           <li><a href="https://www.senemarket.sn/public/table-rectangulaire-pliable-a-vendre/13368" target="_blank" rel="noopener">SeneMarket — table pliante 8 personnes</a> : annonce à 55 000 F, à comparer selon modèle et qualité.</li>
@@ -126,7 +126,7 @@
           <li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>
           <li>Les mensualités des membres sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
           <li>À partir de juin 2027, les recettes de location de sonorisation sont ajoutées au cumul disponible, après encaissement effectif.</li>
-          <li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 4×5, bâche 8×5, puis tables et autres équipements.</li>
+          <li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 8×6, bâche 12×7, puis tables et autres équipements.</li>
           <li>Une étape suivante ne peut pas être achetée avant que l’étape précédente soit financée intégralement.</li>
           <li>Les frais de réparation, transport, entretien et autres dépenses réelles doivent être déduits avant de confirmer un achat.</li>
           <li>Les transferts internes vers la ligne analytique du projet ne sont jamais comptés comme une nouvelle recette de la Caisse générale.</li>
@@ -137,7 +137,7 @@
         <h2>6. Dates prévisionnelles d’achat</h2>
         <h3>Comparaison selon le nombre de participants</h3>
         <p>La collecte spéciale de 1 000 000 F reste identique dans les trois scénarios ; seule la mensualité totale change. Les dates sont calculées avant charges d'exploitation.</p>
-        <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations / mois</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 4×5</th><th>Bâche 8×5</th><th>4 tables</th></tr></thead><tbody>${scenarioRows}</tbody></table></div>
+        <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations / mois</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 8×6</th><th>Bâche 12×7</th><th>4 tables</th></tr></thead><tbody>${scenarioRows}</tbody></table></div>
         <div class="member-table-wrap"><table><thead><tr><th>Projet / achat</th><th>Mois théorique</th><th>Enveloppe</th></tr></thead><tbody>${purchaseRows}</tbody></table></div>
         <p>Si une recette n’est pas encaissée, si le nombre de participants diminue ou si des frais sont engagés, l’achat est reporté au mois où le solde réel atteint le seuil. Les dates ne sont pas des engagements fournisseurs.</p>
         <h3>Objectifs annuels de suivi</h3>
