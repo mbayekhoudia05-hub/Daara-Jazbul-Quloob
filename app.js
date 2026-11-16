@@ -2104,6 +2104,15 @@ async function openPaymentEdit(kind,id){
   const memberSelect=$('editPaymentMember');
   const categorySelect=$('editPaymentCategory');
   memberSelect.innerHTML=memberSource?.innerHTML||'<option value="">Choisir un membre</option>';
+  if(!Array.from(memberSelect.options).some(o=>o.value===row.member_id)){
+    const memberResult=await sb.from('members').select('id,member_number,first_name,last_name').eq('id',row.member_id).maybeSingle();
+    if(memberResult.data){
+      const option=document.createElement('option');
+      option.value=memberResult.data.id;
+      option.textContent=(memberResult.data.member_number||'')+' — '+(memberResult.data.first_name||'')+' '+(memberResult.data.last_name||'');
+      memberSelect.append(option);
+    }
+  }
   categorySelect.innerHTML=categorySource?.innerHTML||'<option value="mensualite">Mensualité</option>';
   if(!Array.from(categorySelect.options).some(o=>o.value===row.category)){
     const option=document.createElement('option');option.value=row.category;option.textContent=contributionCategoryLabel(row.category);categorySelect.append(option);
