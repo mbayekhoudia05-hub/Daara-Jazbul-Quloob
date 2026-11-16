@@ -93,7 +93,7 @@ function setAdminUI(){
 }
 function showAdminSection(id){
   if(!isAdmin&&!isFinance&&!isContentManager)return;
-  const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications','privateDevelopmentProject'];
+  const adminAllowed=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications','privateDevelopmentProject','privateDevelopmentAlternativeProject'];
   const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement'];
   const contentManagerAllowed=['admin','adminGallery'];
   const allowed=isAdmin?adminAllowed:isContentManager?contentManagerAllowed:financeAllowed;
