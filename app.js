@@ -69,14 +69,14 @@ function openAuth(){openAccessibleModal('authModal','#email')}
 function closeAuth(){closeAccessibleModal('authModal')}
 
 function setAdminUI(){
-  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications','privateDevelopmentProject'];
-  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','cashNav','postersNav','eventsNav','galleryNav','notificationsNav','privateDevelopmentProjectNav'];
+  const sections=['adminDashboard','admin','members','commissions','membershipRequests','contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement','posters','adminEvents','adminGallery','adminNotifications','privateDevelopmentProject','privateDevelopmentAlternativeProject'];
+  const navs=['dashboardNav','adminNav','membersNav','commissionsNav','membershipRequestsNav','contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','cashNav','postersNav','eventsNav','galleryNav','notificationsNav','privateDevelopmentProjectNav','privateDevelopmentAlternativeProjectNav'];
   const financeNavs=['contributionsNav','paymentsNav','unpaidNav','financeNav','financeWaveNav','cashNav'];
   sections.forEach(hide);
   navs.forEach(hide);
   if(isAdmin){
     navs.forEach(show);
-    if(currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf')show('privateDevelopmentProjectNav');else hide('privateDevelopmentProjectNav');
+    if(currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf'){show('privateDevelopmentProjectNav');show('privateDevelopmentAlternativeProjectNav');}else{hide('privateDevelopmentProjectNav');hide('privateDevelopmentAlternativeProjectNav');}
     show('adminNavigationGroup');
     show('adminDashboard');
     updateAdminDashboard();
@@ -97,8 +97,8 @@ function showAdminSection(id){
   const financeAllowed=['contributions','paymentTransactions','unpaidMembers','financeDashboard','cashManagement'];
   const contentManagerAllowed=['admin','adminGallery'];
   const allowed=isAdmin?adminAllowed:isContentManager?contentManagerAllowed:financeAllowed;
-  if(!allowed.includes(id) && !(id==='privateDevelopmentProject' && currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf'))return;
-  if(id==='privateDevelopmentProject' && currentUser?.id!=='af676419-4711-48e6-8caf-5099b823facf')return;
+  if(!allowed.includes(id) && !(['privateDevelopmentProject','privateDevelopmentAlternativeProject'].includes(id) && currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf'))return;
+  if(['privateDevelopmentProject','privateDevelopmentAlternativeProject'].includes(id) && currentUser?.id!=='af676419-4711-48e6-8caf-5099b823facf')return;
   adminAllowed.forEach(hide);
   show(id);
   const link=document.querySelector('[data-admin-target="'+id+'"]');
@@ -116,7 +116,7 @@ function showAdminSection(id){
   if(id==='unpaidMembers')void loadUnpaidTracker();
   if(id==='financeDashboard')void loadFinanceDashboard();
   if(id==='cashManagement')void loadCashManagement();
-  if(id==='privateDevelopmentProject')void window.loadPrivateDevelopmentProject?.();
+  if(['privateDevelopmentProject','privateDevelopmentAlternativeProject'].includes(id))void window.loadPrivateDevelopmentProject?.();
 }
 async function updatePendingMembershipCount(){
   if(!sb||!isAdmin)return;
