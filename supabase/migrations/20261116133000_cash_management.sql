@@ -256,7 +256,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public
-as $
+as $cash$
 declare v public.cash_expense_requests%rowtype; v_movement uuid; v_balance numeric;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role in ('admin','finance')) then
@@ -277,7 +277,7 @@ begin
   where id=v.id;
   return jsonb_build_object('success',true,'movement_id',v_movement);
 end;
-$$;
+$cash$;
 
 create or replace function public.request_cash_transfer(
   p_from_fund_id uuid,p_to_fund_id uuid,p_amount numeric,p_reason text
