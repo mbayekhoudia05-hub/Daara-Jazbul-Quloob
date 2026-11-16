@@ -118,13 +118,7 @@ create policy "Finance and admins insert cash funds" on public.cash_funds
 for insert to authenticated with check (
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
-drop policy if exists "Finance and admins update cash funds" on public.cash_funds;
-create policy "Finance and admins update cash funds" on public.cash_funds
-for update to authenticated using (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
-) with check (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
-);
+
 
 drop policy if exists "Finance and admins view cash movements" on public.cash_movements;
 create policy "Finance and admins view cash movements" on public.cash_movements
@@ -145,13 +139,7 @@ for insert to authenticated with check (
   approved_by is null and approved_at is null and paid_by is null and paid_at is null and movement_id is null and
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
-drop policy if exists "Admins can review cash expenses" on public.cash_expense_requests;
-create policy "Admins can review cash expenses" on public.cash_expense_requests
-for update to authenticated using (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin')
-) with check (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin')
-);
+
 
 drop policy if exists "Finance and admins view cash transfers" on public.cash_transfers;
 create policy "Finance and admins view cash transfers" on public.cash_transfers
@@ -164,13 +152,7 @@ for insert to authenticated with check (
   requested_by = (select auth.uid()) and status = 'pending' and approved_by is null and approved_at is null and posted_at is null and
   exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role in ('admin','finance'))
 );
-drop policy if exists "Admins can review cash transfers" on public.cash_transfers;
-create policy "Admins can review cash transfers" on public.cash_transfers
-for update to authenticated using (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin')
-) with check (
-  exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin')
-);
+
 
 drop policy if exists "Finance and admins view cash audit log" on public.cash_audit_log;
 create policy "Finance and admins view cash audit log" on public.cash_audit_log
@@ -199,6 +181,10 @@ begin
   return new;
 end;
 $$;
+
+drop trigger if exists cash_fund_audit on public.cash_funds;
+create trigger cash_fund_audit after insert or update or delete on public.cash_funds
+for each row execute function public.log_cash_record_change();
 
 drop trigger if exists cash_expense_audit on public.cash_expense_requests;
 create trigger cash_expense_audit
@@ -407,3 +393,12 @@ grant execute on function public.approve_cash_expense(uuid,boolean,text) to auth
 grant execute on function public.pay_cash_expense(uuid,date) to authenticated;
 grant execute on function public.request_cash_transfer(uuid,uuid,numeric,text) to authenticated;
 grant execute on function public.approve_cash_transfer(uuid,boolean,text) to authenticated;
+-- Explicit Data API privileges; RLS remains the row-level authorization boundary.
+grant select, insert on public.cash_funds to authenticated;
+grant select on public.cash_movements to authenticated;
+grant select, insert on public.cash_expense_requests to authenticated;
+grant select, insert on public.cash_transfers to authenticated;
+grant select on public.cash_audit_log to authenticated;
+revoke all on function public.request_cash_transfer(uuid,uuid,numeric,text) from public;
+grant execute on function public.request_cash_transfer(uuid,uuid,numeric,text) to authenticated;
+
