@@ -232,12 +232,13 @@
       '<h3>Contribution de base retenue pour les simulations</h3>'+
       '<p><strong>Proposition alternative — 500 FCFA chaque dimanche :</strong> chaque participant volontaire verse 500 FCFA chaque dimanche. Cette proposition remplace la cotisation mensuelle ; les deux formules ne sont jamais additionnées pour une même période.</p>'+
       '<p>La collecte spéciale de 1 000 000 FCFA auprès des familles et des personnes de bonne volonté reste distincte des cotisations des membres. Les tableaux détaillés ci-dessous sont calculés avec la proposition dominicale de 500 FCFA par participant.</p>'+
-      '<div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres, selon les dimanches)</th></tr></thead><tbody>'+
-      Array.from({length:5},(_,i)=>{
+      '<div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cumul des cotisations estimées (40 membres)</th></tr></thead><tbody>'+
+      (()=>{let cumulativeContributions=0;return Array.from({length:5},(_,i)=>{
         const year=2027,month=i+1,days=new Date(year,month,0).getDate();
         let sundays=0;for(let d=1;d<=days;d++)if(new Date(year,month-1,d).getDay()===0)sundays++;
-        return '<tr><td>'+['Janvier','Février','Mars','Avril','Mai'][i]+' 2027</td><td>'+moneyFmt(200000)+'</td><td>'+moneyFmt((i+1)*200000)+'</td><td>'+moneyFmt(40*500*sundays)+' ('+sundays+' dimanches)</td></tr>';
-      }).join('')+
+        cumulativeContributions+=40*500*sundays;
+        return '<tr><td>'+['Janvier','Février','Mars','Avril','Mai'][i]+' 2027</td><td>'+moneyFmt(200000)+'</td><td>'+moneyFmt((i+1)*200000)+'</td><td>'+moneyFmt(cumulativeContributions)+' cumulés ('+sundays+' dimanches ce mois)</td></tr>';
+      }).join('')})()+
       '</tbody></table></div>'+
       '<p><strong>Échéance visée :</strong> 31 mai 2027. L’achat de la sonorisation ne sera engagé qu’après vérification du million réellement encaissé, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables. Si la collecte est en retard, l’achat sera reporté : aucune dette ni dépense anticipée n’est prévue.</p>'+
       '<h3>Enveloppe de sonorisation : 1 000 000 FCFA</h3>'+
