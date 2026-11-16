@@ -114,7 +114,8 @@
         <p>La bâche 8×6 m ouverte est estimée à 550 000 F (estimation provisoire, à confirmer par devis) ; la bâche 12×7 m ouverte à 850 000 F. Les tables pliantes sont estimées à 30 000 F l’unité, quantité initiale de quatre. Ces montants ne constituent pas des commandes.</p>
         <h3>Sources de prix consultées</h3>
         <ul>
-          <li><a href="https://www.dakarvente.com/fr/annonce/vente-de-baches-sur-mesure-chaises-et-packs-pour-vos-evenements" target="_blank" rel="noopener">DakarVente — bâches et chaises</a> : bâche 8×6 ouverte 270 000 F ; 12×7 ouverte 450 000 F ; prix affichés pour chaises VIP et plastiques.</li>
+          <li><a href="https://www.dakarvente.com/fr/annonce/vente-de-baches-sur-mesure-chaises-et-packs-pour-vos-evenements" target="_blank" rel="noopener">DakarVente — bâches et chaises</a> : annonce consultée pour les chaises ; le tarif exact de la bâche 8×6 m reste à demander.</li>
+          <li><a href="https://dakarvente.com/fr/annonce/fabrication-des-baches-au-senegal-3" target="_blank" rel="noopener">DakarVente — fabrication bâche 12×7 m</a> : annonce de 850 000 F en toiture simple ; une autre annonce consultée indique 770 000 F. Prix à confirmer par devis.</li>
           <li><a href="https://www.senemarket.sn/public/vente-de-chaises-de-qualite/19597" target="_blank" rel="noopener">SeneMarket — chaises à Dakar</a> : VIP 1re qualité 16 500 F, VIP 2e qualité 13 000 F, plastique 6 500 F.</li>
           <li><a href="https://dakarvente.com/fr/annonce/table-pliante-multi-usage" target="_blank" rel="noopener">DakarVente — table pliante</a> : 30 000 F à l’unité, prix de détail affiché.</li>
           <li><a href="https://www.senemarket.sn/public/table-rectangulaire-pliable-a-vendre/13368" target="_blank" rel="noopener">SeneMarket — table pliante 8 personnes</a> : annonce à 55 000 F, à comparer selon modèle et qualité.</li>
