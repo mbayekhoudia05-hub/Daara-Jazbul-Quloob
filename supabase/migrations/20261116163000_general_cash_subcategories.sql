@@ -21,6 +21,7 @@ begin
   end if;
   if p_amount is null or p_amount <= 0 or p_date is null
      or nullif(btrim(p_description),'') is null
+     or p_category is null
      or p_category not in ('Mensualités','Tombes','Chasse','Autres recettes et divers') then
     raise exception 'Les informations de la recette sont invalides.';
   end if;
@@ -41,5 +42,5 @@ begin
 end;
 $$;
 
-revoke all on function public.record_general_cash_income(numeric,text,date,text) from public;
+revoke all on function public.record_general_cash_income(numeric,text,date,text) from public, anon;
 grant execute on function public.record_general_cash_income(numeric,text,date,text) to authenticated;
