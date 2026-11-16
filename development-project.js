@@ -88,22 +88,22 @@
       return `<tr><td>${y}</td><td>${money(contrib)}</td><td>${money(dons)}</td><td>${money(sound)}</td><td>${bought.length?escapeHtml(bought.join(', ')):'Financement et suivi'}</td></tr>`;
     }).join('');
     return `
-      <section class="development-section">
-        <h2>3. Nouvelle stratégie : sonorisation d’abord</h2>
+      <section class="development-section" id="dev-section-3">
+        <h2>3. Stratégie de financement : la sonorisation en premier</h2>
         <p>Le projet démarre le <strong>1er janvier 2027</strong>. La première priorité est de réunir <strong>1 000 000 FCFA en cinq mois</strong> auprès des parents des membres, des proches et des personnes de bonne volonté. L’objectif de collecte est de 200 000 FCFA par mois de janvier à mai 2027.</p>
         <p>Les mensualités volontaires des membres, fixées à 500 FCFA par personne et par mois, sont cumulées en parallèle. La simulation principale retient 40 participants, soit 20 000 FCFA par mois. Les mensualités ne sont pas confondues avec les dons affectés à l’achat de la sonorisation.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres)</th></tr></thead><tbody>
           ${Array.from({length:5},(_,i)=>`<tr><td>${['Janvier','Février','Mars','Avril','Mai'][i]} 2027</td><td>${money(200000)}</td><td>${money((i+1)*200000)}</td><td>${money((i+1)*20000)}</td></tr>`).join('')}
         </tbody></table></div>
-        <p><strong>Échéance de collecte :</strong> 31 mai 2027. L’achat de la sonorisation n’est autorisé qu’après encaissement vérifié du million, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables.</p>
+        <p><strong>Échéance visée :</strong> 31 mai 2027. L’achat de la sonorisation ne sera engagé qu’après vérification du million réellement encaissé, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables. Si la collecte est en retard, l’achat sera reporté : aucune dette ni dépense anticipée n’est prévue.</p>
         <h3>Enveloppe de sonorisation : 1 000 000 FCFA</h3>
         <p>Cette somme est un budget maximal à réunir, pas un devis fournisseur déjà accepté. Les annonces consultées à Dakar présentent notamment des packs complets autour de 515 000 FCFA et 760 000 FCFA selon les configurations. Le solde de l’enveloppe pourra couvrir, après devis, les accessoires manquants, câbles, protections, transport, installation et réserve initiale de maintenance. Aucun reliquat ne sera dépensé sans justificatif.</p>
         <h3>Recettes prévisionnelles après acquisition</h3>
         <ul><li>Chaque jeudi d’utilisation payante : 2 500 FCFA.</li><li>Chaque dimanche d’utilisation payante : 3 500 FCFA.</li><li>Hypothèse de calcul à confirmer : le dernier dimanche de chaque mois est réservé au siège et ne génère pas de recette de location.</li></ul>
         <p>La simulation compte les jeudis et dimanches réellement présents dans chaque mois, à partir de juin 2027. Elle suppose que chaque activité payante a lieu et que le paiement est encaissé. Le revenu brut annuel de référence est d’environ 270 000 FCFA sur une année complète. Les recettes de location des chaises ne sont pas intégrées au calcul, car la fréquence des locations n’a pas encore été définie.</p>
       </section>
-      <section class="development-section">
-        <h2>4. Matériel à acquérir : quantités et prix unitaires</h2>
+      <section class="development-section" id="dev-section-4">
+        <h2>4. Liste du matériel et budget prévisionnel</h2>
         <p>Le budget révisé de 4 115 000 FCFA couvre uniquement les équipements prioritaires de cette séquence ; le futur local, les activités et les autres projets feront l’objet d’un budget distinct. Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Matériel / étape</th><th>Quantité</th><th>Prix unitaire estimé</th><th>Enveloppe</th><th>Précision</th></tr></thead><tbody>
           <tr><td>Sonorisation complète</td><td>1 lot</td><td>—</td><td>${money(1000000)}</td><td>Budget plafond, configuration à choisir sur devis</td></tr>
@@ -121,8 +121,8 @@
           <li><a href="https://www.senemarket.sn/public/table-rectangulaire-pliable-a-vendre/13368" target="_blank" rel="noopener">SeneMarket — table pliante 8 personnes</a> : annonce à 55 000 F, à comparer selon modèle et qualité.</li>
         </ul>
       </section>
-      <section class="development-section">
-        <h2>5. Règles de cumul et d’achat</h2>
+      <section class="development-section" id="dev-section-5">
+        <h2>5. Comment l’argent est cumulé et utilisé</h2>
         <ol>
           <li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>
           <li>Les mensualités des membres sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
@@ -134,8 +134,8 @@
         </ol>
         <p class="development-note">Les dates calculées sont des dates théoriques de fin de mois, sur la base de 40 membres payant chaque mois, d’une collecte de 200 000 F pendant cinq mois et de toutes les locations de sonorisation prévues effectivement encaissées. Les charges d’exploitation ne sont pas encore chiffrées : les dates réelles peuvent donc être plus tardives.</p>
       </section>
-      <section class="development-section">
-        <h2>6. Dates prévisionnelles d’achat</h2>
+      <section class="development-section" id="dev-section-6">
+        <h2>6. Dates prévisionnelles et objectifs annuels</h2>
         <h3>Comparaison selon le nombre de participants</h3>
         <p>La collecte spéciale de 1 000 000 F reste identique dans les trois scénarios ; seule la mensualité totale change. Les dates sont calculées avant charges d'exploitation.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations / mois</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 8×6</th><th>Bâche 12×7</th><th>4 tables</th></tr></thead><tbody>${scenarioRows}</tbody></table></div>
@@ -144,8 +144,8 @@
         <h3>Objectifs annuels de suivi</h3>
         <div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Recettes brutes de sonorisation</th><th>Jalon principal</th></tr></thead><tbody>${annualRows}</tbody></table></div>
       </section>
-      <section class="development-section">
-        <h2>7. Calendrier détaillé des 60 mois</h2>
+      <section class="development-section" id="dev-section-7">
+        <h2>7. Calendrier détaillé : janvier 2027 à décembre 2031</h2>
         <p>Chaque ligne donne l’objectif du mois, les recettes estimées et le cumul disponible après les achats déclenchés en fin de mois. Les recettes de sonorisation sont nulles avant l’achat prévu en mai 2027.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Mois</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Sonorisation brute</th><th>Jeudis / dimanches payants</th><th>Achat déclenché</th><th>Solde projeté</th><th>Objectif du mois</th></tr></thead><tbody>${monthlyRows}</tbody></table></div>
       </section>`;
@@ -179,46 +179,78 @@
       </article>
 
       <div class="development-document">
-        <div class="development-document-heading"><span>DAARA JAZBUL QULUUB · CELLULE DAKAR</span><h2>Sommaire du dossier</h2></div>
+        <div class="development-document-heading"><span>DAARA JAZBUL QULUUB · CELLULE DAKAR</span><h2>Guide de lecture et sommaire</h2><p>Le dossier commence par l’essentiel, explique ensuite le financement et les achats, puis présente l’organisation et les outils de suivi.</p></div>
         <ol class="development-toc">
-          <li>Présentation, vision et objectifs</li><li>Axes de développement</li><li>Priorité : sonorisation, puis chaises, bâches, tentes et tables</li>
-          <li>Plan de financement et objectifs annuels</li><li>Budget détaillé du matériel</li><li>Calendrier financier mensuel sur 60 mois</li>
-          <li>Plan de lancement des 90 premiers jours</li><li>Gouvernance et responsabilités</li><li>Règles financières et de contrôle</li>
-          <li>Indicateurs de réussite et risques</li><li>Registre des locations et inventaire</li><li>Validation du projet</li>
+          <li><a href="#dev-section-1">Présentation du projet</a></li>
+          <li><a href="#dev-section-2">Les cinq axes de développement</a></li>
+          <li><a href="#dev-section-3">Stratégie de financement</a></li>
+          <li><a href="#dev-section-4">Matériel et budget</a></li>
+          <li><a href="#dev-section-5">Règles de cumul et d’achat</a></li>
+          <li><a href="#dev-section-6">Dates prévisionnelles et objectifs annuels</a></li>
+          <li><a href="#dev-section-7">Calendrier détaillé sur 60 mois</a></li>
+          <li><a href="#dev-section-8">Plan de lancement</a></li>
+          <li><a href="#dev-section-9">Responsabilités</a></li>
+          <li><a href="#dev-section-10">Règles financières et contrôles</a></li>
+          <li><a href="#dev-section-11">Résultats attendus et risques</a></li>
+          <li><a href="#dev-section-12">Registre privé de suivi</a></li>
+          <li><a href="#dev-section-13">Validation</a></li>
         </ol>
-        <section class="development-section">
-          <h2>1. Présentation, vision et objectifs</h2>
+        <section class="development-summary">
+          <h2>Le projet en quelques minutes</h2>
+          <div class="development-summary-grid">
+            <article><strong>Début</strong><span>1er janvier 2027</span></article>
+            <article><strong>Durée</strong><span>5 ans · 2027–2031</span></article>
+            <article><strong>Participants visés</strong><span>30 à 50 · base de calcul : 40</span></article>
+            <article><strong>Cotisation proposée</strong><span>500 FCFA par participant et par mois</span></article>
+            <article><strong>Collecte spéciale</strong><span>1 000 000 FCFA de janvier à mai 2027</span></article>
+            <article><strong>Budget du matériel</strong><span>4 115 000 FCFA, prix à confirmer</span></article>
+          </div>
+          <h3>Dans quel ordre le projet avance-t-il ?</h3>
+          <ol><li>Réunir les dons destinés à la sonorisation.</li><li>Acquérir et mettre en service la sonorisation.</li><li>Ajouter les cotisations et les recettes nettes de location réellement encaissées.</li><li>Acheter les chaises en deux étapes, puis les bâches 8 × 6 m et 12 × 7 m, et enfin les quatre tables.</li></ol>
+          <p class="development-note"><strong>À retenir :</strong> les chiffres du dossier sont des objectifs et des simulations, pas de l’argent déjà collecté. Les achats ne sont autorisés que lorsque les fonds sont réellement disponibles et que les responsables ont donné leur accord. Toutes les opérations financières réelles passent par la Caisse générale.</p>
+        </section>
+        <section class="development-section" id="dev-section-1">
+          <h2>1. Présentation du projet</h2>
           <p>Le Daara Jazbul Quluub – Cellule Dakar souhaite renforcer progressivement ses moyens financiers et matériels afin de garantir le bon fonctionnement de ses activités religieuses, éducatives, culturelles et sociales. Le programme vise à constituer un patrimoine utile au Dahira, à développer une activité de location et à préparer des investissements durables.</p>
           <h3>Vision à cinq ans</h3><p>${escapeHtml(p.vision)}</p>
-          <h3>Objectif général</h3><p>Mobiliser un objectif indicatif de ${money(p.goal)} sur cinq ans, sans considérer cette cible comme une recette garantie, pour acquérir des équipements, développer une activité économique, soutenir les activités du Dahira et préparer un futur local.</p>
+          <h3>Objectif général</h3><p>Le montant de ${money(p.goal)} correspond au budget prévisionnel de la séquence d’équipements décrite dans ce dossier. Il ne constitue ni une somme déjà disponible ni une promesse de recettes. Les activités futures et le projet de local nécessiteront des budgets séparés, qui seront étudiés et validés ultérieurement.</p>
           <h3>Objectifs spécifiques</h3><ul><li>Mobiliser 30 à 50 participants volontaires à raison de 500 FCFA par mois.</li><li>Constituer un premier parc de matériel événementiel.</li><li>Développer la location de chaises, tables et autres équipements.</li><li>Réinvestir une partie des bénéfices nets dans le matériel.</li><li>Financer progressivement les activités et besoins logistiques.</li><li>Constituer une réserve affectée à un futur local.</li><li>Garantir une gestion documentée, vérifiable et transparente.</li></ul>
         </section>
-        <section class="development-section">
-          <h2>2. Axes de développement</h2>
-          <h3>Axe 1 — Équipements du Dahira</h3><p>Acquérir d’abord une sonorisation pour les activités hebdomadaires et la location, puis les chaises, bâches et tentes, les tables et les équipements complémentaires. Le matériel du Dahira reste prioritaire pour ses propres activités.</p>
+        <section class="development-section" id="dev-section-2">
+          <h2>2. Les cinq grands axes du projet</h2>
+          <h3>Axe 1 — Équipements du Dahira</h3><p>Acquérir d’abord une sonorisation pour les activités hebdomadaires et la location, puis les chaises, les deux bâches et les tables et les équipements complémentaires. Le matériel du Dahira reste prioritaire pour ses propres activités.</p>
           <h3>Axe 2 — Activités génératrices de revenus</h3><p>Commencer par la location de matériel événementiel. Après évaluation de la demande et des résultats, étudier les prestations audiovisuelles, la location de sonorisation et d’autres services compatibles avec les capacités du Dahira.</p>
           <h3>Axe 3 — Activités et événements</h3><p>Soutenir progressivement les rassemblements, événements religieux et culturels, déplacements, activités éducatives et besoins logistiques, selon le budget annuel approuvé.</p>
           <h3>Axe 4 — Futur local</h3><p>Constituer une réserve dédiée, réaliser une étude des besoins, comparer les options de location durable, acquisition ou construction, puis vérifier les aspects juridiques, fonciers et techniques avant tout engagement.</p>
           <h3>Axe 5 — Réserve et maintenance</h3><p>Conserver une réserve de sécurité pour réparations, renouvellement du matériel et imprévus, sans l’utiliser sans autorisation.</p>
         </section>
         ${renderFinancialRoadmap(p)}
-        <section class="development-section">
-          <h2>8. Gouvernance et responsabilités</h2>
+        <section class="development-section" id="dev-section-8">
+          <h2>8. Plan de lancement : les cinq premiers mois</h2>
+          <p>Le lancement est organisé autour d’une collecte spéciale de cinq mois. Chaque mois, le responsable du suivi compare l’objectif, les dons réellement reçus et les cotisations effectivement encaissées.</p>
+          <div class="development-launch-steps">
+            ${(p.launchMilestones||[]).map((x,i)=>`<article><span>Étape ${i+1}</span><strong>${escapeHtml(x.period)}</strong><p>${escapeHtml(x.step)}</p></article>`).join('')}
+          </div>
+          <h3>Point de contrôle à la fin de chaque mois</h3>
+          <ul><li>Compter uniquement les sommes réellement encaissées et enregistrées dans la Caisse générale.</li><li>Comparer le cumul des dons au seuil de 1 000 000 FCFA.</li><li>Mettre à jour la liste des participants et les cotisations reçues.</li><li>Conserver les reçus, preuves de transfert et devis.</li><li>Présenter l’état d’avancement aux responsables et décider de la suite.</li></ul>
+        </section>
+        <section class="development-section" id="dev-section-9">
+          <h2>9. Qui fait quoi ? Organisation et responsabilités</h2>
           <ul>${p.governance.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>
           <p>Les responsables du Dahira approuvent les orientations et dépenses importantes. La Commission Finance tient les écritures et les justificatifs. La Commission Organisation coordonne les activités et la logistique. Un responsable du matériel suit les sorties, retours et réparations. Un comité de suivi contrôle l’avancement. Les fonctions de demande, approbation, paiement et contrôle doivent être séparées autant que possible.</p>
         </section>
-        <section class="development-section">
-          <h2>9. Règles financières et de contrôle</h2>
+        <section class="development-section" id="dev-section-10">
+          <h2>10. Règles financières et contrôles</h2>
           <ol>${p.rules.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol>
           <ul><li>Un reçu ou justificatif est conservé pour chaque recette et dépense.</li><li>Les recettes du projet sont encaissées dans la Caisse générale, puis identifiées dans le suivi analytique du projet.</li><li>Le transfert interne ou l’affectation comptable d’une somme ne constitue pas une nouvelle recette.</li><li>Le registre privé de cette page est un outil de préparation et de suivi ; il ne crée aucun mouvement dans la caisse officielle.</li><li>Un rapprochement périodique doit être fait entre le registre du projet, les justificatifs et la comptabilité réelle.</li></ul>
         </section>
-        <section class="development-section">
-          <h2>10. Indicateurs de réussite et risques</h2>
+        <section class="development-section" id="dev-section-11">
+          <h2>11. Comment mesurer les résultats et prévenir les risques</h2>
           <h3>Indicateurs</h3><ul><li>Montant réellement collecté et montant réservé au projet.</li><li>Nombre de participants réguliers et niveau de contribution volontaire.</li><li>Nombre et valeur des équipements acquis et inventoriés.</li><li>Nombre de locations, chiffre d’affaires, charges et bénéfice net.</li><li>Taux de disponibilité et état du matériel.</li><li>Rapports financiers produits à temps et dépenses justifiées.</li><li>Montant de la réserve dédiée au futur local.</li></ul>
           <h3>Principaux risques et mesures</h3><ul><li>Faible participation : adapter le rythme d’achat et diversifier les dons.</li><li>Faible demande locative : tester le marché avant les acquisitions importantes.</li><li>Casse ou perte : fiches de sortie, caution adaptée, inventaire et entretien.</li><li>Confusion des fonds : suivi analytique, justificatifs et rapprochement régulier.</li><li>Conflit d’usage : priorité écrite aux activités du Dahira et calendrier de réservation.</li></ul>
         </section>
-        <section class="development-section">
-          <h2>11. Registre confidentiel de suivi</h2>
+        <section class="development-section" id="dev-section-12">
+          <h2>12. Registre privé de suivi et outils de gestion</h2>
           <div class="development-print-actions"><button type="button" class="secondary" id="developmentPrintBtn2">Imprimer le dossier</button></div>
           <h3>Résumé du registre financier privé</h3>
           <div class="member-table-wrap"><table><tbody><tr><th>Objectif quinquennal</th><td>${money(p.goal)}</td></tr><tr><th>Recettes saisies dans ce registre</th><td>${money(income)}</td></tr><tr><th>Dépenses saisies dans ce registre</th><td>${money(expenses)}</td></tr><tr><th>Solde du registre privé</th><td>${money(income-expenses)}</td></tr><tr><th>Chiffre d’affaires locatif saisi</th><td>${money(rentalGross)}</td></tr><tr><th>Charges locatives saisies</th><td>${money(rentalCosts)}</td></tr><tr><th>Résultat net théorique du registre de locations</th><td>${money(rentalNet)}</td></tr></tbody></table></div>
@@ -232,8 +264,8 @@
           <h3>Inventaire du matériel</h3>
           <form id="devInventoryForm" class="member-form"><div class="form-row"><label>Matériel<input id="devItemName" maxlength="120" required placeholder="Ex. Chaises plastiques"></label><label>Quantité<input id="devItemQty" type="number" min="1" step="1" required></label></div><div class="form-row"><label>Coût total d’acquisition (FCFA)<input id="devItemCost" type="number" min="0" step="1" value="0"></label><label>État<select id="devItemStatus"><option>À acquérir</option><option>Disponible</option><option>En location</option><option>À réparer</option></select></label></div><button class="primary" type="submit">Ajouter à l’inventaire</button><p id="devInventoryMessage" role="status"></p></form><div id="devInventoryRows" class="admin-module-list"></div>
         </section>
-        <section class="development-section development-approval">
-          <h2>12. Validation du projet</h2>
+        <section class="development-section development-approval" id="dev-section-13">
+          <h2>13. Validation du projet</h2>
           <p>Projet soumis à l’approbation des responsables et des membres du Daara Jazbul Quluub – Cellule Dakar.</p>
           <div class="development-signatures"><div>Président / Responsable<br><span></span></div><div>Responsable financier<br><span></span></div><div>Secrétaire<br><span></span></div><div>Date et signatures<br><span></span></div></div>
         </section>
