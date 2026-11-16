@@ -156,7 +156,7 @@
   }
 
 
-  function buildSundayProjection(p, participantsOverride) {
+  function buildSundayProjection(p, participantsOverride, monthsLimit=180, stopWhenComplete=true) {
     const cfg=p.financialPlan||{};
     const participants=Number(participantsOverride||cfg.participants||40);
     const monthlyDonation=Number(cfg.monthlyDonationTarget||200000);
@@ -165,7 +165,7 @@
     const sequence=Array.isArray(cfg.equipmentSequence)?cfg.equipmentSequence:[];
     let balance=0,donationCollected=0,soundPurchased=false,nextItem=0;
     const rows=[],purchaseDates=[];
-    for(let i=0;i<180;i++){
+    for(let i=0;i<monthsLimit;i++){
       const year=2027+Math.floor(i/12),month=(i%12)+1;
       const days=new Date(year,month,0).getDate();
       let sundays=0,lastSunday=0,thursdays=0,paidSundays=0;
@@ -195,7 +195,7 @@
         purchaseDates.push({name:item.name,year,month,amount:Number(item.total||0)});
       }
       rows.push({year,month,sundays,opening,contributions,donations,thursdays,paidSundays,soundIncome,purchases,closing:balance});
-      if(nextItem>=sequence.length&&soundPurchased)break;
+      if(stopWhenComplete&&nextItem>=sequence.length&&soundPurchased)break;
     }
     return {rows,purchaseDates,participants,completed:nextItem>=sequence.length&&soundPurchased};
   }
@@ -204,70 +204,100 @@
     const fmtDate=x=>String(new Date(x.year,x.month,0).getDate()).padStart(2,'0')+'/'+String(x.month).padStart(2,'0')+'/'+x.year;
     const projections=[30,40,50].map(n=>buildSundayProjection(p,n));
     const names=(p.financialPlan?.equipmentSequence||[]).map(x=>x.name);
-    const finalName=names[names.length-1]||'Dernier équipement';
     const scenarioRows=projections.map(q=>{
-      const last=q.purchaseDates[q.purchaseDates.length-1];
-      const months=last?(last.year-2027)*12+last.month:null;
-      const duration=months?(months/12).toFixed(1).replace('.',',')+' ans':'Non atteint sur 15 ans';
-      const date=last?fmtDate(last):'Après 2041';
-      const when=name=>{const x=q.purchaseDates.find(z=>z.name===name);return x?fmtDate(x):'Après 2041';};
-      return '<tr><td>'+q.participants+'</td><td>'+moneyFmt(q.participants*500*52)+' à '+moneyFmt(q.participants*500*53)+'</td><td>'+when('Chaises — phase 1 (30 VIP + 60 plastiques)')+'</td><td>'+when('Chaises — phase 2 (20 VIP + 40 plastiques)')+'</td><td>'+when('Bâche 8×6 m ouverte')+'</td><td>'+when('Bâche 12×7 m ouverte')+'</td><td>'+when('Tables pliantes')+'</td><td><strong>'+duration+'</strong></td><td>'+date+'</td></tr>';
+      const when=name=>{const x=q.purchaseDates.find(z=>z.name===name);return x?fmtDate(x):'Après 2031';};
+      return '<tr><td>'+q.participants+'</td><td>'+moneyFmt(q.participants*500*52)+' à '+moneyFmt(q.participants*500*53)+'</td><td>'+when('Chaises — phase 1 (30 VIP + 60 plastiques)')+'</td><td>'+when('Chaises — phase 2 (20 VIP + 40 plastiques)')+'</td><td>'+when('Bâche 8×6 m ouverte')+'</td><td>'+when('Bâche 12×7 m ouverte')+'</td><td>'+when('Tables pliantes')+'</td></tr>';
     }).join('');
-    const q=buildSundayProjection(p,40);
-    const purchaseRows=q.purchaseDates.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+fmtDate(x)+'</td><td>'+moneyFmt(x.amount)+'</td></tr>').join('')||'<tr><td colspan="3">Aucun achat atteint.</td></tr>';
-    const annualYears=Math.ceil(q.rows.length/12);
-    const annualRows=Array.from({length:annualYears},(_,i)=>{
-      const y=2027+i,rows=q.rows.filter(x=>x.year===y);
-      if(!rows.length)return '';
+
+    // Le calendrier détaillé reste strictement quinquennal, comme dans le projet principal.
+    const q=buildSundayProjection(p,40,60,false);
+    const purchaseRows=q.purchaseDates.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+fmtDate(x)+'</td><td>'+moneyFmt(x.amount)+'</td></tr>').join('')||'<tr><td colspan="3">Aucun achat atteint avant fin 2031.</td></tr>';
+    const annualRows=[2027,2028,2029,2030,2031].map(y=>{
+      const rows=q.rows.filter(x=>x.year===y);
       const contrib=rows.reduce((a,x)=>a+x.contributions,0);
       const donations=rows.reduce((a,x)=>a+x.donations,0);
       const rentals=rows.reduce((a,x)=>a+x.soundIncome,0);
       const buys=rows.flatMap(x=>x.purchases).map(x=>x.name);
-      return '<tr><td>'+y+'</td><td>'+rows.reduce((a,x)=>a+x.sundays,0)+'</td><td>'+moneyFmt(contrib)+'</td><td>'+moneyFmt(donations)+'</td><td>'+moneyFmt(rentals)+'</td><td>'+escapeHtml(buys.join(', ')||'Poursuite du financement')+'</td></tr>';
+      return '<tr><td>'+y+'</td><td>'+moneyFmt(contrib)+'</td><td>'+moneyFmt(donations)+'</td><td>'+moneyFmt(rentals)+'</td><td>'+escapeHtml(buys.join(', ')||'Financement et suivi')+'</td></tr>';
     }).join('');
-    const monthlyRows=q.rows.map(x=>'<tr><td>'+String(x.month).padStart(2,'0')+'/'+x.year+'</td><td>'+x.sundays+'</td><td>'+moneyFmt(x.contributions)+'</td><td>'+moneyFmt(x.donations)+'</td><td>'+moneyFmt(x.soundIncome)+'</td><td>'+x.thursdays+' / '+x.paidSundays+'</td><td>'+escapeHtml(x.purchases.map(y=>y.name+' : '+moneyFmt(y.amount)).join(', ')||'—')+'</td><td>'+moneyFmt(x.closing)+'</td></tr>').join('');
+    const monthlyRows=q.rows.map(x=>{
+      const objective='Encaisser 500 FCFA par participant pour chacun des '+x.sundays+' dimanches du mois ('+moneyFmt(x.contributions)+') ; poursuivre la collecte spéciale jusqu’en mai 2027 ; suivre les locations réellement encaissées et les achats selon l’ordre prévu.';
+      return '<tr><td>'+String(x.month).padStart(2,'0')+'/'+x.year+'</td><td>'+moneyFmt(x.contributions)+'</td><td>'+moneyFmt(x.donations)+'</td><td>'+moneyFmt(x.soundIncome)+'</td><td>'+x.thursdays+' / '+x.paidSundays+'</td><td>'+escapeHtml(x.purchases.map(y=>y.name+' : '+moneyFmt(y.amount)).join(', ')||'—')+'</td><td>'+moneyFmt(x.closing)+'</td><td>'+escapeHtml(objective)+'</td></tr>';
+    }).join('');
+
     const section=(id,html)=>{const el=baseDocument.querySelector('#'+id);if(el)el.innerHTML=html;};
     section('alt-dev-section-3',
-      '<h2>3. Stratégie de financement : cotisation chaque dimanche</h2>'+
-      '<p>Cette deuxième proposition reprend le même projet, le même matériel, les mêmes quantités et les mêmes prix. La seule modification est la contribution des membres : <strong>500 FCFA par participant chaque dimanche</strong>, au lieu de 500 FCFA par mois.</p>'+
-      '<p>La collecte spéciale auprès des familles et personnes de bonne volonté reste fixée à <strong>1 000 000 FCFA</strong>, soit 200 000 FCFA par mois de janvier à mai 2027. Elle reste distincte des cotisations dominicales.</p>'+
-      '<div class="member-table-wrap"><table><thead><tr><th>Mois</th><th>Objectif de dons</th><th>Cumul des dons</th><th>Cotisations dominicales estimées (40 membres, selon les dimanches)</th></tr></thead><tbody>'+
-      Array.from({length:5},(_,i)=>{const y=2027,m=i+1,days=new Date(y,m,0).getDate();let sundays=0;for(let d=1;d<=days;d++)if(new Date(y,m-1,d).getDay()===0)sundays++;return '<tr><td>'+['Janvier','Février','Mars','Avril','Mai'][i]+' 2027</td><td>'+moneyFmt(200000)+'</td><td>'+moneyFmt((i+1)*200000)+'</td><td>'+moneyFmt(40*500*sundays)+' ('+sundays+' dimanches)</td></tr>';}).join('')+
+      '<h2>3. Stratégie de financement : la cotisation chaque dimanche</h2>'+
+      '<p>Le projet démarre le <strong>1er janvier 2027</strong>. La première priorité est de réunir <strong>1 000 000 FCFA en cinq mois</strong> auprès des parents des membres, des proches et des personnes de bonne volonté. L’objectif de collecte est de 200 000 FCFA par mois de janvier à mai 2027.</p>'+
+      '<h3>Contribution de base retenue pour les simulations</h3>'+
+      '<p><strong>Proposition alternative — 500 FCFA chaque dimanche :</strong> chaque participant volontaire verse 500 FCFA chaque dimanche. Cette proposition remplace la cotisation mensuelle ; les deux formules ne sont jamais additionnées pour une même période.</p>'+
+      '<p>La collecte spéciale de 1 000 000 FCFA auprès des familles et des personnes de bonne volonté reste distincte des cotisations des membres. Les tableaux détaillés ci-dessous sont calculés avec la proposition dominicale de 500 FCFA par participant.</p>'+
+      '<div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cumul des cotisations estimées (40 membres)</th></tr></thead><tbody>'+
+      (()=>{let cumulativeContributions=0;return Array.from({length:5},(_,i)=>{
+        const year=2027,month=i+1,days=new Date(year,month,0).getDate();
+        let sundays=0;for(let d=1;d<=days;d++)if(new Date(year,month-1,d).getDay()===0)sundays++;
+        cumulativeContributions+=40*500*sundays;
+        return '<tr><td>'+['Janvier','Février','Mars','Avril','Mai'][i]+' 2027</td><td>'+moneyFmt(200000)+'</td><td>'+moneyFmt((i+1)*200000)+'</td><td>'+moneyFmt(cumulativeContributions)+' cumulés ('+sundays+' dimanches ce mois)</td></tr>';
+      }).join('')})()+
       '</tbody></table></div>'+
-      '<p><strong>Sonorisation :</strong> budget plafond de 1 000 000 FCFA. Achat uniquement après encaissement de la collecte, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables.</p>'+
-      '<h3>Recettes de location après acquisition</h3><ul><li>Jeudi : 2 500 FCFA par utilisation payante.</li><li>Dimanche : 3 500 FCFA par utilisation payante.</li><li>Le dernier dimanche du mois reste réservé au Dahira et ne génère pas de recette de location.</li></ul>'+
-      '<p>Les recettes locatives sont calculées à partir de juin 2027, après l’acquisition de la sonorisation. Elles sont identiques aux hypothèses du premier projet. Les charges réelles peuvent retarder les achats.</p>');
+      '<p><strong>Échéance visée :</strong> 31 mai 2027. L’achat de la sonorisation ne sera engagé qu’après vérification du million réellement encaissé, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables. Si la collecte est en retard, l’achat sera reporté : aucune dette ni dépense anticipée n’est prévue.</p>'+
+      '<h3>Enveloppe de sonorisation : 1 000 000 FCFA</h3>'+
+      '<p>Cette somme est un budget maximal à réunir, pas un devis fournisseur déjà accepté. Les annonces consultées à Dakar présentent notamment des packs complets autour de 515 000 FCFA et 760 000 FCFA selon les configurations. Le solde de l’enveloppe pourra couvrir, après devis, les accessoires manquants, câbles, protections, transport, installation et réserve initiale de maintenance. Aucun reliquat ne sera dépensé sans justificatif.</p>'+
+      '<h3>Recettes prévisionnelles après acquisition</h3>'+
+      '<ul><li>Chaque jeudi d’utilisation payante : 2 500 FCFA.</li><li>Chaque dimanche d’utilisation payante : 3 500 FCFA.</li><li>Hypothèse de calcul à confirmer : le dernier dimanche de chaque mois est réservé au siège et ne génère pas de recette de location.</li></ul>'+
+      '<p>La simulation compte les jeudis et dimanches réellement présents dans chaque mois, à partir de juin 2027. Elle suppose que chaque activité payante a lieu et que le paiement est encaissé. Le revenu brut annuel de référence est d’environ 270 000 FCFA sur une année complète. Les recettes de location des chaises ne sont pas intégrées au calcul, car la fréquence des locations n’a pas encore été définie.</p>');
+
     section('alt-dev-section-5',
       '<h2>5. Comment l’argent est cumulé et utilisé</h2><ol>'+
-      '<li>Les dons de janvier à mai 2027 visent 1 000 000 FCFA et financent en priorité la sonorisation.</li>'+
-      '<li>Chaque participant verse 500 FCFA chaque dimanche. Cette cotisation remplace intégralement la mensualité du premier projet ; les deux formules ne sont jamais additionnées.</li>'+
-      '<li>Les cotisations dominicales sont cumulées avec les dons disponibles pour financer la sonorisation, puis les achats suivants selon l’ordre prévu.</li>'+
-      '<li>À partir de juin 2027, les recettes de location de sonorisation réellement encaissées sont ajoutées au cumul.</li>'+
-      '<li>Ordre obligatoire : chaises phase 1, chaises phase 2, bâche 8×6 m, bâche 12×7 m, puis cinq tables pliantes.</li>'+
-      '<li>Aucun achat n’est engagé avant que l’étape précédente soit intégralement financée et que les frais réels soient déduits.</li>'+
-      '<li>Les transferts internes ne sont jamais comptés comme une nouvelle recette.</li></ol>'+
-      '<p class="development-note">Les dates sont des simulations théoriques basées sur le nombre réel de dimanches par mois, 200 000 FCFA de dons mensuels pendant cinq mois et les locations prévues encaissées. Les charges d’exploitation ne sont pas chiffrées.</p>');
+      '<li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>'+
+      '<li>Les contributions des membres selon la proposition dominicale (500 FCFA chaque dimanche) sont cumulées séparément et servent au financement du matériel suivant après l’achat de la sonorisation. Elles remplacent la mensualité ; les deux formules ne sont jamais additionnées.</li>'+
+      '<li>À partir de juin 2027, les recettes de location de sonorisation sont ajoutées au cumul disponible, après encaissement effectif.</li>'+
+      '<li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 8×6, bâche 12×7, puis tables et autres équipements.</li>'+
+      '<li>Une étape suivante ne peut pas être achetée avant que l’étape précédente soit financée intégralement.</li>'+
+      '<li>Les frais de réparation, transport, entretien et autres dépenses réelles doivent être déduits avant de confirmer un achat.</li>'+
+      '<li>Les transferts internes vers la ligne analytique du projet ne sont jamais comptés comme une nouvelle recette de la Caisse générale.</li></ol>'+
+      '<p class="development-note">Les dates calculées sont des dates théoriques de fin de mois, sur la base de 40 membres versant 500 FCFA chaque dimanche, d’une collecte de 200 000 F pendant cinq mois et de toutes les locations de sonorisation prévues effectivement encaissées. Les charges d’exploitation ne sont pas encore chiffrées : les dates réelles peuvent donc être plus tardives.</p>');
+
     section('alt-dev-section-6',
-      '<h2>6. Combien d’années pour obtenir tout le matériel ?</h2>'+
-      '<p>La comparaison ci-dessous conserve le budget total de <strong>'+moneyFmt(4145000)+'</strong> et toutes les étapes du premier projet. La durée est calculée jusqu’au dernier achat de matériel, avec les dons et recettes locatives prévus.</p>'+
-      '<div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations par an (52 à 53 dimanches)</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 8×6</th><th>Bâche 12×7</th><th>5 tables</th><th>Durée totale estimée</th><th>Fin estimée</th></tr></thead><tbody>'+scenarioRows+'</tbody></table></div>'+
-      '<h3>Dates des achats — scénario de 40 participants</h3><div class="member-table-wrap"><table><thead><tr><th>Équipement</th><th>Date théorique</th><th>Budget</th></tr></thead><tbody>'+purchaseRows+'</tbody></table></div>'+
-      '<p>Les durées sont calculées avant les charges d’entretien, transport, réparation et autres dépenses. Elles supposent que les cotisations et locations sont intégralement encaissées. Les dates réelles peuvent donc être plus tardives.</p>'+
-      '<h3>Objectifs annuels — scénario de 40 participants</h3><div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Dimanches</th><th>Cotisations</th><th>Dons</th><th>Locations brutes</th><th>Achats réalisés</th></tr></thead><tbody>'+annualRows+'</tbody></table></div>');
+      '<h2>6. Dates prévisionnelles et objectifs annuels</h2>'+
+      '<h3>Comparaison selon le nombre de participants</h3>'+
+      '<p>La collecte spéciale de 1 000 000 F reste identique dans les trois scénarios ; seule la cotisation des membres change. Les dates sont calculées avant charges d’exploitation.</p>'+
+      '<div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Cotisations / an (52 à 53 dimanches)</th><th>Chaises phase 1</th><th>Chaises phase 2</th><th>Bâche 8×6</th><th>Bâche 12×7</th><th>5 tables</th></tr></thead><tbody>'+scenarioRows+'</tbody></table></div>'+
+      '<div class="member-table-wrap"><table><thead><tr><th>Projet / achat</th><th>Mois théorique</th><th>Enveloppe</th></tr></thead><tbody>'+purchaseRows+'</tbody></table></div>'+
+      '<p>Si une recette n’est pas encaissée, si le nombre de participants diminue ou si des frais sont engagés, l’achat est reporté au mois où le solde réel atteint le seuil. Les dates ne sont pas des engagements fournisseurs.</p>'+
+      '<h3>Objectifs annuels de suivi</h3>'+
+      '<div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Recettes brutes de sonorisation</th><th>Jalon principal</th></tr></thead><tbody>'+annualRows+'</tbody></table></div>');
+
     section('alt-dev-section-7',
-      '<h2>7. Calendrier détaillé des cotisations dominicales</h2>'+
-      '<p>Simulation mensuelle pour 40 participants. Chaque ligne compte tous les dimanches du mois, y compris le dernier dimanche pour les cotisations. Les recettes de location excluent le dernier dimanche, réservé au Dahira.</p>'+
-      '<div class="member-table-wrap"><table><thead><tr><th>Mois</th><th>Dimanches</th><th>Cotisations</th><th>Dons</th><th>Locations brutes</th><th>Jeudis / dimanches loués</th><th>Achat déclenché</th><th>Solde projeté</th></tr></thead><tbody>'+monthlyRows+'</tbody></table></div>'+
-      '<p class="development-note">La simulation s’arrête lorsque tous les équipements prévus sont financés ou au terme de 15 ans. Les montants sont des projections, pas des sommes déjà collectées.</p>');
+      '<h2>7. Calendrier détaillé : janvier 2027 à décembre 2031</h2>'+
+      '<p>Chaque ligne donne l’objectif du mois, les recettes estimées et le cumul disponible après les achats déclenchés en fin de mois. Les cotisations sont calculées sur tous les dimanches du mois, y compris le dernier dimanche ; les locations dominicales excluent le dernier dimanche réservé au Dahira.</p>'+
+      '<div class="member-table-wrap"><table><thead><tr><th>Mois</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Sonorisation brute</th><th>Jeudis / dimanches payants</th><th>Achat déclenché</th><th>Solde projeté</th><th>Objectif du mois</th></tr></thead><tbody>'+monthlyRows+'</tbody></table></div>'+
+      '<p class="development-note">La simulation couvre les 60 mois de janvier 2027 à décembre 2031. Les montants sont des projections, pas des sommes déjà collectées.</p>');
+
     const summary=baseDocument.querySelector('.development-summary');
     if(summary){
       const cards=summary.querySelectorAll('.development-summary-grid article');
-      cards.forEach(card=>{if(card.textContent.includes('Cotisation proposée'))card.querySelector('span').textContent='500 FCFA par participant chaque dimanche';if(card.textContent.includes('Durée'))card.querySelector('span').textContent='Jusqu’à acquisition complète du matériel';});
+      cards.forEach(card=>{
+        if(card.textContent.includes('Cotisation proposée'))card.querySelector('span').textContent='500 FCFA par participant chaque dimanche';
+      });
       const alert=summary.querySelector('.development-funding-alert');
-      if(alert)alert.innerHTML='<h3>Combien de temps faut-il pour tout acquérir ?</h3><p>Le tableau de la section 6 compare 30, 40 et 50 participants et indique la durée estimée jusqu’au dernier achat. Le scénario détaillé de 40 participants est présenté dans les sections 6 et 7.</p><p>Les cotisations dominicales remplacent les mensualités : elles ne s’y ajoutent pas.</p>';
+      if(alert){
+        const projectedFunds=q.rows.reduce((a,x)=>a+x.contributions+x.donations+x.soundIncome,0);
+        const equipmentBudget=4145000;
+        const gap=Math.max(0,equipmentBudget-projectedFunds);
+        const purchases=q.purchaseDates.map(x=>x.name);
+        alert.innerHTML='<h3>Le financement suffit-il pour tout acheter avant fin 2031 ?</h3>'+
+          '<p>Dans le scénario de 40 participants, les ressources brutes simulées sur cinq ans sont de <strong>'+moneyFmt(projectedFunds)+'</strong>, pour un budget matériel de <strong>'+moneyFmt(equipmentBudget)+'</strong>. Il reste donc un besoin de financement estimé à <strong>'+moneyFmt(gap)+'</strong>, avant déduction des frais réels.</p>'+
+          '<p>Avec les hypothèses actuelles, les achats atteints dans la simulation sont : <strong>'+escapeHtml(purchases.join(', ')||'aucun achat')+'</strong>. Les équipements non encore financés au 31 décembre 2031 restent à programmer, sauf dons supplémentaires, recettes supérieures aux prévisions ou baisse des coûts.</p>'+
+          '<p>Cette simulation est volontairement prudente sur les engagements : les recettes locatives sont des montants bruts et peuvent être inférieures si les locations ne se réalisent pas. Les charges réelles retarderont les achats.</p>';
+      }
     }
-    const old14=baseDocument.querySelector('#alt-dev-section-14');
-    if(old14)old14.innerHTML='<h2>14. Bilan de la proposition dominicale</h2><p>Cette version constitue une proposition complète indépendante du premier projet. Elle conserve le même objectif matériel de 4 145 000 FCFA, les mêmes prix, la collecte spéciale et les tarifs de location. Seule la cotisation est remplacée par 500 FCFA chaque dimanche.</p><p>La durée d’acquisition est indiquée dans la section 6 pour 30, 40 et 50 participants. Cette proposition ne sera retenue qu’après décision des responsables du Dahira.</p>';
+    const conclusion=baseDocument.querySelector('#alt-dev-section-14');
+    if(conclusion)conclusion.innerHTML=
+      '<h2>14. Bilan et décision de la formule dominicale</h2>'+
+      '<p>Cette deuxième proposition reprend le même projet de développement, les mêmes objectifs, les mêmes équipements, les mêmes quantités, les mêmes prix, la même organisation, les mêmes règles de gestion et le même calendrier quinquennal que le projet principal.</p>'+
+      '<p>La seule différence financière est la cotisation des participants : <strong>500 FCFA chaque dimanche au lieu de 500 FCFA par mois</strong>. Cette formule remplace la première ; elle ne s’y ajoute jamais. La collecte spéciale de 1 000 000 FCFA et les recettes de location restent identiques.</p>'+
+      '<p>Cette proposition alternative ne sera retenue qu’après examen des deux simulations et décision des responsables du Dahira.</p>';
   }
 
   function render() {
@@ -433,7 +463,7 @@
         <footer class="development-footer">DAARA JAZBUL QULUUB – CELLULE DAKAR · DOSSIER CONFIDENTIEL · PROGRAMME 2027–2031</footer>
       </div>`;
     function prepareDevelopmentTablesForMobile(){
-      const tables=content.querySelectorAll('.development-section .member-table-wrap table');
+      const tables=document.querySelectorAll('#privateDevelopmentProjectContent .development-section .member-table-wrap table,#privateDevelopmentAlternativeProjectContent .development-section .member-table-wrap table');
       tables.forEach(table=>{
         const headers=[...table.querySelectorAll('thead th')].map(cell=>cell.textContent.trim().replace(/\s+/g,' '));
         table.setAttribute('data-responsive-table','true');
@@ -450,8 +480,6 @@
 
     const originalCover=content.querySelector('.development-cover');
     const originalDocument=content.querySelector('.development-document');
-    originalDocument?.querySelector('#dev-section-14')?.remove();
-    originalDocument?.querySelector('.development-toc-alternative')?.remove();
     if(originalCover&&originalDocument&&alternativeContent&&!alternativeContent.querySelector('.development-alternative-project')){
       const alternative=document.createElement('div');
       alternative.className='development-alternative-project';
@@ -460,6 +488,8 @@
       cover.querySelector('.development-cover-subtitle').textContent='Même matériel · Même budget · Cotisation de 500 FCFA chaque dimanche';
       cover.querySelector('.development-cover-motto').textContent='« Une deuxième formule de financement pour atteindre le même objectif matériel. »';
       const copy=originalDocument.cloneNode(true);
+      originalDocument.querySelector('#dev-section-14')?.remove();
+      originalDocument.querySelector('.development-toc-alternative')?.remove();
       copy.querySelectorAll('[id]').forEach(el=>{el.id='alt-'+el.id;});
       copy.querySelectorAll('a[href^="#"]').forEach(a=>{a.setAttribute('href','#alt-'+a.getAttribute('href').slice(1));});
       const altToc=copy.querySelector('.development-toc-alternative');
