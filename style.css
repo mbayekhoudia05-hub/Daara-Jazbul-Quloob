@@ -2177,10 +2177,10 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 }
 @page{size:A4;margin:16mm 14mm}
 @media print{
-  html,body{width:100%!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}
-  body *{visibility:hidden!important}
-  #privateDevelopmentProject,#privateDevelopmentProject *{visibility:visible!important}
-  #privateDevelopmentProject{display:block!important;position:absolute!important;inset:0 auto auto 0!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important}
+  html,body{width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}
+  body> :not(#privateDevelopmentProject){display:none!important}
+  #privateDevelopmentProject{display:block!important;position:static!important;inset:auto!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;visibility:visible!important}
+  #privateDevelopmentProject *{visibility:visible!important}
   #privateDevelopmentProject>.head,.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}
   #privateDevelopmentProjectContent,.development-document{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
   .development-cover{min-height:255mm!important;height:255mm!important;margin:0!important;padding:20mm 12mm!important;border:2px solid #075b35!important;border-radius:0!important;break-after:page!important;page-break-after:always!important;box-shadow:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
