@@ -42,5 +42,5 @@ begin
 end;
 $$;
 
-revoke all on function public.record_general_cash_income(numeric,text,date,text) from public, anon;
+revoke all on function public.record_general_cash_income(numeric,text,date,text) from public, anon;\n-- Trigger-only guard: never expose direct RPC execution to application roles.\nrevoke all on function public.enforce_general_cash_income() from public, anon, authenticated;
 grant execute on function public.record_general_cash_income(numeric,text,date,text) to authenticated;
