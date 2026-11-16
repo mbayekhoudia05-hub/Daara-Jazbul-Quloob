@@ -2196,3 +2196,29 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
   .development-footer{margin-top:10mm!important}
   a{color:inherit!important;text-decoration:none!important}
 }
+
+
+/* Lecture simplifiée du programme quinquennal */
+.development-document-heading p{margin:8px 0 0;color:#52685a;line-height:1.6}
+.development-toc a{color:#075b35;text-decoration:none;font-weight:650}
+.development-toc a:hover,.development-toc a:focus{text-decoration:underline}
+.development-summary{margin:0 0 30px;padding:22px;border:1px solid #dce8df;border-radius:14px;background:#f7faf7}
+.development-summary h2{margin:0 0 14px;color:#075b35;font-size:1.35rem}
+.development-summary h3{margin:22px 0 8px;color:#174b30;font-size:1.03rem}
+.development-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.development-summary-grid article{display:grid;gap:6px;padding:13px;border:1px solid #e0e9e2;border-radius:10px;background:#fff}
+.development-summary-grid strong{font-size:.78rem;color:#52705d;text-transform:uppercase;letter-spacing:.04em}
+.development-summary-grid span{font-weight:750;color:#173d29;line-height:1.4}
+.development-launch-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.development-launch-steps article{padding:14px;border:1px solid #dce8df;border-radius:10px;background:#fbfdfb}
+.development-launch-steps article span{display:block;margin-bottom:6px;color:#67816f;font-size:.76rem;font-weight:800;text-transform:uppercase}
+.development-launch-steps article strong{color:#075b35}
+.development-launch-steps article p{margin:6px 0 0}
+@media(max-width:650px){
+ .development-summary{padding:15px}
+ .development-summary-grid,.development-launch-steps{grid-template-columns:1fr}
+}
+@media print{
+ .development-summary,.development-launch-steps article{break-inside:avoid;page-break-inside:avoid}
+ .development-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
