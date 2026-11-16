@@ -76,7 +76,7 @@ function setAdminUI(){
   navs.forEach(hide);
   if(isAdmin){
     navs.forEach(show);
-    if(currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf')show('privateDevelopmentProjectNav');
+    if(currentUser?.id==='af676419-4711-48e6-8caf-5099b823facf')show('privateDevelopmentProjectNav');else hide('privateDevelopmentProjectNav');
     show('adminNavigationGroup');
     show('adminDashboard');
     updateAdminDashboard();
