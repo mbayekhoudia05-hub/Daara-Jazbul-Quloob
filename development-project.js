@@ -154,6 +154,11 @@
   function render() {
     if(!data.plan || !ownerIsSignedIn()) return;
     const p=data.plan;
+    const summaryProjection=buildMonthlyProjection(p);
+    const projectedFunds=summaryProjection.rows.reduce((s,x)=>s+x.contributions+x.donations+x.soundIncome,0);
+    const equipmentBudget=Number(p.goal||0);
+    const fundingGap=Math.max(0,equipmentBudget-projectedFunds);
+    const projectedPurchases=summaryProjection.purchaseDates.map(x=>x.name);
     const income=data.ledger.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
     const expenses=data.ledger.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
     const completedRentals=data.rentals.filter(x=>x.status==='completed');
@@ -207,6 +212,12 @@
           </div>
           <h3>Dans quel ordre le projet avance-t-il ?</h3>
           <ol><li>Réunir les dons destinés à la sonorisation.</li><li>Acquérir et mettre en service la sonorisation.</li><li>Ajouter les cotisations et les recettes nettes de location réellement encaissées.</li><li>Acheter les chaises en deux étapes, puis les bâches 8 × 6 m et 12 × 7 m, et enfin les quatre tables.</li></ol>
+          <div class="development-funding-alert">
+            <h3>Le financement suffit-il pour tout acheter avant fin 2031 ?</h3>
+            <p>Dans le scénario de 40 participants, les ressources brutes simulées sur cinq ans sont de <strong>${money(projectedFunds)}</strong>, pour un budget matériel de <strong>${money(equipmentBudget)}</strong>. Il reste donc un besoin de financement estimé à <strong>${money(fundingGap)}</strong>, avant déduction des frais réels.</p>
+            <p>Avec les hypothèses actuelles, les achats atteints dans la simulation sont : <strong>${escapeHtml(projectedPurchases.join(', ')||'aucun achat')}</strong>. La bâche de 12 × 7 m et les quatre tables restent à financer après 2031, sauf dons supplémentaires, recettes supérieures aux prévisions ou baisse des coûts.</p>
+            <p>Cette simulation est volontairement prudente sur les engagements : les recettes locatives sont des montants bruts et peuvent être inférieures si les locations ne se réalisent pas. Les charges réelles retarderont les achats.</p>
+          </div>
           <p class="development-note"><strong>À retenir :</strong> les chiffres du dossier sont des objectifs et des simulations, pas de l’argent déjà collecté. Les achats ne sont autorisés que lorsque les fonds sont réellement disponibles et que les responsables ont donné leur accord. Toutes les opérations financières réelles passent par la Caisse générale.</p>
         </section>
         <section class="development-section" id="dev-section-1">
