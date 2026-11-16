@@ -282,8 +282,27 @@
         </section>
         <footer class="development-footer">DAARA JAZBUL QULUUB – CELLULE DAKAR · DOSSIER CONFIDENTIEL · PROGRAMME 2027–2031</footer>
       </div>`;
-    $('developmentPrintBtn')?.addEventListener('click',()=>window.print());
-    $('developmentPrintBtn2')?.addEventListener('click',()=>window.print());
+    function printDevelopmentProject(){
+      const source=$('privateDevelopmentProject');
+      if(!source)return;
+      const printWindow=window.open('','_blank');
+      if(!printWindow){
+        alert('La fenêtre d’impression a été bloquée. Autorise les fenêtres contextuelles pour ce site, puis réessaie.');
+        return;
+      }
+      const project=source.cloneNode(true);
+      project.classList.remove('hidden');
+      project.querySelectorAll('.development-print-actions').forEach(el=>el.remove());
+      const styles=[...document.querySelectorAll('link[rel="stylesheet"]')]
+        .map(link=>'<link rel="stylesheet" href="'+link.href+'">').join('');
+      printWindow.document.open();
+      printWindow.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projet de développement — Daara Jazbul Quluub</title>'+styles+'<style>@page{size:A4 portrait;margin:10mm}html,body{margin:0!important;padding:0!important;background:#fff!important}body> :not(main){display:none!important}main#mainContent{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}#privateDevelopmentProject{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}#privateDevelopmentProject>.head,.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}</style></head><body><main id="mainContent"></main></body></html>');
+      printWindow.document.close();
+      printWindow.document.getElementById('mainContent').appendChild(project);
+      printWindow.addEventListener('load',()=>setTimeout(()=>{printWindow.focus();printWindow.print();},700),{once:true});
+    }
+    $('developmentPrintBtn')?.addEventListener('click',printDevelopmentProject);
+    $('developmentPrintBtn2')?.addEventListener('click',printDevelopmentProject);
     renderRows();
   }
   function renderRows() {
