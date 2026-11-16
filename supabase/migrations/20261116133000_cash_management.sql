@@ -254,9 +254,9 @@ $$;
 create or replace function public.pay_cash_expense(p_expense_id uuid, p_date date default current_date)
 returns jsonb
 language plpgsql
-security invoker
+security definer
 set search_path = public
-as $$
+as $
 declare v public.cash_expense_requests%rowtype; v_movement uuid; v_balance numeric;
 begin
   if not exists (select 1 from public.profiles where id = auth.uid() and role in ('admin','finance')) then
