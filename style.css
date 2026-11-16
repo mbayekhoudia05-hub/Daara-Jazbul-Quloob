@@ -2248,3 +2248,9 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
 .development-simple-row span{font-size:14px;line-height:1.4;color:#294b38;flex:1}
 .development-simple-row strong{font-size:14px;line-height:1.4;color:#075b35;text-align:right;white-space:normal}
 @media(max-width:560px){.development-simple-row{flex-direction:column;gap:4px}.development-simple-row strong{text-align:left}}
+
+.development-simple-row{display:none}
+.development-simple-card{padding:13px 15px;border:1px solid #d8e8dd;border-left:4px solid #26734d;border-radius:8px;background:#f7fbf8;margin:8px 0}
+.development-simple-card>strong{display:block;color:#075b35;font-size:15px;margin-bottom:7px}
+.development-simple-card>div{display:flex;flex-wrap:wrap;gap:6px 18px}
+.development-simple-card span{font-size:13px;line-height:1.5;color:#294b38}
