@@ -73,6 +73,8 @@
     const projection=buildMonthlyProjection(p);
     const fmtDate=x=>String(new Date(x.year,x.month,0).getDate()).padStart(2,'0')+'/'+String(x.month).padStart(2,'0')+'/'+x.year;
     const purchases=projection.purchaseDates;
+    const weeklySundays2027_2031=261;
+    const contributionOptionRows=[30,40,50].map(n=>`<tr><td>${n}</td><td>${money(n*500*60)}</td><td>${money(n*500*weeklySundays2027_2031)}</td></tr>`).join('');
     const purchaseRows=purchases.length?purchases.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${fmtDate(x)}</td><td>${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="3">Aucun achat atteint dans la simulation.</td></tr>';
     const scenarioRows=[30,40,50].map(n=>{
       const q=buildMonthlyProjection(p,n);
@@ -91,8 +93,12 @@
       <section class="development-section" id="dev-section-3">
         <h2>3. Stratégie de financement : la sonorisation en premier</h2>
         <p>Le projet démarre le <strong>1er janvier 2027</strong>. La première priorité est de réunir <strong>1 000 000 FCFA en cinq mois</strong> auprès des parents des membres, des proches et des personnes de bonne volonté. L’objectif de collecte est de 200 000 FCFA par mois de janvier à mai 2027.</p>
-        <p>Les mensualités volontaires des membres, fixées à 500 FCFA par personne et par mois, sont cumulées en parallèle. La simulation principale retient 40 participants, soit 20 000 FCFA par mois. Les mensualités ne sont pas confondues avec les dons affectés à l’achat de la sonorisation.</p>
-        <div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres)</th></tr></thead><tbody>
+        <h3>Deux options de contribution des membres</h3>
+        <p><strong>Option 1 — 500 FCFA par mois :</strong> chaque participant verse 500 FCFA une fois par mois. C’est l’option utilisée dans les simulations détaillées actuelles.</p>
+        <p><strong>Option 2 — 500 FCFA chaque dimanche :</strong> chaque participant verse 500 FCFA chaque dimanche. Sur la période 2027–2031, le calendrier compte 261 dimanches (y compris les derniers dimanches du mois). Cette option est présentée séparément et ne s’ajoute pas à l’option 1.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Option 1 : 500 F/mois sur 5 ans</th><th>Option 2 : 500 F/dimanche sur 5 ans</th></tr></thead><tbody>${contributionOptionRows}</tbody></table></div>
+        <p>La collecte spéciale de 1 000 000 FCFA auprès des familles et des personnes de bonne volonté reste distincte des deux options. Les tableaux détaillés de dates et d’achats ci-dessous sont calculés avec l’option 1, jusqu’à ce qu’une option soit officiellement retenue.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres, option 1)</th></tr></thead><tbody>
           ${Array.from({length:5},(_,i)=>`<tr><td>${['Janvier','Février','Mars','Avril','Mai'][i]} 2027</td><td>${money(200000)}</td><td>${money((i+1)*200000)}</td><td>${money((i+1)*20000)}</td></tr>`).join('')}
         </tbody></table></div>
         <p><strong>Échéance visée :</strong> 31 mai 2027. L’achat de la sonorisation ne sera engagé qu’après vérification du million réellement encaissé, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables. Si la collecte est en retard, l’achat sera reporté : aucune dette ni dépense anticipée n’est prévue.</p>
@@ -125,14 +131,14 @@
         <h2>5. Comment l’argent est cumulé et utilisé</h2>
         <ol>
           <li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>
-          <li>Les mensualités des membres sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
+          <li>Les contributions des membres, selon l’option retenue (500 FCFA par mois ou 500 FCFA chaque dimanche), sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
           <li>À partir de juin 2027, les recettes de location de sonorisation sont ajoutées au cumul disponible, après encaissement effectif.</li>
           <li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 8×6, bâche 12×7, puis tables et autres équipements.</li>
           <li>Une étape suivante ne peut pas être achetée avant que l’étape précédente soit financée intégralement.</li>
           <li>Les frais de réparation, transport, entretien et autres dépenses réelles doivent être déduits avant de confirmer un achat.</li>
           <li>Les transferts internes vers la ligne analytique du projet ne sont jamais comptés comme une nouvelle recette de la Caisse générale.</li>
         </ol>
-        <p class="development-note">Les dates calculées sont des dates théoriques de fin de mois, sur la base de 40 membres payant chaque mois, d’une collecte de 200 000 F pendant cinq mois et de toutes les locations de sonorisation prévues effectivement encaissées. Les charges d’exploitation ne sont pas encore chiffrées : les dates réelles peuvent donc être plus tardives.</p>
+        <p class="development-note">Les dates calculées sont des dates théoriques de fin de mois, sur la base de 40 membres selon l’option 1 (500 F par mois), d’une collecte de 200 000 F pendant cinq mois et de toutes les locations de sonorisation prévues effectivement encaissées. Les charges d’exploitation ne sont pas encore chiffrées : les dates réelles peuvent donc être plus tardives.</p>
       </section>
       <section class="development-section" id="dev-section-6">
         <h2>6. Dates prévisionnelles et objectifs annuels</h2>
@@ -225,7 +231,7 @@
           <p>Le Daara Jazbul Quluub – Cellule Dakar souhaite renforcer progressivement ses moyens financiers et matériels afin de garantir le bon fonctionnement de ses activités religieuses, éducatives, culturelles et sociales. Le programme vise à constituer un patrimoine utile au Dahira, à développer une activité de location et à préparer des investissements durables.</p>
           <h3>Vision à cinq ans</h3><p>${escapeHtml(p.vision)}</p>
           <h3>Objectif général</h3><p>Le montant de ${money(p.goal)} correspond au budget prévisionnel de la séquence d’équipements décrite dans ce dossier. Il ne constitue ni une somme déjà disponible ni une promesse de recettes. Les activités futures et le projet de local nécessiteront des budgets séparés, qui seront étudiés et validés ultérieurement.</p>
-          <h3>Objectifs spécifiques</h3><ul><li>Mobiliser 30 à 50 participants volontaires à raison de 500 FCFA par mois.</li><li>Constituer un premier parc de matériel événementiel.</li><li>Développer la location de chaises, tables et autres équipements.</li><li>Réinvestir une partie des bénéfices nets dans le matériel.</li><li>Financer progressivement les activités et besoins logistiques.</li><li>Constituer une réserve affectée à un futur local.</li><li>Garantir une gestion documentée, vérifiable et transparente.</li></ul>
+          <h3>Objectifs spécifiques</h3><ul><li>Mobiliser 30 à 50 participants volontaires selon l’une des deux options : 500 FCFA par mois ou 500 FCFA chaque dimanche.</li><li>Constituer un premier parc de matériel événementiel.</li><li>Développer la location de chaises, tables et autres équipements.</li><li>Réinvestir une partie des bénéfices nets dans le matériel.</li><li>Financer progressivement les activités et besoins logistiques.</li><li>Constituer une réserve affectée à un futur local.</li><li>Garantir une gestion documentée, vérifiable et transparente.</li></ul>
         </section>
         <section class="development-section" id="dev-section-2">
           <h2>2. Les cinq grands axes du projet</h2>
