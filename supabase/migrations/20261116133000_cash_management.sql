@@ -369,10 +369,14 @@ begin
   if old.status <> 'paid' and new.status='paid' then
     insert into public.cash_movements(fund_id,movement_type,amount,movement_date,category,description,contribution_id,created_by)
     values (v_fund,'income',new.amount,new.payment_date,new.category,'Cotisation membre',new.id,auth.uid());
-  elsif old.status='paid' and new.status <> 'paid' then
+  elsif old.status='paid' and new.status <> 'paid' and exists (
+    select 1 from public.cash_movements where contribution_id=new.id and movement_type='income'
+  ) then
     insert into public.cash_movements(fund_id,movement_type,amount,movement_date,category,description,contribution_id,created_by)
     values (v_fund,'adjustment_out',old.amount,current_date,new.category,'Annulation/correction cotisation #'||new.id,new.id,auth.uid());
-  elsif old.status='paid' and new.status='paid' and old.amount <> new.amount then
+  elsif old.status='paid' and new.status='paid' and old.amount <> new.amount and exists (
+    select 1 from public.cash_movements where contribution_id=new.id and movement_type='income'
+  ) then
     if new.amount > old.amount then
       insert into public.cash_movements(fund_id,movement_type,amount,movement_date,category,description,contribution_id,created_by)
       values (v_fund,'adjustment_in',new.amount-old.amount,current_date,new.category,'Correction montant cotisation #'||new.id,new.id,auth.uid());
