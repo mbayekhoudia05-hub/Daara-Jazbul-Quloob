@@ -15,7 +15,9 @@
   function lockUI() {
     if(ownerIsSignedIn()) return;
     $('privateDevelopmentProjectNav')?.classList.add('hidden');
+    $('privateDevelopmentAlternativeProjectNav')?.classList.add('hidden');
     $('privateDevelopmentProject')?.classList.add('hidden');
+    $('privateDevelopmentAlternativeProject')?.classList.add('hidden');
   }
 
   function buildMonthlyProjection(p, participantsOverride) {
@@ -283,6 +285,7 @@
     const rentalCosts=completedRentals.reduce((s,x)=>s+Number(x.costs||0),0);
     const rentalNet=rentalGross-rentalCosts;
     const content=$('privateDevelopmentProjectContent');
+    const alternativeContent=$('privateDevelopmentAlternativeProjectContent');
     content.innerHTML=`
       <div class="development-print-actions">
         <p class="development-confidential-note">🔒 Dossier personnel — accès réservé à ton compte. Ne pas partager ni publier ce document.</p>
@@ -447,7 +450,9 @@
 
     const originalCover=content.querySelector('.development-cover');
     const originalDocument=content.querySelector('.development-document');
-    if(originalCover&&originalDocument&&!content.querySelector('.development-alternative-project')){
+    originalDocument?.querySelector('#dev-section-14')?.remove();
+    originalDocument?.querySelector('.development-toc-alternative')?.remove();
+    if(originalCover&&originalDocument&&alternativeContent&&!alternativeContent.querySelector('.development-alternative-project')){
       const alternative=document.createElement('div');
       alternative.className='development-alternative-project';
       const cover=originalCover.cloneNode(true);
@@ -470,13 +475,18 @@
       alternative.appendChild(cover);
       alternative.appendChild(copy);
       const label=document.createElement('div');label.className='development-document-heading';label.innerHTML='<span>DEUXIÈME PROPOSITION — OPTION ALTERNATIVE</span><h2>Projet complet financé par une cotisation dominicale</h2><p>Copie du projet principal avec une seule modification : 500 FCFA chaque dimanche à la place de 500 FCFA par mois.</p>';
-      content.appendChild(label);
-      content.appendChild(alternative);
+      alternativeContent.innerHTML='';
+      const printActions=document.createElement('div');
+      printActions.className='development-print-actions';
+      printActions.innerHTML='<button class="primary" type="button" id="developmentAlternativePrintBtn">🖨️ Imprimer le projet alternatif / Enregistrer en PDF</button>';
+      alternativeContent.appendChild(printActions);
+      alternativeContent.appendChild(label);
+      alternativeContent.appendChild(alternative);
       prepareDevelopmentTablesForMobile();
     }
 
-    function printDevelopmentProject(){
-      const source=$('privateDevelopmentProject');
+    function printDevelopmentProject(sourceId='privateDevelopmentProject'){
+      const source=$(sourceId);
       if(!source)return;
       const printWindow=window.open('','_blank');
       if(!printWindow){
@@ -485,17 +495,19 @@
       }
       const project=source.cloneNode(true);
       project.classList.remove('hidden');
+      project.querySelectorAll('.head').forEach(el=>el.remove());
       project.querySelectorAll('.development-print-actions').forEach(el=>el.remove());
       const styles=[...document.querySelectorAll('link[rel="stylesheet"]')]
         .map(link=>'<link rel="stylesheet" href="'+link.href+'">').join('');
       printWindow.document.open();
-      printWindow.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projet de développement — Daara Jazbul Quluub</title>'+styles+'<style>@page{size:A4 portrait;margin:10mm}html,body{margin:0!important;padding:0!important;background:#fff!important}body> :not(main){display:none!important}main#mainContent{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}#privateDevelopmentProject{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}#privateDevelopmentProject>.head,.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}</style></head><body><main id="mainContent"></main></body></html>');
+      printWindow.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projet Daara Jazbul Quluub</title>'+styles+'<style>@page{size:A4 portrait;margin:10mm}html,body{margin:0!important;padding:0!important;background:#fff!important}body> :not(main){display:none!important}main#mainContent{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}.section{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}.development-print-actions,.development-section form,.development-section [data-ledger-remove],.development-section [data-inventory-remove],.development-section [data-rental-remove],.development-section #devLedgerRows,.development-section #devInventoryRows,.development-section #devRentalRows{display:none!important}</style></head><body><main id="mainContent"></main></body></html>');
       printWindow.document.close();
       printWindow.document.getElementById('mainContent').appendChild(project);
       printWindow.addEventListener('load',()=>setTimeout(()=>{printWindow.focus();printWindow.print();},700),{once:true});
     }
     $('developmentPrintBtn')?.addEventListener('click',printDevelopmentProject);
-    $('developmentPrintBtn2')?.addEventListener('click',printDevelopmentProject);
+    $('developmentPrintBtn2')?.addEventListener('click',()=>printDevelopmentProject('privateDevelopmentProject'));
+    $('developmentAlternativePrintBtn')?.addEventListener('click',()=>printDevelopmentProject('privateDevelopmentAlternativeProject'));
     renderRows();
   }
   function renderRows() {
