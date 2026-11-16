@@ -17,6 +17,131 @@
     $('privateDevelopmentProjectNav')?.classList.add('hidden');
     $('privateDevelopmentProject')?.classList.add('hidden');
   }
+
+  function buildMonthlyProjection(p) {
+    const cfg = p.financialPlan || {};
+    const participants = Number(cfg.participants || 40);
+    const monthlyContribution = Number(cfg.monthlyContribution || 500);
+    const monthlyDonation = Number(cfg.monthlyDonationTarget || 200000);
+    const donationMonths = Number(cfg.donationMonths || 5);
+    const soundBudget = Number(cfg.soundSystemBudget || 1000000);
+    const sequence = Array.isArray(cfg.equipmentSequence) ? cfg.equipmentSequence : [];
+    let balance = 0, donationCollected = 0, soundPurchased = false, nextItem = 0;
+    const rows = [], purchaseDates = [];
+    for (let i=0;i<60;i++) {
+      const year = 2027 + Math.floor(i/12), month = (i%12)+1;
+      const days = new Date(year, month, 0).getDate();
+      let lastSunday = 0, thursdays = 0, paidSundays = 0;
+      for(let d=1;d<=days;d++) if(new Date(year,month-1,d).getDay()===0) lastSunday=d;
+      for(let d=1;d<=days;d++) {
+        const weekday = new Date(year,month-1,d).getDay();
+        if(weekday===4) thursdays++;
+        if(weekday===0 && d!==lastSunday) paidSundays++;
+      }
+      const opening = balance;
+      const contributions = participants * monthlyContribution;
+      const donations = i < donationMonths ? monthlyDonation : 0;
+      donationCollected += donations;
+      balance += contributions + donations;
+      const soundIncome = soundPurchased ? thursdays*Number(cfg.thursdayRentalFee||2500)+paidSundays*Number(cfg.sundayRentalFee||3500) : 0;
+      balance += soundIncome;
+      const purchases = [];
+      if(!soundPurchased && donationCollected >= soundBudget) {
+        balance -= soundBudget;
+        soundPurchased = true;
+        purchases.push({name:'Sonorisation complète — enveloppe budgétaire',amount:soundBudget});
+        purchaseDates.push({name:'Sonorisation',year,month,amount:soundBudget});
+      }
+      while(soundPurchased && nextItem < sequence.length && balance >= Number(sequence[nextItem].total||0)) {
+        const item=sequence[nextItem++];
+        balance -= Number(item.total||0);
+        purchases.push({name:item.name,amount:Number(item.total||0)});
+        purchaseDates.push({name:item.name,year,month,amount:Number(item.total||0)});
+      }
+      let objective;
+      if(i===0) objective='Lancer la collecte spéciale : 200 000 F de dons visés ; encaisser les mensualités ; obtenir les devis de sonorisation.';
+      else if(i<4) objective='Atteindre 200 000 F de dons supplémentaires ; suivre les promesses et encaissements ; poursuivre les cotisations.';
+      else if(i===4) objective='Atteindre 1 000 000 F de collecte spéciale, contrôler les devis et acheter la sonorisation uniquement si le million est encaissé.';
+      else objective='Encaisser les cotisations ; enregistrer les locations réellement payées ; entretenir le matériel et alimenter le prochain achat dans l’ordre prévu.';
+      if(purchases.length) objective += ' Achat prévu ce mois : '+purchases.map(x=>x.name).join(', ')+'.';
+      rows.push({year,month,opening,contributions,donations,thursdays,paidSundays,soundIncome,purchases,closing:balance,objective});
+    }
+    return {rows,purchaseDates,participants,monthlyContribution,monthlyDonation,soundBudget};
+  }
+  function renderFinancialRoadmap(p) {
+    const cfg=p.financialPlan || {};
+    const projection=buildMonthlyProjection(p);
+    const fmtDate=x=>String(x.month).padStart(2,'0')+'/'+x.year;
+    const purchases=projection.purchaseDates;
+    const purchaseRows=purchases.length?purchases.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${fmtDate(x)}</td><td>${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="3">Aucun achat atteint dans la simulation.</td></tr>';
+    const monthlyRows=projection.rows.map((x,i)=>`<tr><td>${String(x.month).padStart(2,'0')}/${x.year}</td><td>${money(x.contributions)}</td><td>${money(x.donations)}</td><td>${money(x.soundIncome)}</td><td>${x.thursdays} / ${x.paidSundays}</td><td>${x.purchases.length?x.purchases.map(y=>escapeHtml(y.name)+' : '+money(y.amount)).join('<br>'):'—'}</td><td>${money(x.closing)}</td><td>${escapeHtml(x.objective)}</td></tr>`).join('');
+    const sequenceRows=(cfg.equipmentSequence||[]).map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.quantityLabel||'—')}</td><td>${money(x.unitPrice||0)}</td><td>${money(x.total||0)}</td><td>${escapeHtml(x.priceNote||'Prix indicatif à confirmer par devis')}</td></tr>`).join('');
+    const annualRows=[2027,2028,2029,2030,2031].map(y=>{
+      const rows=projection.rows.filter(x=>x.year===y);
+      const contrib=rows.reduce((a,x)=>a+x.contributions,0), dons=rows.reduce((a,x)=>a+x.donations,0), sound=rows.reduce((a,x)=>a+x.soundIncome,0);
+      const bought=rows.flatMap(x=>x.purchases).map(x=>x.name);
+      return `<tr><td>${y}</td><td>${money(contrib)}</td><td>${money(dons)}</td><td>${money(sound)}</td><td>${bought.length?escapeHtml(bought.join(', ')):'Financement et suivi'}</td></tr>`;
+    }).join('');
+    return `
+      <section class="development-section">
+        <h2>3. Nouvelle stratégie : sonorisation d’abord</h2>
+        <p>Le projet démarre le <strong>1er janvier 2027</strong>. La première priorité est de réunir <strong>1 000 000 FCFA en cinq mois</strong> auprès des parents des membres, des proches et des personnes de bonne volonté. L’objectif de collecte est de 200 000 FCFA par mois de janvier à mai 2027.</p>
+        <p>Les mensualités volontaires des membres, fixées à 500 FCFA par personne et par mois, sont cumulées en parallèle. La simulation principale retient 40 participants, soit 20 000 FCFA par mois. Les mensualités ne sont pas confondues avec les dons affectés à l’achat de la sonorisation.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres)</th></tr></thead><tbody>
+          ${Array.from({length:5},(_,i)=>`<tr><td>${['Janvier','Février','Mars','Avril','Mai'][i]} 2027</td><td>${money(200000)}</td><td>${money((i+1)*200000)}</td><td>${money((i+1)*20000)}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p><strong>Échéance de collecte :</strong> 31 mai 2027. L’achat de la sonorisation n’est autorisé qu’après encaissement vérifié du million, comparaison d’au moins trois devis, contrôle du matériel et validation des responsables.</p>
+        <h3>Enveloppe de sonorisation : 1 000 000 FCFA</h3>
+        <p>Cette somme est un budget maximal à réunir, pas un devis fournisseur déjà accepté. Les annonces consultées à Dakar présentent notamment des packs complets autour de 515 000 FCFA et 760 000 FCFA selon les configurations. Le solde de l’enveloppe pourra couvrir, après devis, les accessoires manquants, câbles, protections, transport, installation et réserve initiale de maintenance. Aucun reliquat ne sera dépensé sans justificatif.</p>
+        <h3>Recettes prévisionnelles après acquisition</h3>
+        <ul><li>Chaque jeudi d’utilisation payante : 2 500 FCFA.</li><li>Chaque dimanche d’utilisation payante : 3 500 FCFA.</li><li>Le dernier dimanche de chaque mois : activité au siège, sans encaissement de location.</li></ul>
+        <p>La simulation compte les jeudis et dimanches réellement présents dans chaque mois, à partir de juin 2027. Elle suppose que chaque activité payante a lieu et que le paiement est encaissé. Le revenu brut annuel de référence est d’environ 270 000 FCFA sur une année complète. Les recettes de location des chaises ne sont pas intégrées au calcul, car la fréquence des locations n’a pas encore été définie.</p>
+      </section>
+      <section class="development-section">
+        <h2>4. Matériel à acquérir : quantités et prix unitaires</h2>
+        <p>Les prix ci-dessous sont des bases de travail. Les prix des chaises reprennent les estimations déjà retenues dans le projet ; les offres actuellement visibles à Dakar doivent être comparées avant achat. Les bâches et tables sont basées sur des annonces de vente consultées. Tous les montants restent à confirmer par devis écrits, disponibilité et frais de livraison.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Matériel / étape</th><th>Quantité</th><th>Prix unitaire estimé</th><th>Enveloppe</th><th>Précision</th></tr></thead><tbody>
+          <tr><td>Sonorisation complète</td><td>1 lot</td><td>—</td><td>${money(1000000)}</td><td>Budget plafond, configuration à choisir sur devis</td></tr>
+          ${sequenceRows}
+        </tbody></table></div>
+        <p><strong>Chaises — phase 1 :</strong> 30 VIP à 15 000 F et 60 plastiques à 7 000 F = 870 000 F, plus provision de 10 % (87 000 F), soit 957 000 F.</p>
+        <p><strong>Chaises — phase 2 :</strong> 20 VIP à 15 000 F et 40 plastiques à 7 000 F = 580 000 F, plus provision de 10 % (58 000 F), soit 638 000 F. Total visé : 50 VIP et 100 plastiques.</p>
+        <p>La bâche 4×5 m ouverte est estimée à 270 000 F ; la bâche 8×5 m ouverte à 450 000 F. Les tables pliantes sont estimées à 30 000 F l’unité, quantité initiale de quatre. Ces montants ne constituent pas des commandes.</p>
+        <h3>Sources de prix consultées</h3>
+        <ul>
+          <li><a href="https://www.dakarvente.com/fr/annonce/vente-de-baches-sur-mesure-chaises-et-packs-pour-vos-evenements" target="_blank" rel="noopener">DakarVente — bâches et chaises</a> : bâche 4×5 ouverte 270 000 F ; 8×5 ouverte 450 000 F ; prix affichés pour chaises VIP et plastiques.</li>
+          <li><a href="https://www.senemarket.sn/public/vente-de-chaises-de-qualite/19597" target="_blank" rel="noopener">SeneMarket — chaises à Dakar</a> : VIP 1re qualité 16 500 F, VIP 2e qualité 13 000 F, plastique 6 500 F.</li>
+          <li><a href="https://dakarvente.com/fr/annonce/table-pliante-multi-usage" target="_blank" rel="noopener">DakarVente — table pliante</a> : 30 000 F à l’unité, prix de détail affiché.</li>
+          <li><a href="https://www.senemarket.sn/public/table-rectangulaire-pliable-a-vendre/13368" target="_blank" rel="noopener">SeneMarket — table pliante 8 personnes</a> : annonce à 55 000 F, à comparer selon modèle et qualité.</li>
+        </ul>
+      </section>
+      <section class="development-section">
+        <h2>5. Règles de cumul et d’achat</h2>
+        <ol>
+          <li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>
+          <li>Les mensualités des membres sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
+          <li>À partir de juin 2027, les recettes de location de sonorisation sont ajoutées au cumul disponible, après encaissement effectif.</li>
+          <li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 4×5, bâche 8×5, puis tables et autres équipements.</li>
+          <li>Une étape suivante ne peut pas être achetée avant que l’étape précédente soit financée intégralement.</li>
+          <li>Les frais de réparation, transport, entretien et autres dépenses réelles doivent être déduits avant de confirmer un achat.</li>
+          <li>Les transferts internes vers la ligne analytique du projet ne sont jamais comptés comme une nouvelle recette de la Caisse générale.</li>
+        </ol>
+        <p class="development-note">Les dates calculées sont des dates théoriques de fin de mois, sur la base de 40 membres payant chaque mois, d’une collecte de 200 000 F pendant cinq mois et de toutes les locations de sonorisation prévues effectivement encaissées. Les charges d’exploitation ne sont pas encore chiffrées : les dates réelles peuvent donc être plus tardives.</p>
+      </section>
+      <section class="development-section">
+        <h2>6. Dates prévisionnelles d’achat</h2>
+        <div class="member-table-wrap"><table><thead><tr><th>Projet / achat</th><th>Mois théorique</th><th>Enveloppe</th></tr></thead><tbody>${purchaseRows}</tbody></table></div>
+        <p>Si une recette n’est pas encaissée, si le nombre de participants diminue ou si des frais sont engagés, l’achat est reporté au mois où le solde réel atteint le seuil. Les dates ne sont pas des engagements fournisseurs.</p>
+        <h3>Objectifs annuels de suivi</h3>
+        <div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Recettes brutes de sonorisation</th><th>Jalon principal</th></tr></thead><tbody>${annualRows}</tbody></table></div>
+      </section>
+      <section class="development-section">
+        <h2>7. Calendrier détaillé des 60 mois</h2>
+        <p>Chaque ligne donne l’objectif du mois, les recettes estimées et le cumul disponible après les achats déclenchés en fin de mois. Les recettes de sonorisation sont nulles avant l’achat prévu en mai 2027.</p>
+        <div class="member-table-wrap"><table><thead><tr><th>Mois</th><th>Cotisations prévues</th><th>Dons prévus</th><th>Sonorisation brute</th><th>Jeudis / dimanches payants</th><th>Achat déclenché</th><th>Solde projeté</th><th>Objectif du mois</th></tr></thead><tbody>${monthlyRows}</tbody></table></div>
+      </section>`;
+  }
+
   function render() {
     if(!data.plan || !ownerIsSignedIn()) return;
     const p=data.plan;
@@ -47,8 +172,8 @@
       <div class="development-document">
         <div class="development-document-heading"><span>DAARA JAZBUL QULUUB · CELLULE DAKAR</span><h2>Sommaire du dossier</h2></div>
         <ol class="development-toc">
-          <li>Présentation, vision et objectifs</li><li>Axes de développement</li><li>Activité prioritaire : location de matériel</li>
-          <li>Plan de financement et objectifs annuels</li><li>Budget d’affectation prévisionnel</li><li>Calendrier de réalisation sur cinq ans</li>
+          <li>Présentation, vision et objectifs</li><li>Axes de développement</li><li>Priorité : sonorisation, puis chaises, bâches, tentes et tables</li>
+          <li>Plan de financement et objectifs annuels</li><li>Budget détaillé du matériel</li><li>Calendrier financier mensuel sur 60 mois</li>
           <li>Plan de lancement des 90 premiers jours</li><li>Gouvernance et responsabilités</li><li>Règles financières et de contrôle</li>
           <li>Indicateurs de réussite et risques</li><li>Registre des locations et inventaire</li><li>Validation du projet</li>
         </ol>
@@ -61,54 +186,13 @@
         </section>
         <section class="development-section">
           <h2>2. Axes de développement</h2>
-          <h3>Axe 1 — Équipements du Dahira</h3><p>Acquérir progressivement chaises, tables, tentes, bâches, sonorisation, microphones, matériel audiovisuel, informatique, rangement et transport. Le matériel du Dahira reste prioritaire pour ses propres activités.</p>
+          <h3>Axe 1 — Équipements du Dahira</h3><p>Acquérir d’abord une sonorisation pour les activités hebdomadaires et la location, puis les chaises, bâches et tentes, les tables et les équipements complémentaires. Le matériel du Dahira reste prioritaire pour ses propres activités.</p>
           <h3>Axe 2 — Activités génératrices de revenus</h3><p>Commencer par la location de matériel événementiel. Après évaluation de la demande et des résultats, étudier les prestations audiovisuelles, la location de sonorisation et d’autres services compatibles avec les capacités du Dahira.</p>
           <h3>Axe 3 — Activités et événements</h3><p>Soutenir progressivement les rassemblements, événements religieux et culturels, déplacements, activités éducatives et besoins logistiques, selon le budget annuel approuvé.</p>
           <h3>Axe 4 — Futur local</h3><p>Constituer une réserve dédiée, réaliser une étude des besoins, comparer les options de location durable, acquisition ou construction, puis vérifier les aspects juridiques, fonciers et techniques avant tout engagement.</p>
           <h3>Axe 5 — Réserve et maintenance</h3><p>Conserver une réserve de sécurité pour réparations, renouvellement du matériel et imprévus, sans l’utiliser sans autorisation.</p>
         </section>
-        <section class="development-section">
-          <h2>3. Activité prioritaire : location de matériel</h2>
-          <p>Le Dahira constitue un parc de matériel utilisable pour ses propres activités et louable à des tiers lorsqu’il est disponible. Cette activité doit réduire certaines dépenses de location du Dahira et générer des bénéfices nets réinvestissables.</p>
-          <h3>Premier investissement : parc de chaises</h3>
-          <div class="member-table-wrap"><table><thead><tr><th>Équipement</th><th>Quantité visée</th><th>Prix unitaire communiqué</th><th>Coût total</th><th>Tarif de location unitaire</th><th>Recette si tout le lot est loué une fois</th></tr></thead><tbody><tr><td>Chaise VIP</td><td>50</td><td>15 000 FCFA</td><td>750 000 FCFA</td><td>500 FCFA</td><td>25 000 FCFA</td></tr><tr><td>Chaise plastique</td><td>100</td><td>7 000 FCFA</td><td>700 000 FCFA</td><td>100 FCFA</td><td>10 000 FCFA</td></tr><tr><th>Total</th><th>150 chaises</th><th>—</th><th>1 450 000 FCFA</th><th>—</th><th>35 000 FCFA brut</th></tr></tbody></table></div>
-          <p><strong>Budget d’achat des 150 chaises :</strong> 1 450 000 FCFA. <strong>Provision de sécurité de 10 % :</strong> 145 000 FCFA. <strong>Enveloppe à réunir avant achat complet :</strong> 1 595 000 FCFA. Cette provision n’est pas un prix fournisseur : elle ne sera dépensée que sur justificatif et autorisation.</p>
-          <p>Les prix unitaires ci-dessus sont ceux communiqués par la porteuse du projet après sa recherche. Ils restent à confirmer par des devis écrits récents avant la commande. Le stockage est prévu au siège du Dahira.</p>
-          <h3>Acquisition en deux étapes pour ne pas bloquer le projet</h3>
-          <div class="member-table-wrap"><table><thead><tr><th>Étape</th><th>Quantités</th><th>Achat</th><th>Provision 10 %</th><th>Enveloppe</th><th>Recette brute par location complète du lot</th></tr></thead><tbody><tr><td>Phase 1 — lancement</td><td>30 VIP + 60 plastiques</td><td>870 000 F</td><td>87 000 F</td><td>957 000 F</td><td>21 000 F</td></tr><tr><td>Phase 2 — complément</td><td>20 VIP + 40 plastiques</td><td>580 000 F</td><td>58 000 F</td><td>638 000 F</td><td>14 000 F</td></tr><tr><th>Total</th><th>50 VIP + 100 plastiques</th><th>1 450 000 F</th><th>145 000 F</th><th>1 595 000 F</th><th>35 000 F</th></tr></tbody></table></div>
-          <p>La location de la totalité des 150 chaises au tarif indiqué produirait 35 000 FCFA de chiffre d’affaires brut par location complète, avant transport, manutention, entretien, casse et réparations. Ce n’est pas un bénéfice net.</p>
-          <h3>Ordre d’acquisition ultérieur</h3><ol><li>Tables pliantes et accessoires de protection.</li><li>Tentes et bâches après validation de la demande.</li><li>Sonorisation et microphones lorsque l’entretien et la gestion sont maîtrisés.</li><li>Matériel audiovisuel et logistique complémentaire selon rentabilité.</li></ol>
-          <h3>Procédure de chaque location</h3><ol><li>Recevoir la demande et vérifier le calendrier de disponibilité.</li><li>Confirmer les quantités, le tarif, le transport, la caution éventuelle et les conditions.</li><li>Enregistrer le client, les dates, le matériel et le montant convenu.</li><li>Faire signer ou confirmer une fiche de sortie avec l’état du matériel.</li><li>Contrôler le matériel au retour et consigner pertes, casse ou réparations.</li><li>Enregistrer séparément l’encaissement et les charges réellement payées.</li><li>Calculer le bénéfice net après déduction des coûts.</li></ol>
-          <p><strong>Principe :</strong> le chiffre d’affaires d’une location n’est pas le bénéfice. Transport, manutention, entretien, casse et réparations doivent être pris en compte.</p>
-        </section>
-        <section class="development-section">
-          <h2>4. Plan de financement et objectifs annuels</h2>
-          <h3>Contributions volontaires</h3><p>Hypothèse centrale : 40 participants × 500 FCFA par mois = 20 000 FCFA par mois, 240 000 FCFA par an et 1 200 000 FCFA sur cinq ans. Avec 30 participants, le total serait 900 000 FCFA ; avec 50 participants, 1 500 000 FCFA. La participation reste volontaire et distincte des cotisations ordinaires.</p>
-          <h3>Objectif financier et capacité réelle de démarrage</h3><p>Le premier parc de 150 chaises représente 1 450 000 FCFA d’achat, ou 1 595 000 FCFA avec une provision de 10 %. Avec 40 participants réguliers, les contributions rapportent 240 000 FCFA par an : elles seules ne suffisent donc pas à financer rapidement le premier achat. Il faut compléter par des dons, collectes et soutiens extérieurs. La première phase peut commencer dès que 957 000 FCFA sont effectivement disponibles et réservés, sans utiliser les fonds nécessaires au fonctionnement courant.</p>
-          <p>Au tarif annoncé, la location simultanée de 50 chaises VIP et 100 chaises plastiques rapporterait 35 000 FCFA brut par location complète. Les charges réelles seront déduites avant de retenir un bénéfice net.</p>
-          <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Mensuel</th><th>Annuel</th><th>Sur 5 ans</th></tr></thead><tbody><tr><td>30</td><td>15 000 F</td><td>180 000 F</td><td>900 000 F</td></tr><tr><td>40</td><td>20 000 F</td><td>240 000 F</td><td>1 200 000 F</td></tr><tr><td>50</td><td>25 000 F</td><td>300 000 F</td><td>1 500 000 F</td></tr></tbody></table></div>
-          <h3>Sources de financement visées</h3><div class="member-table-wrap"><table><thead><tr><th>Source</th><th>Objectif sur 5 ans</th></tr></thead><tbody>${p.funding.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${money(x.amount)}</td></tr>`).join('')}<tr><th>Total</th><th>${money(p.funding.reduce((s,x)=>s+Number(x.amount||0),0))}</th></tr></tbody></table></div>
-          <h3>Objectifs annuels de mobilisation</h3><div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Objectif annuel</th><th>Cumul</th><th>Étape principale</th></tr></thead><tbody>${p.annualTargets.map(x=>`<tr><td>${x.year}</td><td>${money(x.target)}</td><td>${money(x.cumulative)}</td><td>${escapeHtml(x.stage)}</td></tr>`).join('')}</tbody></table></div>
-          <p class="development-note">Les objectifs annuels sont des cibles de mobilisation combinant contributions, dons, collectes et bénéfices nets. Ils ne sont pas garantis. Les bénéfices de location sont calculés après charges et ne doivent pas être confondus avec le chiffre d’affaires.</p>
-        </section>
-        <section class="development-section">
-          <h2>5. Budget d’affectation prévisionnel</h2>
-          <div class="member-table-wrap"><table><thead><tr><th>Affectation</th><th>Budget sur 5 ans</th></tr></thead><tbody>${p.allocations.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${money(x.amount)}</td></tr>`).join('')}<tr><th>Total</th><th>${money(p.allocations.reduce((s,x)=>s+Number(x.amount||0),0))}</th></tr></tbody></table></div>
-          <p>Les achats sont échelonnés selon les devis, les besoins réels et les fonds disponibles. Les montants affectés au futur local sont une réserve à constituer, et non une promesse d’achat immobilier.</p>
-        </section>
-        <section class="development-section">
-          <h2>6. Calendrier de réalisation 2027–2031</h2>
-          ${p.annualTargets.map(x=>`<div class="development-year"><h3>${x.year} — ${money(x.target)}</h3><p>${escapeHtml(x.stage)}</p></div>`).join('')}
-        </section>
-        <section class="development-section">
-          <h2>7. Plan de lancement des 90 premiers jours</h2>
-          <div class="development-year"><h3>16 novembre – 15 décembre 2026 — Préparation et validation</h3><p>Présenter le projet aux responsables, faire approuver le principe des contributions volontaires et de la location, désigner les responsables de la Commission Organisation et valider les procédures. Aucun achat à ce stade.</p></div>
-          <div class="development-year"><h3>16 décembre 2026 – 31 janvier 2027 — Mobilisation et devis</h3><p>Recueillir les engagements volontaires, lancer les dons et collectes, obtenir au moins trois devis écrits pour les chaises, vérifier qualité, livraison, délais et garanties. Confirmer le stockage au siège du Dahira.</p></div>
-          <div class="development-year"><h3>Février – mars 2027 — Constitution de la première enveloppe</h3><p>Constituer et tracer les fonds. La première commande ne sera autorisée que lorsque 957 000 FCFA sont réellement disponibles pour financer 30 chaises VIP et 60 chaises plastiques, provision de 10 % comprise. Si le seuil n’est pas atteint, la collecte continue et la date est reportée.</p></div>
-          <div class="development-year"><h3>Avril 2027 — Décision de lancement conditionnelle</h3><p>Réunion de contrôle : vérifier le solde disponible, les devis, le stockage, le registre, les tarifs, les personnes responsables et les imprévus. Si toutes les conditions sont remplies, les responsables approuvent l’achat de la phase 1. Sinon, report au prochain contrôle trimestriel.</p></div>
-          <div class="development-year"><h3>Mai – juin 2027 — Première mise en location, si achat réalisé</h3><p>Inventorier et identifier les chaises, établir les fiches de sortie/retour, lancer les locations tests et produire un premier bilan. La phase 2 ne sera décidée qu’après observation de la demande et constitution de l’enveloppe de 638 000 FCFA.</p></div>
-          <p><strong>Condition de prudence :</strong> ne pas engager d’achat sur la base de recettes espérées. L’achat doit être couvert par des fonds réellement disponibles et autorisés.</p>
-        </section>
+        ${renderFinancialRoadmap(p)}
         <section class="development-section">
           <h2>8. Gouvernance et responsabilités</h2>
           <ul>${p.governance.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>
