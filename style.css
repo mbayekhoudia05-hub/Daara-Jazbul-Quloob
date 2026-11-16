@@ -2222,3 +2222,8 @@ body.sidebar-collapsed .app-sidebar nav .sidebar-subgroup{margin-left:0;padding-
  .development-summary,.development-launch-steps article{break-inside:avoid;page-break-inside:avoid}
  .development-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+.development-funding-alert{margin:18px 0;padding:17px 19px;border:1px solid #e5c98e;border-left:5px solid #b18b42;border-radius:10px;background:#fffaf0;color:#51452e}
+.development-funding-alert h3{margin:0 0 8px;color:#74551b}
+.development-funding-alert p{margin:8px 0;line-height:1.6}
+@media print{.development-funding-alert{break-inside:avoid;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
