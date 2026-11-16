@@ -62,7 +62,7 @@
       if(i===0) objective='Lancer la collecte spéciale : 200 000 F de dons visés ; encaisser les mensualités ; obtenir les devis de sonorisation.';
       else if(i<4) objective='Atteindre 200 000 F de dons supplémentaires ; suivre les promesses et encaissements ; poursuivre les cotisations.';
       else if(i===4) objective='Atteindre 1 000 000 F de collecte spéciale, contrôler les devis et acheter la sonorisation uniquement si le million est encaissé.';
-      else objective='Encaisser les cotisations ; enregistrer les locations réellement payées ; entretenir le matériel et alimenter le prochain achat dans l’ordre prévu.';
+      else objective='Encaisser '+money(contributions)+' de cotisations ; viser '+money(soundIncome)+' de locations sonorisation ('+thursdays+' jeudis × 2 500 F et '+paidSundays+' dimanches × 3 500 F) ; déduire les charges réelles et alimenter le prochain achat dans l’ordre prévu.';
       if(purchases.length) objective += ' Achat prévu ce mois : '+purchases.map(x=>x.name).join(', ')+'.';
       rows.push({year,month,opening,contributions,donations,thursdays,paidSundays,soundIncome,purchases,closing:balance,objective});
     }
@@ -71,7 +71,7 @@
   function renderFinancialRoadmap(p) {
     const cfg=p.financialPlan || {};
     const projection=buildMonthlyProjection(p);
-    const fmtDate=x=>String(x.month).padStart(2,'0')+'/'+x.year;
+    const fmtDate=x=>String(new Date(x.year,x.month,0).getDate()).padStart(2,'0')+'/'+String(x.month).padStart(2,'0')+'/'+x.year;
     const purchases=projection.purchaseDates;
     const purchaseRows=purchases.length?purchases.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${fmtDate(x)}</td><td>${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="3">Aucun achat atteint dans la simulation.</td></tr>';
     const scenarioRows=[30,40,50].map(n=>{
