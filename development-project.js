@@ -73,8 +73,6 @@
     const projection=buildMonthlyProjection(p);
     const fmtDate=x=>String(new Date(x.year,x.month,0).getDate()).padStart(2,'0')+'/'+String(x.month).padStart(2,'0')+'/'+x.year;
     const purchases=projection.purchaseDates;
-    const weeklySundays2027_2031=261;
-    const contributionOptionRows=[30,40,50].map(n=>`<tr><td>${n}</td><td>${money(n*500*60)}</td><td>${money(n*500*weeklySundays2027_2031)}</td></tr>`).join('');
     const purchaseRows=purchases.length?purchases.map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${fmtDate(x)}</td><td>${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="3">Aucun achat atteint dans la simulation.</td></tr>';
     const scenarioRows=[30,40,50].map(n=>{
       const q=buildMonthlyProjection(p,n);
@@ -93,11 +91,9 @@
       <section class="development-section" id="dev-section-3">
         <h2>3. Stratégie de financement : la sonorisation en premier</h2>
         <p>Le projet démarre le <strong>1er janvier 2027</strong>. La première priorité est de réunir <strong>1 000 000 FCFA en cinq mois</strong> auprès des parents des membres, des proches et des personnes de bonne volonté. L’objectif de collecte est de 200 000 FCFA par mois de janvier à mai 2027.</p>
-        <h3>Deux options de contribution des membres</h3>
-        <p><strong>Option 1 — 500 FCFA par mois :</strong> chaque participant verse 500 FCFA une fois par mois. C’est l’option utilisée dans les simulations détaillées actuelles.</p>
-        <p><strong>Option 2 — 500 FCFA chaque dimanche :</strong> chaque participant verse 500 FCFA chaque dimanche. Sur la période 2027–2031, le calendrier compte 261 dimanches (y compris les derniers dimanches du mois). Cette option est présentée séparément et ne s’ajoute pas à l’option 1.</p>
-        <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Option 1 : 500 F/mois sur 5 ans</th><th>Option 2 : 500 F/dimanche sur 5 ans</th></tr></thead><tbody>${contributionOptionRows}</tbody></table></div>
-        <p>La collecte spéciale de 1 000 000 FCFA auprès des familles et des personnes de bonne volonté reste distincte des deux options. Les tableaux détaillés de dates et d’achats ci-dessous sont calculés avec l’option 1, jusqu’à ce qu’une option soit officiellement retenue.</p>
+        <h3>Contribution de base retenue pour les simulations</h3>
+        <p><strong>Proposition principale — 500 FCFA par mois :</strong> chaque participant verse 500 FCFA une fois par mois. Cette proposition sert de base aux simulations détaillées, aux dates prévisionnelles et au calendrier d’achats du présent projet. Une proposition alternative, à utiliser uniquement si celle-ci n’est pas suffisamment rentable, est présentée à la toute fin du dossier.</p>
+        <p>La collecte spéciale de 1 000 000 FCFA auprès des familles et des personnes de bonne volonté reste distincte des cotisations des membres. Les tableaux détaillés ci-dessous sont calculés avec la proposition principale de 500 FCFA par mois.</p>
         <div class="member-table-wrap"><table><thead><tr><th>Mois de collecte</th><th>Objectif mensuel</th><th>Cumul des dons</th><th>Cotisations estimées (40 membres, option 1)</th></tr></thead><tbody>
           ${Array.from({length:5},(_,i)=>`<tr><td>${['Janvier','Février','Mars','Avril','Mai'][i]} 2027</td><td>${money(200000)}</td><td>${money((i+1)*200000)}</td><td>${money((i+1)*20000)}</td></tr>`).join('')}
         </tbody></table></div>
@@ -131,7 +127,7 @@
         <h2>5. Comment l’argent est cumulé et utilisé</h2>
         <ol>
           <li>Les dons de janvier à mai 2027 sont affectés à l’objectif sonorisation de 1 000 000 F.</li>
-          <li>Les contributions des membres, selon l’option retenue (500 FCFA par mois ou 500 FCFA chaque dimanche), sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation.</li>
+          <li>Les contributions des membres selon la proposition principale (500 FCFA par mois) sont cumulées à part et servent au financement du matériel suivant après l’achat de la sonorisation. La proposition alternative du dimanche ne pourra remplacer cette base qu’après une décision distincte des responsables.</li>
           <li>À partir de juin 2027, les recettes de location de sonorisation sont ajoutées au cumul disponible, après encaissement effectif.</li>
           <li>L’ordre est obligatoire : chaises phase 1, chaises phase 2, bâche 8×6, bâche 12×7, puis tables et autres équipements.</li>
           <li>Une étape suivante ne peut pas être achetée avant que l’étape précédente soit financée intégralement.</li>
@@ -231,7 +227,7 @@
           <p>Le Daara Jazbul Quluub – Cellule Dakar souhaite renforcer progressivement ses moyens financiers et matériels afin de garantir le bon fonctionnement de ses activités religieuses, éducatives, culturelles et sociales. Le programme vise à constituer un patrimoine utile au Dahira, à développer une activité de location et à préparer des investissements durables.</p>
           <h3>Vision à cinq ans</h3><p>${escapeHtml(p.vision)}</p>
           <h3>Objectif général</h3><p>Le montant de ${money(p.goal)} correspond au budget prévisionnel de la séquence d’équipements décrite dans ce dossier. Il ne constitue ni une somme déjà disponible ni une promesse de recettes. Les activités futures et le projet de local nécessiteront des budgets séparés, qui seront étudiés et validés ultérieurement.</p>
-          <h3>Objectifs spécifiques</h3><ul><li>Mobiliser 30 à 50 participants volontaires selon l’une des deux options : 500 FCFA par mois ou 500 FCFA chaque dimanche.</li><li>Constituer un premier parc de matériel événementiel.</li><li>Développer la location de chaises, tables et autres équipements.</li><li>Réinvestir une partie des bénéfices nets dans le matériel.</li><li>Financer progressivement les activités et besoins logistiques.</li><li>Constituer une réserve affectée à un futur local.</li><li>Garantir une gestion documentée, vérifiable et transparente.</li></ul>
+          <h3>Objectifs spécifiques</h3><ul><li>Mobiliser 30 à 50 participants volontaires autour de la proposition principale de 500 FCFA par mois.</li><li>Constituer un premier parc de matériel événementiel.</li><li>Développer la location de chaises, tables et autres équipements.</li><li>Réinvestir une partie des bénéfices nets dans le matériel.</li><li>Financer progressivement les activités et besoins logistiques.</li><li>Constituer une réserve affectée à un futur local.</li><li>Garantir une gestion documentée, vérifiable et transparente.</li></ul>
         </section>
         <section class="development-section" id="dev-section-2">
           <h2>2. Les cinq grands axes du projet</h2>
@@ -285,6 +281,27 @@
           <h2>13. Validation du projet</h2>
           <p>Projet soumis à l’approbation des responsables et des membres du Daara Jazbul Quluub – Cellule Dakar.</p>
           <div class="development-signatures"><div>Président / Responsable<br><span></span></div><div>Responsable financier<br><span></span></div><div>Secrétaire<br><span></span></div><div>Date et signatures<br><span></span></div></div>
+        </section>
+        <section class="development-section" id="dev-section-14">
+          <h2>14. Proposition alternative — 500 FCFA chaque dimanche</h2>
+          <p><strong>Cette proposition est une solution de remplacement, et non une cotisation supplémentaire.</strong> Elle sera étudiée uniquement si la proposition principale de 500 FCFA par mois ne permet pas d’obtenir une rentabilité suffisante. Elle ne sera appliquée qu’après une décision des responsables du Dahira.</p>
+          <p>Dans cette formule, chaque participant volontaire verse 500 FCFA chaque dimanche, y compris le dernier dimanche du mois. Sur les cinq années 2027–2031, le calendrier compte 261 dimanches. Les sommes ci-dessous sont des prévisions de collecte brute, avant toute dépense.</p>
+          <h3>Projection sur les cinq années selon le nombre de participants</h3>
+          <div class="member-table-wrap"><table><thead><tr><th>Participants</th><th>Collecte par dimanche</th><th>Collecte sur 5 ans (261 dimanches)</th></tr></thead><tbody>
+            <tr><td>30</td><td>${money(30*500)}</td><td>${money(30*500*261)}</td></tr>
+            <tr><td>40</td><td>${money(40*500)}</td><td>${money(40*500*261)}</td></tr>
+            <tr><td>50</td><td>${money(50*500)}</td><td>${money(50*500*261)}</td></tr>
+          </tbody></table></div>
+          <h3>Répartition prévisionnelle par année</h3>
+          <div class="member-table-wrap"><table><thead><tr><th>Année</th><th>Nombre de dimanches</th><th>30 participants</th><th>40 participants</th><th>50 participants</th></tr></thead><tbody>
+            <tr><td>2027</td><td>52</td><td>${money(30*500*52)}</td><td>${money(40*500*52)}</td><td>${money(50*500*52)}</td></tr>
+            <tr><td>2028</td><td>53</td><td>${money(30*500*53)}</td><td>${money(40*500*53)}</td><td>${money(50*500*53)}</td></tr>
+            <tr><td>2029</td><td>52</td><td>${money(30*500*52)}</td><td>${money(40*500*52)}</td><td>${money(50*500*52)}</td></tr>
+            <tr><td>2030</td><td>52</td><td>${money(30*500*52)}</td><td>${money(40*500*52)}</td><td>${money(50*500*52)}</td></tr>
+            <tr><td>2031</td><td>52</td><td>${money(30*500*52)}</td><td>${money(40*500*52)}</td><td>${money(50*500*52)}</td></tr>
+            <tr><th>Total</th><th>261</th><th>${money(30*500*261)}</th><th>${money(40*500*261)}</th><th>${money(50*500*261)}</th></tr>
+          </tbody></table></div>
+          <p class="development-note">Cette simulation alternative est indépendante des tableaux financiers précédents, qui restent calculés avec 500 FCFA par mois. Les dons spéciaux de 1 000 000 FCFA et les recettes de location ne sont pas inclus dans ces montants. Il ne faut jamais additionner les deux formules de cotisation pour un même participant et une même période.</p>
         </section>
         <footer class="development-footer">DAARA JAZBUL QULUUB – CELLULE DAKAR · DOSSIER CONFIDENTIEL · PROGRAMME 2027–2031</footer>
       </div>`;
