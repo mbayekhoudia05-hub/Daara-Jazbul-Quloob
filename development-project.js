@@ -317,7 +317,7 @@
     function prepareDevelopmentTablesForMobile(){
       const tables=content.querySelectorAll('.development-section .member-table-wrap table');
       tables.forEach(table=>{
-        const headers=[...table.querySelectorAll('thead th')].map(cell=>cell.textContent.trim().replace(/\\s+/g,' '));
+        const headers=[...table.querySelectorAll('thead th')].map(cell=>cell.textContent.trim().replace(/\s+/g,' '));
         table.setAttribute('data-responsive-table','true');
         table.querySelectorAll('tbody tr').forEach(row=>{
           [...row.children].forEach((cell,index)=>{
