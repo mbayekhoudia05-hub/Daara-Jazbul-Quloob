@@ -9,7 +9,7 @@
   let ready = false;
   function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
   function notify(id, text, ok=false) { const el=$(id); if(el){el.textContent=text;el.style.color=ok?'#167344':'#b42318';} }
-  function ownerIsSignedIn() { return window.currentUser?.id === OWNER_ID; }
+  function ownerIsSignedIn() { return currentUser?.id === OWNER_ID; }
   function lockUI() {
     const nav=$('privateDevelopmentProjectNav'), section=$('privateDevelopmentProject');
     if(!ownerIsSignedIn()){nav?.classList.add('hidden');section?.classList.add('hidden');}
@@ -25,14 +25,14 @@
   }
   async function save() {
     if(!ownerIsSignedIn()) throw new Error('Accès personnel non autorisé.');
-    const result=await window.sb.from('private_development_projects').upsert({
+    const result=await sb.from('private_development_projects').upsert({
       owner_id:OWNER_ID, project_key:PROJECT_KEY, project_data:data, updated_at:new Date().toISOString()
     },{onConflict:'owner_id,project_key'});
     if(result.error) throw result.error;
   }
   async function load() {
     if(!ownerIsSignedIn()){lockUI();return;}
-    const result=await window.sb.from('private_development_projects').select('project_data').eq('owner_id',OWNER_ID).eq('project_key',PROJECT_KEY).maybeSingle();
+    const result=await sb.from('private_development_projects').select('project_data').eq('owner_id',OWNER_ID).eq('project_key',PROJECT_KEY).maybeSingle();
     if(result.error) throw result.error;
     if(result.data?.project_data) data={ledger:Array.isArray(result.data.project_data.ledger)?result.data.project_data.ledger:[],inventory:Array.isArray(result.data.project_data.inventory)?result.data.project_data.inventory:[]};
     else await save();
