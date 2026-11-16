@@ -201,6 +201,7 @@
           <li><a href="#dev-section-11">Résultats attendus et risques</a></li>
           <li><a href="#dev-section-12">Registre privé de suivi</a></li>
           <li><a href="#dev-section-13">Validation</a></li>
+          <li><a href="#dev-section-14">Proposition alternative : 500 FCFA chaque dimanche</a></li>
         </ol>
         <section class="development-summary">
           <h2>Le projet en quelques minutes</h2>
@@ -305,6 +306,21 @@
         </section>
         <footer class="development-footer">DAARA JAZBUL QULUUB – CELLULE DAKAR · DOSSIER CONFIDENTIEL · PROGRAMME 2027–2031</footer>
       </div>`;
+    function prepareDevelopmentTablesForMobile(){
+      const tables=content.querySelectorAll('.development-section .member-table-wrap table');
+      tables.forEach(table=>{
+        const headers=[...table.querySelectorAll('thead th')].map(cell=>cell.textContent.trim().replace(/\\s+/g,' '));
+        table.setAttribute('data-responsive-table','true');
+        table.querySelectorAll('tbody tr').forEach(row=>{
+          [...row.children].forEach((cell,index)=>{
+            if((cell.tagName==='TD'||cell.tagName==='TH')&&!cell.hasAttribute('colspan')&&headers[index]){
+              cell.setAttribute('data-label',headers[index]);
+            }
+          });
+        });
+      });
+    }
+    prepareDevelopmentTablesForMobile();
     function printDevelopmentProject(){
       const source=$('privateDevelopmentProject');
       if(!source)return;
