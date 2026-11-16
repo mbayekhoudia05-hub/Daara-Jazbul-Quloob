@@ -220,7 +220,6 @@ begin
   if exists (select 1 from public.cash_movements where fund_id = p_fund_id and movement_type = 'opening_balance') then
     raise exception 'Le solde initial de cette caisse est déjà enregistré.';
   end if;
-  if p_amount = 0 then return null; end if;
   insert into public.cash_movements(fund_id,movement_type,amount,movement_date,category,description,created_by)
   values (p_fund_id,'opening_balance',p_amount,p_date,'solde_initial',coalesce(nullif(btrim(p_note),''),'Solde initial de caisse'),auth.uid())
   returning id into v_id;
