@@ -1728,7 +1728,7 @@ function openMemberCardsPrint(members,title,cardsPerPage=9){
    const pageSize=1;
    const sheetClass=pageSize===1?'print-sheet single-card-sheet':'print-sheet';
    const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
-  const stylesheet=new URL('style.css?v=20261105-qr-16-v12',location.href).href;
+  const stylesheet=new URL('style.css?v=20261117-card-print-73x105-v2',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
 @page{size:73mm 105mm;margin:0}
