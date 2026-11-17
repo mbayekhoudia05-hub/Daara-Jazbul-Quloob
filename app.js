@@ -845,7 +845,6 @@ async function setUser(u){
   isFinance=r.data.role==='finance';
   isContentManager=r.data.role==='content_manager';
   setAdminUI();
-  await loadPublicCommissionDirectory();
 
   const linkResult=await sb.rpc('link_my_member_account');
   if(linkResult.error){
@@ -863,7 +862,7 @@ async function setUser(u){
     return;
   }
 
-  if(mr.data && mr.data.commission_id){
+  if(mr.data && mr.data.commission_id && !isAdmin && !isFinance && !isContentManager){
     const commissionResult=await sb.from('commissions')
       .select('name,description,responsible_member_id,successor_member_id')
       .eq('id',mr.data.commission_id)
@@ -898,27 +897,26 @@ async function setUser(u){
   }
 
   if(isAdmin){
-    await loadMembers();
-    await loadGeneralLeadership();
-    await loadCommissions();
-    await loadMembershipRequests();
-    await initPortalAdminModules();
-    await loadContributions();
-    await loadFinanceDashboard();
-    await loadUnpaidTracker();
-    await initPaymentTransactions();
-    await load();
-    updateAdminDashboard();
+    // Afficher immédiatement l'accueil; les données utiles au tableau de bord
+    // se chargent en parallèle. Les autres rubriques restent chargées à l'ouverture.
+    showAdminSection('adminDashboard');
+    void Promise.allSettled([
+      loadMembers(),
+      loadContributions(),
+      loadPaymentTransactions()
+    ]).then(()=>updateAdminDashboard());
   }else if(isContentManager){
     await load();
     await loadAdminGallery();
     showAdminSection('admin');
   }else if(isFinance){
-    await loadContributions();
-    await loadFinanceDashboard();
-    await loadUnpaidTracker();
-    await initPaymentTransactions();
     showAdminSection('financeDashboard');
+    void Promise.allSettled([
+      loadContributions(),
+      loadFinanceDashboard(),
+      loadUnpaidTracker(),
+      initPaymentTransactions()
+    ]);
   }
 }
 async function loadConnectedMemberDashboard(member){
