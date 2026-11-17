@@ -738,8 +738,8 @@ async function init(){
  $('closeMemberFinance').onclick=()=>closeAccessibleModal('memberFinanceModal');
  initPosterGenerator();
  $('printCardBtn').onclick=()=>void printSelectedMemberCard();
- $('printAllMemberCardsBtn')?.addEventListener('click',()=>void printAllMemberCards(9,'printAllMemberCardsBtn'));
- $('printAllMemberCardsOnePerPageBtn')?.addEventListener('click',()=>void printAllMemberCards(1,'printAllMemberCardsOnePerPageBtn'));
+ $('printAllMemberCardsBtn')?.addEventListener('click',()=>void printAllMemberCards(1,'printAllMemberCardsBtn'));
+ 
  $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
@@ -1725,13 +1725,13 @@ function openMemberCardsPrint(members,title,cardsPerPage=9){
  if(!w){alert('Autorise les fenêtres pop-up pour imprimer les cartes.');return;}
  try{
   const cardMarkup=members.map(memberCardPrintMarkup);
-   const pageSize=Math.max(1,Number(cardsPerPage)||9);
+   const pageSize=1;
    const sheetClass=pageSize===1?'print-sheet single-card-sheet':'print-sheet';
    const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
   const stylesheet=new URL('style.css?v=20261105-qr-16-v12',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
-@page{size:A4 portrait;margin:10mm}
+@page{size:73mm 105mm;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;color:#17351f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
 #memberCard{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important}
@@ -1889,6 +1889,37 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
  object-fit:contain!important;image-rendering:pixelated!important;
 }
 
+
+/* Format physique demandé : une carte par page, 73 × 105 mm, sans A4 ni mise à l'échelle. */
+@page{size:73mm 105mm;margin:0}
+html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important;height:auto!important;margin:0!important;padding:0!important;background:#fff!important}
+#memberCard{width:73mm!important;max-width:73mm!important;margin:0!important;padding:0!important}
+.print-sheet,.print-sheet.single-card-sheet{
+ display:block!important;position:relative!important;width:73mm!important;height:105mm!important;
+ min-width:73mm!important;min-height:105mm!important;max-width:73mm!important;max-height:105mm!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;
+ break-after:page!important;page-break-after:always!important;
+}
+.print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}
+#memberCard .print-sheet .member-card{
+ display:block!important;position:relative!important;flex:none!important;
+ width:73mm!important;height:105mm!important;min-width:73mm!important;min-height:105mm!important;
+ max-width:73mm!important;max-height:105mm!important;margin:0!important;padding:0!important;
+ overflow:hidden!important;box-sizing:border-box!important;border:0!important;border-radius:0!important;
+ transform:none!important;aspect-ratio:73/105!important;
+}
+#memberCard .print-sheet .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important}
+#memberCard .print-sheet .card-info h3{font-size:12px!important;line-height:1.15!important}
+#memberCard .print-sheet .card-info p,#memberCard .print-sheet .card-info p b{font-size:8.25px!important;line-height:1.28!important}
+#memberCard .print-sheet .qrcode{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;max-width:16px!important;max-height:16px!important}
+@media screen{
+ body{width:73mm!important;padding:0!important;background:#eee!important}
+ .print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;margin:12px auto!important;box-shadow:0 2px 12px #0002!important}
+}
+@media print{
+ html,body{width:73mm!important;height:auto!important;margin:0!important;padding:0!important}
+ .print-sheet,.print-sheet.single-card-sheet{margin:0!important;box-shadow:none!important}
+}
 </style></head><body><main id="memberCard">${cards}</main><script>
 window.addEventListener('load',()=>{const imgs=[...document.images];Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>setTimeout(()=>window.print(),700))});
 window.addEventListener('afterprint',()=>window.close());
@@ -1916,7 +1947,7 @@ async function printAllMemberCards(cardsPerPage=9,buttonId='printAllMemberCardsB
 }
 async function printSelectedMemberCard(){
  if(!currentCardMember){alert('Aucune carte sélectionnée.');return;}
- openMemberCardsPrint([currentCardMember],'Carte de '+currentCardMember.first_name+' '+currentCardMember.last_name);
+ openMemberCardsPrint([currentCardMember],'Carte de '+currentCardMember.first_name+' '+currentCardMember.last_name,1);
 }
 
 let editingMemberId=null;
