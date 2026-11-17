@@ -1730,7 +1730,7 @@ function openMemberCardsPrint(members,title,cardsPerPage=9){
    const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
   // Impression autonome : ne pas charger style.css, qui impose des formats A4 aux autres impressions.
   w.document.open();
-  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script><style>
 @page{size:73mm 105mm;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;color:#17351f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
@@ -1920,10 +1920,35 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 @page member-card{size:73mm 105mm;margin:0}
 .print-sheet,.print-sheet.single-card-sheet{page:member-card}
 @media print{@page{size:73mm 105mm;margin:0}html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important;margin:0!important;padding:0!important}.print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;min-height:105mm!important;max-height:105mm!important;margin:0!important;break-after:page!important;page-break-after:always!important}#memberCard .print-sheet .member-card{width:73mm!important;height:105mm!important;min-width:73mm!important;min-height:105mm!important;max-width:73mm!important;max-height:105mm!important;transform:none!important}}
-</style></head><body><main id="memberCard">${cards}</main><script>
-window.addEventListener('load',()=>{const imgs=[...document.images];Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>setTimeout(()=>window.print(),700))});
-window.addEventListener('afterprint',()=>window.close());
-<\/script></body></html>`);
+</style></head><body>
+<div class="pdf-toolbar" style="position:sticky;top:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;background:#075b35;color:#fff;font:14px Arial,sans-serif">
+<button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
+<span id="pdfStatus" role="status">Chaque carte sera une page PDF au format exact.</span></div>
+<main id="memberCard">${cards}</main><script>
+document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
+ const button=document.getElementById('downloadCardsPdf'),status=document.getElementById('pdfStatus');
+ button.disabled=true;status.textContent='Préparation du PDF…';
+ try{
+  if(!window.html2canvas||!window.jspdf?.jsPDF)throw new Error('La bibliothèque PDF ne s’est pas chargée. Vérifie la connexion Internet puis réessaie.');
+  const cards=[...document.querySelectorAll('.print-sheet .member-card')];
+  if(!cards.length)throw new Error('Aucune carte trouvée.');
+  const images=[...document.images];
+  await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})})));
+  const PDF=window.jspdf.jsPDF;
+  const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true});
+  for(let index=0;index<cards.length;index++){
+   status.textContent='Création du PDF : carte '+(index+1)+' sur '+cards.length+'…';
+   const canvas=await window.html2canvas(cards[index],{scale:3,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:cards[index].offsetWidth,height:cards[index].offsetHeight});
+   if(index>0)pdf.addPage([73,105],'portrait');
+   pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'FAST');
+  }
+  const safeName=(document.title||'cartes-membres').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
+  pdf.save((safeName||'cartes-membres')+'-73x105mm.pdf');
+  status.textContent='PDF créé : '+cards.length+' page(s) de 73 × 105 mm.';
+ }catch(error){status.textContent='Erreur : '+(error?.message||String(error));}
+ finally{button.disabled=false;}
+});
+<\\/script></body></html>`);
 
   w.document.close();
  }catch(error){w.close();alert('Impossible de préparer l’impression : '+(error?.message||String(error)));}
