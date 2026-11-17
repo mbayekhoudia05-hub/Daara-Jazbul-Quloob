@@ -112,7 +112,7 @@ function showAdminSection(id){
   if(id==='adminGallery')void loadAdminGallery();
   if(id==='adminNotifications')void loadAdminNotifications();
   if(id==='contributions')void loadContributions();
-  if(id==='paymentTransactions')void loadPaymentTransactions();
+  if(id==='paymentTransactions')void initPaymentTransactions();
   if(id==='unpaidMembers')void loadUnpaidTracker();
   if(id==='financeDashboard')void loadFinanceDashboard();
   if(id==='cashManagement')void loadCashManagement();
