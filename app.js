@@ -1948,7 +1948,7 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
  }catch(error){status.textContent='Erreur : '+(error?.message||String(error));}
  finally{button.disabled=false;}
 });
-<\\/script></body></html>`);
+<\/script></body></html>`);
 
   w.document.close();
  }catch(error){w.close();alert('Impossible de préparer l’impression : '+(error?.message||String(error)));}
