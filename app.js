@@ -1933,7 +1933,23 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
   const cards=[...document.querySelectorAll('.print-sheet .member-card')];
   if(!cards.length)throw new Error('Aucune carte trouvée.');
   const images=[...document.images];
-  await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})})));
+  await Promise.all(images.map(async img=>{
+   if(!img.complete)await new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});});
+   if(img.decode)try{await img.decode();}catch{}
+  }));
+  // S'assurer que le QR est entièrement décodé avant la capture haute résolution.
+  for(const qr of document.querySelectorAll('.qrcode')){
+   const qrImage=qr.querySelector('img');
+   if(qrImage){
+    qrImage.style.setProperty('display','block','important');
+    qrImage.style.setProperty('width','100%','important');
+    qrImage.style.setProperty('height','100%','important');
+    qrImage.style.setProperty('max-width','none','important');
+    qrImage.style.setProperty('max-height','none','important');
+    qrImage.style.setProperty('object-fit','fill','important');
+    if(qrImage.decode)try{await qrImage.decode();}catch{}
+   }
+  }
   const PDF=window.jspdf.jsPDF;
   const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true,precision:16});
   for(let index=0;index<cards.length;index++){
