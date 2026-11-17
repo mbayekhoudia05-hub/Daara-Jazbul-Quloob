@@ -738,7 +738,8 @@ async function init(){
  $('closeMemberFinance').onclick=()=>closeAccessibleModal('memberFinanceModal');
  initPosterGenerator();
  $('printCardBtn').onclick=()=>void printSelectedMemberCard();
- $('printAllMemberCardsBtn')?.addEventListener('click',()=>void printAllMemberCards());
+ $('printAllMemberCardsBtn')?.addEventListener('click',()=>void printAllMemberCards(9,'printAllMemberCardsBtn'));
+ $('printAllMemberCardsOnePerPageBtn')?.addEventListener('click',()=>void printAllMemberCards(1,'printAllMemberCardsOnePerPageBtn'));
  $('myMemberCardBtn')?.addEventListener('click',()=>void showMyMemberCard());
  $('closeCardBtn').onclick=()=>hide('memberCard');
  $('contributionForm').onsubmit=addContribution;
@@ -1708,13 +1709,15 @@ function memberCardPrintMarkup(m){
  }
  return card.outerHTML;
 }
-function openMemberCardsPrint(members,title){
+function openMemberCardsPrint(members,title,cardsPerPage=9){
  if(!members.length){alert('Aucun membre actif à imprimer.');return;}
  const w=window.open('','_blank','width=900,height=1000');
  if(!w){alert('Autorise les fenêtres pop-up pour imprimer les cartes.');return;}
  try{
   const cardMarkup=members.map(memberCardPrintMarkup);
-   const cards=Array.from({length:Math.ceil(cardMarkup.length/9)},(_,page)=>'<section class="print-sheet">'+cardMarkup.slice(page*9,(page+1)*9).join('')+'</section>').join('');
+   const pageSize=Math.max(1,Number(cardsPerPage)||9);
+   const sheetClass=pageSize===1?'print-sheet single-card-sheet':'print-sheet';
+   const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
   const stylesheet=new URL('style.css?v=20261105-qr-16-v12',location.href).href;
   w.document.open();
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${stylesheet}"><style>
@@ -1723,6 +1726,7 @@ function openMemberCardsPrint(members,title){
 html,body{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;color:#17351f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
 #memberCard{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important}
 .print-sheet{display:grid!important;grid-template-columns:repeat(3,206.93px)!important;grid-template-rows:repeat(3,310.4px)!important;gap:3mm!important;align-content:center!important;justify-content:center!important;width:100%!important;height:277mm!important;min-height:277mm!important;margin:0!important;padding:0!important;box-sizing:border-box!important;break-after:page!important;page-break-after:always!important}
+ .print-sheet.single-card-sheet{grid-template-columns:206.93px!important;grid-template-rows:310.4px!important;align-content:center!important;justify-content:center!important}
 .print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}
 #memberCard .print-sheet .member-card{display:flex!important;flex:0 0 206.93px!important;flex-direction:column!important;gap:5px!important;width:206.93px!important;height:310.4px!important;min-width:206.93px!important;min-height:297.64px!important;max-width:206.93px!important;max-height:297.64px!important;margin:0 auto!important;padding:8px!important;overflow:hidden!important;box-sizing:border-box!important;border-radius:7px!important;box-shadow:none!important;color:#17351f!important;break-inside:avoid!important;page-break-inside:avoid!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 #memberCard .print-sheet .card-top{position:relative!important;display:flex!important;flex:0 0 48px!important;align-items:center!important;justify-content:center!important;gap:4px!important;width:100%!important;height:48px!important;min-height:48px!important;padding:2px 45px!important;overflow:hidden!important;box-sizing:border-box!important;text-align:center!important}
@@ -1883,9 +1887,9 @@ window.addEventListener('afterprint',()=>window.close());
   w.document.close();
  }catch(error){w.close();alert('Impossible de préparer l’impression : '+(error?.message||String(error)));}
 }
-async function printAllMemberCards(){
+async function printAllMemberCards(cardsPerPage=9,buttonId='printAllMemberCardsBtn'){
  if(!isAdmin||!sb)return;
- const btn=$('printAllMemberCardsBtn');if(btn){btn.disabled=true;btn.textContent='Préparation des cartes…';}
+ const btn=$(buttonId);const originalLabel=cardsPerPage===1?'🖨️ Une carte par page':'🖨️ Imprimer toutes les cartes';if(btn){btn.disabled=true;btn.textContent='Préparation des cartes…';}
  try{
   const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id,function_title,mission').eq('status','active').order('member_number',{ascending:true});
   if(mr.error)throw mr.error;
@@ -1896,9 +1900,9 @@ async function printAllMemberCards(){
   const leader=await sb.from('dahira_general_leadership').select('member_id,title,mission').maybeSingle();
   if(leader.error)throw leader.error;
   members.forEach(m=>{m.commissions=byId.get(m.commission_id)||null;m.isGeneralDieuwrigne=!!(leader.data?.member_id&&leader.data.member_id===m.id);if(m.isGeneralDieuwrigne){m.title=leader.data.title;m.leadershipMission=leader.data.mission;}});
-  openMemberCardsPrint(members,'Cartes des membres actifs');
+  openMemberCardsPrint(members,cardsPerPage===1?'Cartes des membres actifs — une carte par page':'Cartes des membres actifs',cardsPerPage);
  }catch(err){alert('Impossible de préparer les cartes : '+(err?.message||String(err)));}
- finally{if(btn){btn.disabled=false;btn.textContent='🖨️ Imprimer toutes les cartes';}}
+ finally{if(btn){btn.disabled=false;btn.textContent=originalLabel;}}
 }
 async function printSelectedMemberCard(){
  if(!currentCardMember){alert('Aucune carte sélectionnée.');return;}
