@@ -779,7 +779,7 @@ if($('financeMonthFilter')){
    $('financeExportBtn').onclick=exportFinanceCSV;
  }
  if(c.SUPABASE_PUBLISHABLE_KEY.startsWith('COLLER_')){loadDemo();return}
- sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY);void loadGeneralLeadership();void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
+ sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}});void loadGeneralLeadership();void loadPublicCommissions();void loadPublicCommissionDirectory();void loadPublicEvents();void loadPublicGallery();
  $('adminEventForm')?.addEventListener('submit',createAdminEvent);
  $('adminGalleryForm')?.addEventListener('submit',createAdminGalleryItem);
  $('galleryImageFile')?.addEventListener('change',()=>{const input=$('galleryImageFile'),preview=$('galleryMediaPreview');galleryPreviewUrls.forEach(url=>URL.revokeObjectURL(url));galleryPreviewUrls=[];if(!preview)return;preview.innerHTML='';const files=Array.from(input.files||[]);if(!files.length){preview.classList.add('hidden');return;}const invalid=files.find(file=>{const kind=getGalleryMediaKind(file);return !kind||file.size>(kind==='video'?50:8)*1024*1024;});if(invalid){msg('galleryMessage','Fichier non accepté ou trop volumineux : photos 8 Mo maximum, vidéos 50 Mo maximum (JPG, PNG, WebP, MP4, WebM, MOV).');input.value='';preview.classList.add('hidden');return;}files.forEach(file=>{const url=URL.createObjectURL(file);galleryPreviewUrls.push(url);const item=document.createElement('div');item.className='gallery-preview-item';const media=document.createElement(getGalleryMediaKind(file)==='video'?'video':'img');media.src=url;if(media.tagName==='VIDEO'){media.controls=true;media.muted=true;media.playsInline=true;}else media.alt=file.name;const caption=document.createElement('small');caption.textContent=file.name;item.append(media,caption);preview.append(item);});preview.classList.remove('hidden');msg('galleryMessage',files.length+' média(s) sélectionné(s).',true);});
@@ -831,13 +831,25 @@ async function setUser(u){
 
   if(r.error){
     console.error('Lecture du profil utilisateur impossible:',r.error);
-    alert("Impossible de vérifier les droits de ce compte. Déconnecte-toi puis réessaie. Si le problème persiste, contacte l'administrateur.");
-    await sb.auth.signOut();
+    isAdmin=false;
+    isFinance=false;
+    isContentManager=false;
+    setAdminUI();
+    hide('memberDashboard');
+    hide('membershipFormSection');
+    show('logoutBtn');
+    msg('authMessage',"Tu es toujours connecté, mais le profil n'a pas pu être vérifié pour le moment. Vérifie ta connexion Internet puis actualise la page. Tu n'as pas besoin de ressaisir ton mot de passe.");
     return;
   }
   if(!r.data){
-    alert("Le profil de ce compte n'a pas été créé correctement. Contacte l'administrateur avant de réessayer.");
-    await sb.auth.signOut();
+    isAdmin=false;
+    isFinance=false;
+    isContentManager=false;
+    setAdminUI();
+    hide('memberDashboard');
+    hide('membershipFormSection');
+    show('logoutBtn');
+    msg('authMessage',"La session est conservée, mais aucun profil d'accès n'est associé à ce compte. Contacte l'administrateur pour vérifier sa fiche.");
     return;
   }
 
