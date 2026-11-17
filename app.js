@@ -1935,12 +1935,12 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
   const images=[...document.images];
   await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})})));
   const PDF=window.jspdf.jsPDF;
-  const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true});
+  const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true,precision:16});
   for(let index=0;index<cards.length;index++){
    status.textContent='Création du PDF : carte '+(index+1)+' sur '+cards.length+'…';
-   const canvas=await window.html2canvas(cards[index],{scale:5,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:cards[index].offsetWidth,height:cards[index].offsetHeight});
+   const canvas=await window.html2canvas(cards[index],{scale:8,windowWidth:cards[index].scrollWidth,windowHeight:cards[index].scrollHeight,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:cards[index].offsetWidth,height:cards[index].offsetHeight,foreignObjectRendering:false,removeContainer:true});
    if(index>0)pdf.addPage([73,105],'portrait');
-   pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'FAST');
+   pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'SLOW');
   }
   const safeName=(document.title||'cartes-membres').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
   pdf.save((safeName||'cartes-membres')+'-73x105mm.pdf');
