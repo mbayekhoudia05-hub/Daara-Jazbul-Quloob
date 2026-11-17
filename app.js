@@ -1908,7 +1908,7 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 #memberCard .print-sheet .card-background{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important}
 #memberCard .print-sheet .card-info h3{font-size:12px!important;line-height:1.15!important}
 #memberCard .print-sheet .card-info p,#memberCard .print-sheet .card-info p b{font-size:8.25px!important;line-height:1.28!important}
-#memberCard .print-sheet .qrcode{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;max-width:16px!important;max-height:16px!important}
+#memberCard .print-sheet .qrcode{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;max-width:38px!important;max-height:38px!important}
 @media screen{
  body{width:73mm!important;padding:0!important;background:#eee!important}
  .print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;margin:12px auto!important;box-shadow:0 2px 12px #0002!important}
@@ -1938,7 +1938,7 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
   const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true});
   for(let index=0;index<cards.length;index++){
    status.textContent='Création du PDF : carte '+(index+1)+' sur '+cards.length+'…';
-   const canvas=await window.html2canvas(cards[index],{scale:3,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:cards[index].offsetWidth,height:cards[index].offsetHeight});
+   const canvas=await window.html2canvas(cards[index],{scale:5,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:cards[index].offsetWidth,height:cards[index].offsetHeight});
    if(index>0)pdf.addPage([73,105],'portrait');
    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'FAST');
   }
