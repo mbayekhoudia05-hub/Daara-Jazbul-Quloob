@@ -1949,8 +1949,13 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 }
 /* Le PDF capture une image PNG finale, pas le canvas temporaire du générateur. */
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
- width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
- max-width:56px!important;max-height:56px!important;overflow:hidden!important;
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;width:84px!important;height:84px!important;
+ min-width:84px!important;min-height:84px!important;max-width:84px!important;max-height:84px!important;
+ margin:0 0 0 -42px!important;padding:0!important;overflow:hidden!important;
+ transform:none!important;z-index:999!important;background:#fff!important;
+ border:1px solid #075b35!important;border-radius:2px!important;
 }
 #memberCard .print-sheet .member-card .qrcode[data-access-url] img{
  display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
@@ -1971,11 +1976,17 @@ const qrReady=new Promise(resolve=>{
     new QRCode(element,{text:element.dataset.accessUrl,width:512,height:512,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     const qrCanvas=element.querySelector('canvas');
     if(!qrCanvas||qrCanvas.width===0||qrCanvas.height===0)throw new Error('Le QR n’a pas été dessiné.');
+    const paddedCanvas=document.createElement('canvas');
+    paddedCanvas.width=640;paddedCanvas.height=640;
+    const paddedContext=paddedCanvas.getContext('2d');
+    paddedContext.fillStyle='#ffffff';paddedContext.fillRect(0,0,640,640);
+    paddedContext.imageSmoothingEnabled=false;
+    paddedContext.drawImage(qrCanvas,64,64,512,512);
     const qrImage=new Image();
-    qrImage.alt='QR code d’accès sécurisé';qrImage.width=512;qrImage.height=512;
+    qrImage.alt='QR code d’accès sécurisé';qrImage.width=640;qrImage.height=640;
     qrImage.onload=()=>{element.replaceChildren(qrImage);done();};
     qrImage.onerror=()=>{element.textContent='QR indisponible';done();};
-    qrImage.src=qrCanvas.toDataURL('image/png');
+    qrImage.src=paddedCanvas.toDataURL('image/png');
    }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);done();}
   }))).then(resolve);
  };
