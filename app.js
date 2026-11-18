@@ -1554,7 +1554,7 @@ async function loadMembers(){
  try{
   // Charger les membres sans jointure : une relation PostgREST défectueuse ne doit pas masquer toute la liste.
   const r=await sb.from('members')
-   .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission,created_at')
+   .select('id,member_number,first_name,last_name,phone,email,address,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token,created_at')
    .order('member_number',{ascending:true});
   if(r.error){
    box.innerHTML='<tr><td colspan="7">Erreur de chargement des membres : '+esc(r.error.message)+'</td></tr>';
@@ -1634,6 +1634,24 @@ async function showMyMemberCard(){
  showMemberCard({...member,commissions:commission,isGeneralDieuwrigne:!!leadership,...(leadership||{})});
 }
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
+function createMemberAccessUrl(member){
+ const token=member?.public_access_token;
+ if(!token||!/^[a-f0-9]{48}$/.test(token))return '';
+ const url=new URL(location.href);
+ url.search='';
+ url.hash='';
+ url.searchParams.set('member',token);
+ return url.toString();
+}
+function createMemberQrDataUrl(member){
+ const accessUrl=createMemberAccessUrl(member);
+ if(!accessUrl||typeof QRCode==='undefined')return '';
+ const holder=document.createElement('div');
+ new QRCode(holder,{text:accessUrl,width:512,height:512,correctLevel:QRCode.CorrectLevel.M});
+ const canvas=holder.querySelector('canvas');
+ if(canvas)return canvas.toDataURL('image/png');
+ return holder.querySelector('img')?.src||'';
+}
 function showMemberCard(m){
  currentCardMember={...m};
  const commission=m.isGeneralDieuwrigne?'Direction générale':(m.commissions?.name||'Aucune commission');
@@ -1642,7 +1660,18 @@ function showMemberCard(m){
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
  show('memberCard');
  const screenQr=$('cardAccessQr');
- if(screenQr)screenQr.remove();
+ if(screenQr){
+  screenQr.innerHTML='';
+  const qrData=createMemberQrDataUrl(m);
+  if(qrData){
+   const qrImage=document.createElement('img');
+   qrImage.src=qrData;qrImage.alt='QR code personnel pour accéder à votre espace membre';
+   qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
+   screenQr.appendChild(qrImage);
+   screenQr.setAttribute('data-access-url','true');
+   screenQr.style.cssText='position:absolute;left:50%;bottom:8%;width:46px;height:46px;min-width:46px;min-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10';
+  }
+ }
  $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
@@ -1655,39 +1684,74 @@ async function handlePublicMember(){
   show('memberPublic');
 
   const box=$('publicMemberBox');
-  box.innerHTML='<p>Vérification de la carte et chargement des cotisations…</p>';
-  const r=await sb.rpc('get_public_member_card_by_token',{p_token:token});
-
-  if(r.error){
-    box.innerHTML='<p class="verify-no">Impossible de vérifier cette carte pour le moment. Réessayez avec une connexion Internet stable.</p>';
-    console.error('Vérification publique de la carte impossible:',r.error);
-    return;
-  }
-
-  const payload=r.data;
-  const m=payload?.member;
-  if(!m){
-    box.innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';
-    return;
-  }
-
-  const contributions=Array.isArray(payload.contributions)?payload.contributions:[];
-  const rows=contributions.map(c=>`<tr><td>${esc(c.month||'—')}</td><td>${esc(c.category||'Cotisation')}</td><td>${esc(formatMoney(c.amount))}</td><td>${esc(c.date||'—')}</td></tr>`).join('');
   box.innerHTML=`
     <div class="verify-organization"><strong>DAHIRA JAZBUL QULOUB</strong><span>CELLULE DAKAR</span></div>
-    <img src="${esc(m.photo_url||'logo.jpeg')}" alt="Photo">
-    <h3>${esc(m.first_name)} ${esc(m.last_name)}</h3>
-    <p><b>N° membre :</b> ${esc(m.member_number)}</p>
-    <p><b>Commission :</b> ${esc(m.commission_name||'Aucune commission')}</p>
-    <p><b>Fonction :</b> ${esc(m.commission_role||'—')}</p>
-    <p><b>Mission :</b> ${esc(m.commission_description||'—')}</p>
-    <p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p>
-    <p class="verify-ok">✓ Carte valide — membre actif</p>
-    <h3>Historique des cotisations</h3>
-    <p><b>Total encaissé :</b> ${esc(formatMoney(payload.total_paid||0))}</p>
-    <div class="table-wrap"><table><thead><tr><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Date</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Aucune cotisation encaissée.</td></tr>'}</tbody></table></div>
-    <p class="verify-note">Seules les cotisations confirmées et encaissées sont affichées.</p>
+    <h3>Accès à votre espace membre</h3>
+    <p>Entrez le code confidentiel pour consulter vos informations et vos cotisations.</p>
+    <form id="publicMemberPinForm" class="member-form" style="max-width:340px;margin:18px auto">
+      <label for="publicMemberPin">Code confidentiel</label>
+      <input id="publicMemberPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••" required>
+      <button id="publicMemberPinSubmit" class="primary" type="submit">Accéder à mon espace</button>
+      <p id="publicMemberPinMessage" role="status" aria-live="polite"></p>
+    </form>
   `;
+
+  $('publicMemberPinForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const pin=$('publicMemberPin').value.trim();
+    const button=$('publicMemberPinSubmit');
+    if(!/^\\d{4}$/.test(pin)){
+      msg('publicMemberPinMessage','Saisissez le code à 4 chiffres.');
+      return;
+    }
+    button.disabled=true;
+    button.textContent='Vérification…';
+    msg('publicMemberPinMessage','');
+    try{
+      const r=await sb.rpc('get_member_card_with_pin',{p_token:token,p_password:pin});
+      if(r.error)throw r.error;
+      const payload=r.data;
+      const m=payload?.member;
+      if(!m){
+        msg('publicMemberPinMessage','Code incorrect, carte introuvable ou membre inactif.');
+        $('publicMemberPin').value='';
+        $('publicMemberPin').focus();
+        return;
+      }
+
+      const contributions=Array.isArray(payload.contributions)?payload.contributions:[];
+      const rows=contributions.map(c=>`<tr><td>${esc(c.month||'—')}</td><td>${esc(c.category||'Cotisation')}</td><td>${esc(formatMoney(c.amount))}</td><td>${esc(c.method||'—')}</td><td>${esc(c.date||'—')}</td></tr>`).join('');
+      box.innerHTML=`
+        <div class="verify-organization"><strong>DAHIRA JAZBUL QULOUB</strong><span>CELLULE DAKAR</span></div>
+        <img src="${esc(m.photo_url||'logo.jpeg')}" alt="Photo du membre">
+        <h3>${esc(m.first_name)} ${esc(m.last_name)}</h3>
+        <p class="verify-ok">✓ Espace membre vérifié — membre actif</p>
+        <div class="verify-meta">
+          <p><b>N° membre :</b> ${esc(m.member_number||'—')}</p>
+          <p><b>Téléphone :</b> ${esc(m.phone||'Non renseigné')}</p>
+          <p><b>E-mail :</b> ${esc(m.email||'Non renseigné')}</p>
+          <p><b>Adresse :</b> ${esc(m.address||'Non renseignée')}</p>
+          <p><b>Commission :</b> ${esc(m.commission_name||'Aucune commission')}</p>
+          <p><b>Fonction :</b> ${esc(m.commission_role||'—')}</p>
+          <p><b>Mission :</b> ${esc(m.commission_description||'—')}</p>
+          <p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p>
+          <p><b>Statut :</b> ${esc(m.status||'—')}</p>
+        </div>
+        <h3>Historique de mes cotisations</h3>
+        <p><b>Total encaissé :</b> ${esc(formatMoney(payload.total_paid||0))}</p>
+        <div class="table-wrap"><table><thead><tr><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Mode</th><th>Date</th></tr></thead><tbody>${rows||'<tr><td colspan="5">Aucune cotisation encaissée.</td></tr>'}</tbody></table></div>
+        <p class="verify-note">Seules les cotisations confirmées et encaissées sont affichées.</p>
+        <button type="button" class="secondary" id="publicMemberClose">Fermer mon espace</button>
+      `;
+      $('publicMemberClose').addEventListener('click',()=>{box.innerHTML='<p>Pour consulter votre dossier, scannez à nouveau votre QR code et saisissez le code confidentiel.</p>';});
+    }catch(error){
+      console.error('Consultation de l’espace membre impossible:',error);
+      msg('publicMemberPinMessage','Erreur de connexion. Vérifiez Internet puis réessayez.');
+    }finally{
+      const currentButton=$('publicMemberPinSubmit');
+      if(currentButton){currentButton.disabled=false;currentButton.textContent='Accéder à mon espace';}
+    }
+  });
 }
 
 
@@ -1714,8 +1778,16 @@ function memberCardPrintMarkup(m){
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
 
- // Ancien QR retiré : la prochaine version sera reconstruite séparément.
- card.querySelectorAll('.qrcode, #cardAccessQr').forEach(node=>node.remove());
+ const qrNode=card.querySelector('#cardAccessQr');
+ const qrData=createMemberQrDataUrl(m);
+ if(qrNode&&qrData){
+  qrNode.innerHTML='';
+  const qrImage=document.createElement('img');
+  qrImage.src=qrData;qrImage.alt='QR code personnel';
+  qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
+  qrNode.appendChild(qrImage);
+  qrNode.setAttribute('data-access-url','true');
+ }else if(qrNode){qrNode.remove();}
 
  return card.outerHTML;
 }
@@ -2001,7 +2073,7 @@ async function printAllMemberCards(cardsPerPage=9,buttonId='printAllMemberCardsB
  if(!isAdmin||!sb)return;
  const btn=$(buttonId);const originalLabel=cardsPerPage===1?'🖨️ Une carte par page':'🖨️ Imprimer toutes les cartes';if(btn){btn.disabled=true;btn.textContent='Préparation des cartes…';}
  try{
-  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token').eq('status','active').order('member_number',{ascending:true});
+  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,address,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token').eq('status','active').order('member_number',{ascending:true});
   if(mr.error)throw mr.error;
   const members=mr.data||[],ids=[...new Set(members.map(m=>m.commission_id).filter(Boolean))];
   let commissions=[];
