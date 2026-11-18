@@ -803,6 +803,9 @@ if(sessionResult.error) throw sessionResult.error;
 if(sessionResult.data.session) await setUser(sessionResult.data.session.user);
 load();
 await handlePublicMember();
+if(new URLSearchParams(window.location.search).get('espace')==='1'&&!sessionResult.data.session){
+  openAuth();
+}
 }
 async function setUser(u){
   currentUser=u;
@@ -1701,6 +1704,17 @@ function memberCardPrintMarkup(m){
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
 
+ // QR de connexion : il ouvre uniquement l'entrée sécurisée du portail.
+ // Les droits et les données affichées restent déterminés par le compte Supabase connecté.
+ const accessUrl=new URL('./',window.location.href);
+ accessUrl.search='';accessUrl.hash='';
+ accessUrl.searchParams.set('espace','1');
+ const accessQr=document.createElement('div');
+ accessQr.className='qrcode';
+ accessQr.setAttribute('data-access-url',accessUrl.toString());
+ accessQr.setAttribute('aria-label','QR code d’accès sécurisé à l’espace du Dahira');
+ card.appendChild(accessQr);
+
  return card.outerHTML;
 }
 function openMemberCardsPrint(members,title,cardsPerPage=9){
@@ -1714,7 +1728,7 @@ function openMemberCardsPrint(members,title,cardsPerPage=9){
    const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
   // Impression autonome : ne pas charger style.css, qui impose des formats A4 aux autres impressions.
   w.document.open();
-  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script><style>
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>
 @page{size:73mm 105mm;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;color:#17351f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
@@ -1909,6 +1923,11 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
 <span id="pdfStatus" role="status">Chaque carte sera une page PDF au format exact.</span></div>
 <main id="memberCard">${cards}</main><script>
+document.querySelectorAll('.qrcode[data-access-url]').forEach(element=>{
+ try{
+  new QRCode(element,{text:element.dataset.accessUrl,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+ }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);}
+});
 document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
  const button=document.getElementById('downloadCardsPdf'),status=document.getElementById('pdfStatus');
  button.disabled=true;status.textContent='Préparation du PDF…';
