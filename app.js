@@ -1674,7 +1674,7 @@ function showMemberCard(m){
    qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
    screenQr.appendChild(qrImage);
    screenQr.setAttribute('data-access-url','true');
-   screenQr.style.cssText='position:absolute;left:50%;bottom:8%;width:46px;height:46px;min-width:46px;min-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10';
+   screenQr.style.cssText='position:absolute;left:50%;bottom:8%;box-sizing:border-box;width:46px;height:46px;min-width:46px;min-height:46px;max-width:46px;max-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10';
   }
  }
  $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
@@ -1695,7 +1695,7 @@ async function handlePublicMember(){
     <p>Entrez le code confidentiel pour consulter vos informations et vos cotisations.</p>
     <form id="publicMemberPinForm" class="member-form" style="max-width:340px;margin:18px auto">
       <label for="publicMemberPin">Code confidentiel</label>
-      <input id="publicMemberPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••" required>
+      <input id="publicMemberPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="one-time-code" placeholder="Entrez 0000" aria-label="Code confidentiel à quatre chiffres" required autofocus>
       <button id="publicMemberPinSubmit" class="primary" type="submit">Accéder à mon espace</button>
       <p id="publicMemberPinMessage" role="status" aria-live="polite"></p>
     </form>
@@ -1705,7 +1705,7 @@ async function handlePublicMember(){
     event.preventDefault();
     const pin=$('publicMemberPin').value.trim();
     const button=$('publicMemberPinSubmit');
-    if(!/^\\d{4}$/.test(pin)){
+    if(!/^[0-9]{4}$/.test(pin)){
       msg('publicMemberPinMessage','Saisissez le code à 4 chiffres.');
       return;
     }
@@ -1792,7 +1792,7 @@ function memberCardPrintMarkup(m){
   qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
   qrNode.appendChild(qrImage);
   qrNode.setAttribute('data-access-url','true');
-  qrNode.style.cssText='position:absolute;left:50%;bottom:8%;width:46px;height:46px;min-width:46px;min-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:999';
+  qrNode.style.cssText='position:absolute;left:50%;bottom:8%;box-sizing:border-box;width:46px;height:46px;min-width:46px;min-height:46px;max-width:46px;max-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:999';
  }else if(qrNode){qrNode.remove();}
 
  return card.outerHTML;
