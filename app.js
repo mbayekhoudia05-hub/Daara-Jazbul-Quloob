@@ -1882,16 +1882,17 @@ html,body{margin:0!important;padding:0!important;width:100%!important;background
 /* QR CODE IMPRESSION : meme format et position que l'apercu ecran. */
 #memberCard .print-sheet .qrcode{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
- width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;
- max-width:16px!important;max-height:16px!important;margin:0!important;padding:2px!important;
+ width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
+ max-width:56px!important;max-height:56px!important;margin:0!important;padding:2px!important;
  transform:translateX(-50%)!important;z-index:7!important;box-sizing:border-box!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
  background:#fff!important;border:1px solid #075b35!important;border-radius:3px!important;overflow:hidden!important;
 }
-#memberCard .print-sheet .qrcode img,#memberCard .print-sheet .qrcode canvas{
+#memberCard .print-sheet .qrcode img{
  display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
  object-fit:contain!important;image-rendering:pixelated!important;
 }
+#memberCard .print-sheet .qrcode canvas{display:none!important}
 
 
 /* Format physique demandé : une carte par page, 73 × 105 mm, sans A4 ni mise à l'échelle. */
