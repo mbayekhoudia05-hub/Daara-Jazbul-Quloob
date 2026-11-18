@@ -2017,7 +2017,7 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
    Position fixe dans la carte 73 × 105 mm ; le cadre et le QR sont un seul bloc. */
 #memberCard .print-sheet .member-card{position:relative!important}
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
- position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:10%!important;
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
  display:block!important;box-sizing:border-box!important;
  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
  max-width:46px!important;max-height:46px!important;margin-left:-23px!important;margin-top:0!important;
@@ -2026,7 +2026,7 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 }
 /* Le PDF capture une image PNG finale, pas le canvas temporaire du générateur. */
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
- position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
  box-sizing:border-box!important;width:46px!important;height:46px!important;
  min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
