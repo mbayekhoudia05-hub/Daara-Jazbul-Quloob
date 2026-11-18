@@ -1940,12 +1940,16 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
  padding:4px!important;transform:none!important;overflow:visible!important;
  z-index:999!important;background:#fff!important;border:1.5px solid #075b35!important;border-radius:2px!important;
 }
-/* Le canvas est la source QR fiable : ne pas dépendre de l'image générée ensuite. */
-#memberCard .print-sheet .member-card .qrcode[data-access-url] img{display:none!important}
-#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{
+/* Le PDF capture une image PNG finale, pas le canvas temporaire du générateur. */
+#memberCard .print-sheet .member-card .qrcode[data-access-url]{
+ width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
+ max-width:56px!important;max-height:56px!important;overflow:hidden!important;
+}
+#memberCard .print-sheet .member-card .qrcode[data-access-url] img{
  display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
  object-fit:contain!important;image-rendering:pixelated!important;
 }
+#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{display:none!important}
 </style></head><body>
 <div class="pdf-toolbar" style="position:sticky;top:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;background:#075b35;color:#fff;font:14px Arial,sans-serif">
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
@@ -1953,15 +1957,20 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 <main id="memberCard">${cards}</main><script>
 const qrReady=new Promise(resolve=>{
  const renderAccessQrs=()=>{
-  document.querySelectorAll('.print-sheet .qrcode[data-access-url]').forEach(element=>{
+  const elements=[...document.querySelectorAll('.print-sheet .qrcode[data-access-url]')];
+  Promise.all(elements.map(element=>new Promise(done=>{
    try{
     element.replaceChildren();
-    new QRCode(element,{text:element.dataset.accessUrl,width:256,height:256,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    new QRCode(element,{text:element.dataset.accessUrl,width:512,height:512,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     const qrCanvas=element.querySelector('canvas');
-    if(!qrCanvas||qrCanvas.width===0||qrCanvas.height===0)throw new Error('Le QR n’a pas été dessiné sur le canvas.');
-   }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);}
-  });
-  resolve();
+    if(!qrCanvas||qrCanvas.width===0||qrCanvas.height===0)throw new Error('Le QR n’a pas été dessiné.');
+    const qrImage=new Image();
+    qrImage.alt='QR code d’accès sécurisé';qrImage.width=512;qrImage.height=512;
+    qrImage.onload=()=>{element.replaceChildren(qrImage);done();};
+    qrImage.onerror=()=>{element.textContent='QR indisponible';done();};
+    qrImage.src=qrCanvas.toDataURL('image/png');
+   }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);done();}
+  }))).then(resolve);
  };
  if(window.QRCode)renderAccessQrs();
  else window.addEventListener('load',renderAccessQrs,{once:true});
