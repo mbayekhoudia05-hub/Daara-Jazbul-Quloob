@@ -1936,11 +1936,11 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
    Position fixe dans la carte 73 × 105 mm ; le cadre et le QR sont un seul bloc. */
 #memberCard .print-sheet .member-card{position:relative!important}
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
- position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:10%!important;
  display:block!important;box-sizing:border-box!important;
- width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
- max-width:56px!important;max-height:56px!important;margin-left:-28px!important;margin-top:0!important;
- padding:4px!important;transform:none!important;overflow:hidden!important;
+ width:68px!important;height:68px!important;min-width:68px!important;min-height:68px!important;
+ max-width:68px!important;max-height:68px!important;margin-left:-34px!important;margin-top:0!important;
+ padding:6px!important;transform:none!important;overflow:visible!important;
  z-index:999!important;background:#fff!important;border:1.5px solid #075b35!important;border-radius:2px!important;
 }
 #memberCard .print-sheet .member-card .qrcode[data-access-url] img{
