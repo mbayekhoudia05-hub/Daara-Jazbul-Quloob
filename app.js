@@ -1633,13 +1633,13 @@ async function showMyMemberCard(){
 function createMemberQrImage(container,text,size=104){
  if(typeof QRCode!=='function')throw new Error('Le générateur QR est indisponible.');
  const source=document.createElement('div');
+ // Reprendre les paramètres du premier QR : vert foncé, fond blanc et correction par défaut.
  new QRCode(source,{
   text:String(text),
   width:size,
   height:size,
-  colorDark:'#000000',
-  colorLight:'#ffffff',
-  correctLevel:QRCode.CorrectLevel.M
+  colorDark:'#075c2d',
+  colorLight:'#ffffff'
  });
  const canvas=source.querySelector('canvas');
  if(!canvas)throw new Error('La génération de l’image QR a échoué.');
@@ -1966,34 +1966,28 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
   const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true,precision:16});
   for(let index=0;index<cards.length;index++){
    status.textContent='Création du PDF : carte '+(index+1)+' sur '+cards.length+'…';
-   // Le QR est exclu de la capture html2canvas : certains moteurs le rasterisent en gris ou le coupent.
-   // On le réinsère ensuite directement dans le PDF depuis son PNG source, sans le redessiner.
+   // Capturer la carte complète avec le QR d'origine visible, comme dans la première version.
+   // Le QR est généré en 104 × 104 px puis affiché dans son emplacement CSS existant.
    const card=cards[index];
-   const qr=card.querySelector('.qrcode');
-   const qrImage=qr?.querySelector('img');
-   const cardRect=card.getBoundingClientRect();
-   const qrRect=qr?.getBoundingClientRect();
-   const qrData=qrImage?.src||'';
-   if(!qrData.startsWith('data:image/png'))throw new Error('Le PNG du QR code est introuvable pour la carte '+(index+1)+'.');
-   if(!qrImage.complete||!qrImage.naturalWidth||!qrImage.naturalHeight)throw new Error('Le PNG du QR code n’est pas entièrement chargé pour la carte '+(index+1)+'.');
-   const previousVisibility=qr.style.visibility;
-   if(qr)qr.style.visibility='hidden';
-   let canvas;
-   try{
-    canvas=await window.html2canvas(card,{scale:8,windowWidth:card.scrollWidth,windowHeight:card.scrollHeight,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:card.offsetWidth,height:card.offsetHeight,foreignObjectRendering:false,removeContainer:true});
-   }finally{
-    if(qr)qr.style.visibility=previousVisibility;
+   const qrImage=card.querySelector('.qrcode img');
+   if(!qrImage||!qrImage.complete||!qrImage.naturalWidth||!qrImage.naturalHeight){
+    throw new Error('Le QR code n’est pas entièrement chargé pour la carte '+(index+1)+'.');
    }
    if(index>0)pdf.addPage([73,105],'portrait');
+   const canvas=await window.html2canvas(card,{
+    scale:8,
+    windowWidth:card.scrollWidth,
+    windowHeight:card.scrollHeight,
+    useCORS:true,
+    allowTaint:false,
+    backgroundColor:'#ffffff',
+    logging:false,
+    width:card.offsetWidth,
+    height:card.offsetHeight,
+    foreignObjectRendering:false,
+    removeContainer:true
+   });
    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'SLOW');
-   if(qr&&qrRect&&cardRect.width>0){
-    const mmPerPixel=73/cardRect.width;
-    const x=(qrRect.left-cardRect.left)*mmPerPixel;
-    const y=(qrRect.top-cardRect.top)*mmPerPixel;
-    const width=qrRect.width*mmPerPixel;
-    const height=qrRect.height*mmPerPixel;
-    pdf.addImage(qrData,'PNG',x,y,width,height,undefined,'FAST');
-   }
   }
   const safeName=(document.title||'cartes-membres').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
   pdf.save((safeName||'cartes-membres')+'-73x105mm.pdf');
