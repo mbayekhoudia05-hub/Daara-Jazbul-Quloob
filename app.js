@@ -1973,17 +1973,17 @@ const qrReady=new Promise(resolve=>{
   Promise.all(elements.map(element=>new Promise(done=>{
    try{
     element.replaceChildren();
-    new QRCode(element,{text:element.dataset.accessUrl,width:512,height:512,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+    new QRCode(element,{text:element.dataset.accessUrl,width:1024,height:1024,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.L});
     const qrCanvas=element.querySelector('canvas');
     if(!qrCanvas||qrCanvas.width===0||qrCanvas.height===0)throw new Error('Le QR n’a pas été dessiné.');
     const paddedCanvas=document.createElement('canvas');
-    paddedCanvas.width=640;paddedCanvas.height=640;
+    paddedCanvas.width=1280;paddedCanvas.height=1280;
     const paddedContext=paddedCanvas.getContext('2d');
-    paddedContext.fillStyle='#ffffff';paddedContext.fillRect(0,0,640,640);
+    paddedContext.fillStyle='#ffffff';paddedContext.fillRect(0,0,1280,1280);
     paddedContext.imageSmoothingEnabled=false;
-    paddedContext.drawImage(qrCanvas,64,64,512,512);
+    paddedContext.drawImage(qrCanvas,128,128,1024,1024);
     const qrImage=new Image();
-    qrImage.alt='QR code d’accès sécurisé';qrImage.width=640;qrImage.height=640;
+    qrImage.alt='QR code d’accès sécurisé';qrImage.width=1280;qrImage.height=1280;
     qrImage.onload=()=>{element.replaceChildren(qrImage);done();};
     qrImage.onerror=()=>{element.textContent='QR indisponible';done();};
     qrImage.src=paddedCanvas.toDataURL('image/png');
