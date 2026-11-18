@@ -1630,6 +1630,24 @@ async function showMyMemberCard(){
  const leadership=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
  showMemberCard({...member,commissions:commission,isGeneralDieuwrigne:!!leadership,...(leadership||{})});
 }
+function createMemberQrImage(container,text,size=104){
+ if(typeof qrcode!=='function')throw new Error('Le nouveau générateur QR n’est pas disponible.');
+ const generator=qrcode(0,'M');
+ generator.addData(String(text),'Byte');
+ generator.make();
+ const svg=generator.createSvgTag({cellSize:4,margin:0,scalable:true});
+ const image=document.createElement('img');
+ image.alt='QR code de vérification du membre';
+ image.width=size;
+ image.height=size;
+ image.style.width=size+'px';
+ image.style.height=size+'px';
+ image.style.display='block';
+ image.style.objectFit='contain';
+ image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+ container.replaceChildren(image);
+ return image;
+}
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
@@ -1637,7 +1655,7 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);new QRCode($('qrcode'),{text:url,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);createMemberQrImage($('qrcode'),url,104);document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1702,21 +1720,8 @@ function memberCardPrintMarkup(m){
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
  const qr=card.querySelector('.qrcode');
  qr.innerHTML='';
- new QRCode(qr,{text:location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff'});
- const qrCanvas=qr.querySelector('canvas');
- const qrGeneratedImage=qr.querySelector('img');
- const qrSource=qrCanvas?qrCanvas.toDataURL('image/png'):(qrGeneratedImage?.src||'');
- if(qrSource){
-  const qrImage=document.createElement('img');
-  qrImage.src=qrSource;
-  qrImage.alt='QR code du membre '+(m.member_number||'');
-  qrImage.width=104;
-  qrImage.height=104;
-  qr.innerHTML='';
-  qr.appendChild(qrImage);
- }else{
-  throw new Error('Le QR code du membre n’a pas pu être généré.');
- }
+ createMemberQrImage(qr,location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),104);
+
  return card.outerHTML;
 }
 function openMemberCardsPrint(members,title,cardsPerPage=9){
@@ -1933,7 +1938,23 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
   const cards=[...document.querySelectorAll('.print-sheet .member-card')];
   if(!cards.length)throw new Error('Aucune carte trouvée.');
   const images=[...document.images];
-  await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})})));
+  await Promise.all(images.map(async img=>{
+   if(!img.complete)await new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});});
+   if(img.decode)try{await img.decode();}catch{}
+  }));
+  // S'assurer que le QR est entièrement décodé avant la capture haute résolution.
+  for(const qr of document.querySelectorAll('.qrcode')){
+   const qrImage=qr.querySelector('img');
+   if(qrImage){
+    qrImage.style.setProperty('display','block','important');
+    qrImage.style.setProperty('width','100%','important');
+    qrImage.style.setProperty('height','100%','important');
+    qrImage.style.setProperty('max-width','none','important');
+    qrImage.style.setProperty('max-height','none','important');
+    qrImage.style.setProperty('object-fit','fill','important');
+    if(qrImage.decode)try{await qrImage.decode();}catch{}
+   }
+  }
   const PDF=window.jspdf.jsPDF;
   const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true,precision:16});
   for(let index=0;index<cards.length;index++){
