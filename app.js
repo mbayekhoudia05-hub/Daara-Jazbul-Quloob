@@ -1649,7 +1649,7 @@ function showMemberCard(m){
   screenQr.dataset.accessUrl=accessUrl.toString();
   screenQr.replaceChildren();
   try{
-   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:160,height:160,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:256,height:256,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
    else screenQr.textContent='QR indisponible';
   }catch(error){screenQr.textContent='QR indisponible';console.error('Génération du QR de la carte impossible:',error);}
  }
@@ -1932,19 +1932,22 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 .print-sheet,.print-sheet.single-card-sheet{page:member-card}
 @media print{@page{size:73mm 105mm;margin:0}html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important;margin:0!important;padding:0!important}.print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;min-height:105mm!important;max-height:105mm!important;margin:0!important;break-after:page!important;page-break-after:always!important}#memberCard .print-sheet .member-card{width:73mm!important;height:105mm!important;min-width:73mm!important;min-height:105mm!important;max-width:73mm!important;max-height:105mm!important;transform:none!important}}
 /* QR d’accès : position et dimensions prioritaires dans chaque carte 73 × 105 mm. */
+/* QR d’accès : un seul rendu (image) dans un cadre unique, pour éviter le QR coupé.
+   Position fixe dans la carte 73 × 105 mm ; le cadre et le QR sont un seul bloc. */
+#memberCard .print-sheet .member-card{position:relative!important}
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
- display:flex!important;align-items:center!important;justify-content:center!important;
- width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
- max-width:44px!important;max-height:44px!important;margin:0!important;padding:2px!important;
- transform:translateX(-50%)!important;box-sizing:border-box!important;overflow:hidden!important;
- z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important;
+ display:block!important;box-sizing:border-box!important;
+ width:64px!important;height:64px!important;min-width:64px!important;min-height:64px!important;
+ max-width:64px!important;max-height:64px!important;margin-left:-32px!important;margin-top:0!important;
+ padding:4px!important;transform:none!important;overflow:hidden!important;
+ z-index:999!important;background:#fff!important;border:1.5px solid #075b35!important;border-radius:2px!important;
 }
-#memberCard .print-sheet .member-card .qrcode[data-access-url] img,
-#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{
+#memberCard .print-sheet .member-card .qrcode[data-access-url] img{
  display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
  object-fit:contain!important;image-rendering:pixelated!important;
 }
+#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{display:none!important}
 </style></head><body>
 <div class="pdf-toolbar" style="position:sticky;top:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;background:#075b35;color:#fff;font:14px Arial,sans-serif">
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
@@ -1955,7 +1958,7 @@ const qrReady=new Promise(resolve=>{
   document.querySelectorAll('.print-sheet .qrcode[data-access-url]').forEach(element=>{
    try{
     element.replaceChildren();
-    new QRCode(element,{text:element.dataset.accessUrl,width:160,height:160,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    new QRCode(element,{text:element.dataset.accessUrl,width:256,height:256,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
    }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);}
   });
   resolve();
