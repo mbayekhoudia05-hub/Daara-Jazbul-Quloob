@@ -868,7 +868,7 @@ async function setUser(u){
   }
 
   const mr=await sb.from('members')
-    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission')
+    .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token')
     .eq('auth_user_id',u.id)
     .maybeSingle();
 
@@ -1643,7 +1643,7 @@ function showMemberCard(m){
  show('memberCard');
  const screenQr=$('cardAccessQr');
  if(screenQr){
-  const accessUrl=new URL('https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/?espace=1');
+  const accessUrl=new URL('?member='+encodeURIComponent(m.public_access_token||''),'https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/');
   screenQr.dataset.accessUrl=accessUrl.toString();
   screenQr.replaceChildren();
   try{
@@ -1654,31 +1654,34 @@ function showMemberCard(m){
  $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
-  const n=new URLSearchParams(location.search).get('member');
-  if(!n||!sb)return;
+  const token=new URLSearchParams(location.search).get('member');
+  if(!token||!sb)return;
 
   hide('accueil');
   hide('contenus');
   hide('annonces');
   show('memberPublic');
 
-  const r=await sb.rpc('get_public_member_card',{
-    p_member_number:n
-  });
+  const box=$('publicMemberBox');
+  box.innerHTML='<p>Vérification de la carte et chargement des cotisations…</p>';
+  const r=await sb.rpc('get_public_member_card_by_token',{p_token:token});
 
   if(r.error){
-    $('publicMemberBox').innerHTML='<p class="verify-no">Erreur de vérification de la carte.</p>';
+    box.innerHTML='<p class="verify-no">Impossible de vérifier cette carte pour le moment. Réessayez avec une connexion Internet stable.</p>';
+    console.error('Vérification publique de la carte impossible:',r.error);
     return;
   }
 
-  const m=Array.isArray(r.data)?r.data[0]:r.data;
-
+  const payload=r.data;
+  const m=payload?.member;
   if(!m){
-    $('publicMemberBox').innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';
+    box.innerHTML='<p class="verify-no">Carte introuvable ou membre inactif.</p>';
     return;
   }
 
-  $('publicMemberBox').innerHTML=`
+  const contributions=Array.isArray(payload.contributions)?payload.contributions:[];
+  const rows=contributions.map(c=>`<tr><td>${esc(c.month||'—')}</td><td>${esc(c.category||'Cotisation')}</td><td>${esc(formatMoney(c.amount))}</td><td>${esc(c.date||'—')}</td></tr>`).join('');
+  box.innerHTML=`
     <div class="verify-organization"><strong>DAHIRA JAZBUL QULOUB</strong><span>CELLULE DAKAR</span></div>
     <img src="${esc(m.photo_url||'logo.jpeg')}" alt="Photo">
     <h3>${esc(m.first_name)} ${esc(m.last_name)}</h3>
@@ -1688,6 +1691,10 @@ async function handlePublicMember(){
     <p><b>Mission :</b> ${esc(m.commission_description||'—')}</p>
     <p><b>Adhésion :</b> ${esc(m.membership_date||'—')}</p>
     <p class="verify-ok">✓ Carte valide — membre actif</p>
+    <h3>Historique des cotisations</h3>
+    <p><b>Total encaissé :</b> ${esc(formatMoney(payload.total_paid||0))}</p>
+    <div class="table-wrap"><table><thead><tr><th>Mois</th><th>Catégorie</th><th>Montant</th><th>Date</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Aucune cotisation encaissée.</td></tr>'}</tbody></table></div>
+    <p class="verify-note">Seules les cotisations confirmées et encaissées sont affichées.</p>
   `;
 }
 
@@ -1717,7 +1724,7 @@ function memberCardPrintMarkup(m){
 
  // Le QR est déjà présent dans le modèle de carte ; on réutilise ce même élément pour le PDF.
  // Les droits restent déterminés par le compte Supabase connecté après authentification.
- const accessUrl=new URL('https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/?espace=1');
+ const accessUrl=new URL('?member='+encodeURIComponent(m.public_access_token||''),'https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/');
  const accessQr=card.querySelector('.qrcode[data-access-url]')||card.querySelector('.qrcode');
  if(accessQr){
   accessQr.dataset.accessUrl=accessUrl.toString();
@@ -2024,7 +2031,7 @@ async function printAllMemberCards(cardsPerPage=9,buttonId='printAllMemberCardsB
  if(!isAdmin||!sb)return;
  const btn=$(buttonId);const originalLabel=cardsPerPage===1?'🖨️ Une carte par page':'🖨️ Imprimer toutes les cartes';if(btn){btn.disabled=true;btn.textContent='Préparation des cartes…';}
  try{
-  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id,function_title,mission').eq('status','active').order('member_number',{ascending:true});
+  const mr=await sb.from('members').select('id,member_number,first_name,last_name,phone,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token').eq('status','active').order('member_number',{ascending:true});
   if(mr.error)throw mr.error;
   const members=mr.data||[],ids=[...new Set(members.map(m=>m.commission_id).filter(Boolean))];
   let commissions=[];
@@ -2068,7 +2075,7 @@ function cancelEditMember(){
 }
 async function editMember(id){
  if(!sb||!isAdmin)return;
- const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission').eq('id',id).single();
+ const r=await sb.from('members').select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token').eq('id',id).single();
  if(r.error){msg('memberMessage',r.error.message);return}
  startEditMember(r.data);
 }
@@ -3154,7 +3161,7 @@ document.addEventListener('click', async function(e) {
     case 'delete-member': deleteMemberPermanently(id); break;
     case 'show-member-card': {
       const r = await sb.from('members')
-        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission')
+        .select('id,member_number,first_name,last_name,phone,email,status,membership_date,photo_url,commission_id,function_title,mission,public_access_token')
         .eq('id', id).maybeSingle();
       if (r.error || !r.data) { alert("Membre introuvable."); return; }
       if(r.data.commission_id){
