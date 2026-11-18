@@ -1640,7 +1640,20 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');
+ const screenQr=$('cardAccessQr');
+ if(screenQr){
+  const accessUrl=new URL('./',window.location.href);
+  accessUrl.search='';accessUrl.hash='';
+  accessUrl.searchParams.set('espace','1');
+  screenQr.dataset.accessUrl=accessUrl.toString();
+  screenQr.replaceChildren();
+  try{
+   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:160,height:160,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+   else screenQr.textContent='QR indisponible';
+  }catch(error){screenQr.textContent='QR indisponible';console.error('Génération du QR de la carte impossible:',error);}
+ }
+ $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1704,18 +1717,16 @@ function memberCardPrintMarkup(m){
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
 
- // QR de connexion : il ouvre uniquement l'entrée sécurisée du portail.
- // Les droits et les données affichées restent déterminés par le compte Supabase connecté.
+ // Le QR est déjà présent dans le modèle de carte ; on réutilise ce même élément pour le PDF.
+ // Les droits restent déterminés par le compte Supabase connecté après authentification.
  const accessUrl=new URL('./',window.location.href);
  accessUrl.search='';accessUrl.hash='';
  accessUrl.searchParams.set('espace','1');
- const accessQr=document.createElement('div');
- accessQr.className='qrcode';
- accessQr.setAttribute('data-access-url',accessUrl.toString());
- accessQr.setAttribute('aria-label','QR code d’accès sécurisé à l’espace du Dahira');
- // Placer le QR avant les informations, dans le calque de la carte.
- const cardInfo=card.querySelector('.card-info');
- if(cardInfo)card.insertBefore(accessQr,cardInfo);else card.appendChild(accessQr);
+ const accessQr=card.querySelector('.qrcode[data-access-url]')||card.querySelector('.qrcode');
+ if(accessQr){
+  accessQr.dataset.accessUrl=accessUrl.toString();
+  accessQr.setAttribute('aria-label','QR code d’accès sécurisé à l’espace du Dahira');
+ }
 
  return card.outerHTML;
 }
@@ -1922,7 +1933,7 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 @media print{@page{size:73mm 105mm;margin:0}html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important;margin:0!important;padding:0!important}.print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;min-height:105mm!important;max-height:105mm!important;margin:0!important;break-after:page!important;page-break-after:always!important}#memberCard .print-sheet .member-card{width:73mm!important;height:105mm!important;min-width:73mm!important;min-height:105mm!important;max-width:73mm!important;max-height:105mm!important;transform:none!important}}
 /* QR d’accès : position et dimensions prioritaires dans chaque carte 73 × 105 mm. */
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
- position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
  max-width:44px!important;max-height:44px!important;margin:0!important;padding:2px!important;
