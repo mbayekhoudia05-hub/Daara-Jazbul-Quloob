@@ -1649,7 +1649,7 @@ function showMemberCard(m){
   screenQr.dataset.accessUrl=accessUrl.toString();
   screenQr.replaceChildren();
   try{
-   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:160,height:160,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:256,height:256,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
    else screenQr.textContent='QR indisponible';
   }catch(error){screenQr.textContent='QR indisponible';console.error('Génération du QR de la carte impossible:',error);}
  }
