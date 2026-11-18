@@ -1528,7 +1528,7 @@ function printContributionReceipt(x){
 }
 
 /* QR personnel : dimensions finales demandées, 46 × 46 px, sur chaque carte imprimée. */
-#memberCard .print-sheet .member-card .qrcode[data-access-url]{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;margin:0 0 0 -18px!important;padding:2px!important;overflow:hidden!important;transform:none!important;z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
+#memberCard .print-sheet .member-card .qrcode[data-access-url]{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;margin:0 0 0 -23px!important;padding:2px!important;overflow:hidden!important;transform:none!important;z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
 #memberCard .print-sheet .member-card .qrcode[data-access-url] img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;image-rendering:pixelated!important}
 #memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{display:none!important}
 </style></head><body><div class="receipt">
@@ -1674,7 +1674,7 @@ function showMemberCard(m){
    qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
    screenQr.appendChild(qrImage);
    screenQr.setAttribute('data-access-url','true');
-   screenQr.style.cssText='position:absolute;left:50%;bottom:11%;box-sizing:border-box;width:36px;height:36px;min-width:36px;min-height:36px;max-width:36px;max-height:36px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10';
+   screenQr.style.cssText='position:absolute;left:50%;bottom:11%;box-sizing:border-box;width:46px;height:46px;min-width:46px;min-height:46px;max-width:46px;max-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10';
   }
  }
  $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
@@ -1792,7 +1792,7 @@ function memberCardPrintMarkup(m){
   qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
   qrNode.appendChild(qrImage);
   qrNode.setAttribute('data-access-url','true');
-  qrNode.style.cssText='position:absolute;left:50%;bottom:11%;box-sizing:border-box;width:36px;height:36px;min-width:36px;min-height:36px;max-width:36px;max-height:36px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:999';
+  qrNode.style.cssText='position:absolute;left:50%;bottom:11%;box-sizing:border-box;width:46px;height:46px;min-width:46px;min-height:46px;max-width:46px;max-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:999';
  }else if(qrNode){qrNode.remove();}
 
  return card.outerHTML;
