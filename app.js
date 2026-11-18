@@ -1643,9 +1643,7 @@ function showMemberCard(m){
  show('memberCard');
  const screenQr=$('cardAccessQr');
  if(screenQr){
-  const accessUrl=new URL('./',window.location.href);
-  accessUrl.search='';accessUrl.hash='';
-  accessUrl.searchParams.set('espace','1');
+  const accessUrl=new URL('https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/?espace=1');
   screenQr.dataset.accessUrl=accessUrl.toString();
   screenQr.replaceChildren();
   try{
@@ -1719,9 +1717,7 @@ function memberCardPrintMarkup(m){
 
  // Le QR est déjà présent dans le modèle de carte ; on réutilise ce même élément pour le PDF.
  // Les droits restent déterminés par le compte Supabase connecté après authentification.
- const accessUrl=new URL('./',window.location.href);
- accessUrl.search='';accessUrl.hash='';
- accessUrl.searchParams.set('espace','1');
+ const accessUrl=new URL('https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/?espace=1');
  const accessQr=card.querySelector('.qrcode[data-access-url]')||card.querySelector('.qrcode');
  if(accessQr){
   accessQr.dataset.accessUrl=accessUrl.toString();
@@ -1938,8 +1934,8 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:10%!important;
  display:block!important;box-sizing:border-box!important;
- width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
- max-width:56px!important;max-height:56px!important;margin-left:-28px!important;margin-top:0!important;
+ width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+ max-width:46px!important;max-height:46px!important;margin-left:-23px!important;margin-top:0!important;
  padding:4px!important;transform:none!important;overflow:visible!important;
  z-index:999!important;background:#fff!important;border:1.5px solid #075b35!important;border-radius:2px!important;
 }
