@@ -1526,20 +1526,6 @@ function printContributionReceipt(x){
   box-shadow:none!important;
   transform:none!important;
 }
-/* QR d’accès : position et dimensions prioritaires dans chaque carte 73 × 105 mm. */
-#memberCard .print-sheet .member-card .qrcode[data-access-url]{
- position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
- display:flex!important;align-items:center!important;justify-content:center!important;
- width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
- max-width:44px!important;max-height:44px!important;margin:0!important;padding:2px!important;
- transform:translateX(-50%)!important;box-sizing:border-box!important;overflow:hidden!important;
- z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important;
-}
-#memberCard .print-sheet .member-card .qrcode[data-access-url] img,
-#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{
- display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
- object-fit:contain!important;image-rendering:pixelated!important;
-}
 </style></head><body><div class="receipt">
   <h1>Daara Jazbul Qulub</h1><div class="sub">Reçu de cotisation</div>
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
@@ -1934,6 +1920,20 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 @page member-card{size:73mm 105mm;margin:0}
 .print-sheet,.print-sheet.single-card-sheet{page:member-card}
 @media print{@page{size:73mm 105mm;margin:0}html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important;margin:0!important;padding:0!important}.print-sheet,.print-sheet.single-card-sheet{width:73mm!important;height:105mm!important;min-height:105mm!important;max-height:105mm!important;margin:0!important;break-after:page!important;page-break-after:always!important}#memberCard .print-sheet .member-card{width:73mm!important;height:105mm!important;min-width:73mm!important;min-height:105mm!important;max-width:73mm!important;max-height:105mm!important;transform:none!important}}
+/* QR d’accès : position et dimensions prioritaires dans chaque carte 73 × 105 mm. */
+#memberCard .print-sheet .member-card .qrcode[data-access-url]{
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+ max-width:44px!important;max-height:44px!important;margin:0!important;padding:2px!important;
+ transform:translateX(-50%)!important;box-sizing:border-box!important;overflow:hidden!important;
+ z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important;
+}
+#memberCard .print-sheet .member-card .qrcode[data-access-url] img,
+#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{
+ display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ object-fit:contain!important;image-rendering:pixelated!important;
+}
 </style></head><body>
 <div class="pdf-toolbar" style="position:sticky;top:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;background:#075b35;color:#fff;font:14px Arial,sans-serif">
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
