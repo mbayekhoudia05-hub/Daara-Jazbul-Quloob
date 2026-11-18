@@ -2019,8 +2019,8 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
  display:block!important;box-sizing:border-box!important;
- width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
- max-width:46px!important;max-height:46px!important;margin-left:-23px!important;margin-top:0!important;
+ width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
+ max-width:56px!important;max-height:56px!important;margin-left:-28px!important;margin-top:0!important;
  padding:4px!important;transform:none!important;overflow:visible!important;
  z-index:999!important;background:#fff!important;border:1.5px solid #075b35!important;border-radius:2px!important;
 }
@@ -2028,9 +2028,9 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:11%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
- box-sizing:border-box!important;width:46px!important;height:46px!important;
- min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
- margin:0 0 0 -23px!important;padding:0px!important;
+ box-sizing:border-box!important;width:56px!important;height:56px!important;
+ min-width:56px!important;min-height:56px!important;max-width:56px!important;max-height:56px!important;
+ margin:0 0 0 -28px!important;padding:0px!important;
  transform:none!important;z-index:999!important;background:#fff!important;
  border:1px solid #075b35!important;border-radius:2px!important;
 }
