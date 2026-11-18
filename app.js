@@ -1642,15 +1642,7 @@ function showMemberCard(m){
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
  show('memberCard');
  const screenQr=$('cardAccessQr');
- if(screenQr){
-  const accessUrl=new URL('?member='+encodeURIComponent(m.public_access_token||''),'https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/');
-  screenQr.dataset.accessUrl=accessUrl.toString();
-  screenQr.replaceChildren();
-  try{
-   if(window.QRCode)new QRCode(screenQr,{text:accessUrl.toString(),width:256,height:256,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-   else screenQr.textContent='QR indisponible';
-  }catch(error){screenQr.textContent='QR indisponible';console.error('Génération du QR de la carte impossible:',error);}
- }
+ if(screenQr)screenQr.remove();
  $('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
@@ -1722,14 +1714,8 @@ function memberCardPrintMarkup(m){
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
 
- // Le QR est déjà présent dans le modèle de carte ; on réutilise ce même élément pour le PDF.
- // Les droits restent déterminés par le compte Supabase connecté après authentification.
- const accessUrl=new URL('?member='+encodeURIComponent(m.public_access_token||''),'https://mbayekhoudia05-hub.github.io/Daara-Jazbul-Quloob/');
- const accessQr=card.querySelector('.qrcode[data-access-url]')||card.querySelector('.qrcode');
- if(accessQr){
-  accessQr.dataset.accessUrl=accessUrl.toString();
-  accessQr.setAttribute('aria-label','QR code d’accès sécurisé à l’espace du Dahira');
- }
+ // Ancien QR retiré : la prochaine version sera reconstruite séparément.
+ card.querySelectorAll('.qrcode, #cardAccessQr').forEach(node=>node.remove());
 
  return card.outerHTML;
 }
@@ -1744,7 +1730,7 @@ function openMemberCardsPrint(members,title,cardsPerPage=9){
    const cards=Array.from({length:Math.ceil(cardMarkup.length/pageSize)},(_,page)=>'<section class="'+sheetClass+'">'+cardMarkup.slice(page*pageSize,(page+1)*pageSize).join('')+'</section>').join('');
   // Impression autonome : ne pas charger style.css, qui impose des formats A4 aux autres impressions.
   w.document.open();
-  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script><style>
 @page{size:73mm 105mm;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;color:#17351f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
@@ -1967,36 +1953,9 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
 <span id="pdfStatus" role="status">Chaque carte sera une page PDF au format exact.</span></div>
 <main id="memberCard">${cards}</main><script>
-const qrReady=new Promise(resolve=>{
- const renderAccessQrs=()=>{
-  const elements=[...document.querySelectorAll('.print-sheet .qrcode[data-access-url]')];
-  Promise.all(elements.map(element=>new Promise(done=>{
-   try{
-    element.replaceChildren();
-    new QRCode(element,{text:element.dataset.accessUrl,width:1024,height:1024,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.L});
-    const qrCanvas=element.querySelector('canvas');
-    if(!qrCanvas||qrCanvas.width===0||qrCanvas.height===0)throw new Error('Le QR n’a pas été dessiné.');
-    const paddedCanvas=document.createElement('canvas');
-    paddedCanvas.width=1280;paddedCanvas.height=1280;
-    const paddedContext=paddedCanvas.getContext('2d');
-    paddedContext.fillStyle='#ffffff';paddedContext.fillRect(0,0,1280,1280);
-    paddedContext.imageSmoothingEnabled=false;
-    paddedContext.drawImage(qrCanvas,128,128,1024,1024);
-    const qrImage=new Image();
-    qrImage.alt='QR code d’accès sécurisé';qrImage.width=1280;qrImage.height=1280;
-    qrImage.onload=()=>{element.replaceChildren(qrImage);done();};
-    qrImage.onerror=()=>{element.textContent='QR indisponible';done();};
-    qrImage.src=paddedCanvas.toDataURL('image/png');
-   }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);done();}
-  }))).then(resolve);
- };
- if(window.QRCode)renderAccessQrs();
- else window.addEventListener('load',renderAccessQrs,{once:true});
-});
 document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
  const button=document.getElementById('downloadCardsPdf'),status=document.getElementById('pdfStatus');
  button.disabled=true;status.textContent='Préparation du PDF…';
-  await qrReady;
  try{
   if(!window.html2canvas||!window.jspdf?.jsPDF)throw new Error('La bibliothèque PDF ne s’est pas chargée. Vérifie la connexion Internet puis réessaie.');
   const cards=[...document.querySelectorAll('.print-sheet .member-card')];
