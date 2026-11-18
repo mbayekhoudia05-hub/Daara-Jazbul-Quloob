@@ -1526,6 +1526,11 @@ function printContributionReceipt(x){
   box-shadow:none!important;
   transform:none!important;
 }
+
+/* QR personnel : dimensions finales demandées, 46 × 46 px, sur chaque carte imprimée. */
+#memberCard .print-sheet .member-card .qrcode[data-access-url]{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;margin:0 0 0 -23px!important;padding:2px!important;overflow:hidden!important;transform:none!important;z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important}
+#memberCard .print-sheet .member-card .qrcode[data-access-url] img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;image-rendering:pixelated!important}
+#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{display:none!important}
 </style></head><body><div class="receipt">
   <h1>Daara Jazbul Qulub</h1><div class="sub">Reçu de cotisation</div>
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
@@ -1787,6 +1792,7 @@ function memberCardPrintMarkup(m){
   qrImage.style.cssText='display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated';
   qrNode.appendChild(qrImage);
   qrNode.setAttribute('data-access-url','true');
+  qrNode.style.cssText='position:absolute;left:50%;bottom:8%;width:46px;height:46px;min-width:46px;min-height:46px;padding:2px;background:#fff;border:1px solid #075b35;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:999';
  }else if(qrNode){qrNode.remove();}
 
  return card.outerHTML;
