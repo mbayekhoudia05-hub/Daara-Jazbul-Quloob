@@ -1631,11 +1631,18 @@ async function showMyMemberCard(){
  showMemberCard({...member,commissions:commission,isGeneralDieuwrigne:!!leadership,...(leadership||{})});
 }
 function createMemberQrImage(container,text,size=104){
- if(typeof qrcode!=='function')throw new Error('Le nouveau générateur QR n’est pas disponible.');
- const generator=qrcode(0,'M');
- generator.addData(String(text),'Byte');
- generator.make();
- const svg=generator.createSvgTag({cellSize:4,margin:0,scalable:true});
+ if(typeof QRCode!=='function')throw new Error('Le générateur QR est indisponible.');
+ const source=document.createElement('div');
+ new QRCode(source,{
+  text:String(text),
+  width:size,
+  height:size,
+  colorDark:'#000000',
+  colorLight:'#ffffff',
+  correctLevel:QRCode.CorrectLevel.M
+ });
+ const canvas=source.querySelector('canvas');
+ if(!canvas)throw new Error('La génération de l’image QR a échoué.');
  const image=document.createElement('img');
  image.alt='QR code de vérification du membre';
  image.width=size;
@@ -1644,7 +1651,7 @@ function createMemberQrImage(container,text,size=104){
  image.style.height=size+'px';
  image.style.display='block';
  image.style.objectFit='contain';
- image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+ image.src=canvas.toDataURL('image/png');
  container.replaceChildren(image);
  return image;
 }
