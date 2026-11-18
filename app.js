@@ -1630,31 +1630,6 @@ async function showMyMemberCard(){
  const leadership=await getGeneralLeadershipForMember(member.id).catch(error=>{console.warn('Lecture direction générale impossible',error);return false;});
  showMemberCard({...member,commissions:commission,isGeneralDieuwrigne:!!leadership,...(leadership||{})});
 }
-function createMemberQrImage(container,text,size=104){
- if(typeof QRCode!=='function')throw new Error('Le générateur QR est indisponible.');
- const source=document.createElement('div');
- // Reprendre les paramètres du premier QR : vert foncé, fond blanc et correction par défaut.
- new QRCode(source,{
-  text:String(text),
-  width:size,
-  height:size,
-  colorDark:'#075c2d',
-  colorLight:'#ffffff'
- });
- const canvas=source.querySelector('canvas');
- if(!canvas)throw new Error('La génération de l’image QR a échoué.');
- const image=document.createElement('img');
- image.alt='QR code de vérification du membre';
- image.width=size;
- image.height=size;
- image.style.width=size+'px';
- image.style.height=size+'px';
- image.style.display='block';
- image.style.objectFit='contain';
- image.src=canvas.toDataURL('image/png');
- container.replaceChildren(image);
- return image;
-}
 function formatMemberCardDate(value){if(!value)return '—';const s=String(value).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[1]} | ${m[2]} | ${m[3]}`:s;}
 function showMemberCard(m){
  currentCardMember={...m};
@@ -1662,7 +1637,7 @@ function showMemberCard(m){
  const defaultRole=m.isGeneralDieuwrigne?'Dieuwrigne Général du Dahira':(m.commissions?.responsible_member_id===m.id?'Dieuwrigne de commission':(m.commissions?.successor_member_id===m.id?'Adjoint Dieuwrigne':(m.commission_id?'Membre de la commission':'Membre')));
  const role=(m.isGeneralDieuwrigne?(m.title||'Dieuwrigne Général du Dahira'):(m.function_title||'').trim()||defaultRole);
  const mission=(m.isGeneralDieuwrigne?(m.leadershipMission||m.mission||GENERAL_DIEUWRIGNE_MISSION):((m.mission||'').trim()||(m.commissions?.description||'Participation aux activités et aux travaux de sa commission.')));
- show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';$('qrcode').innerHTML='';const url=location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number);createMemberQrImage($('qrcode'),url,104);document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
+ show('memberCard');$('cardIntro').textContent='Carte de '+m.first_name+' '+m.last_name;$('cardName').textContent=(m.first_name+' '+m.last_name).trim();$('cardNumber').textContent=m.member_number;$('cardPhone').textContent=m.phone?formatPhoneDisplay(m.phone):'Non renseigné';$('cardCommission').textContent=commission;$('cardCommission').closest('p').style.display=m.isGeneralDieuwrigne?'none':'';$('cardCommissionRole').textContent=role;$('cardCommissionDescription').textContent=mission;$('cardCommissionDescription').style.fontSize=m.isGeneralDieuwrigne?'8px':'';$('cardCommissionDescription').style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';$('cardMissionLabel').textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';$('cardDate').textContent=formatMemberCardDate(m.membership_date);$('cardStatus').textContent=m.status==='active'?'Actif':'Inactif';$('cardPhoto').src=m.photo_url||'';$('cardPhoto').style.display=m.photo_url?'block':'none';document.getElementById('memberCard').scrollIntoView({behavior:'smooth'});
 }
 async function handlePublicMember(){
   const n=new URLSearchParams(location.search).get('member');
@@ -1725,9 +1700,6 @@ function memberCardPrintMarkup(m){
  if(missionText){missionText.style.fontSize=m.isGeneralDieuwrigne?'8px':'';missionText.style.lineHeight=m.isGeneralDieuwrigne?'1.15':'';}
  const missionLabel=card.querySelector('#cardMissionLabel');
  if(missionLabel)missionLabel.textContent=m.isGeneralDieuwrigne?'Mission du Dieuwrigne Général :':'Mission :';
- const qr=card.querySelector('.qrcode');
- qr.innerHTML='';
- createMemberQrImage(qr,location.origin+location.pathname+'?member='+encodeURIComponent(m.member_number),104);
 
  return card.outerHTML;
 }
@@ -1949,66 +1921,26 @@ document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
    if(!img.complete)await new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});});
    if(img.decode)try{await img.decode();}catch{}
   }));
-  // S'assurer que le QR est entièrement décodé avant la capture haute résolution.
-  for(const qr of document.querySelectorAll('.qrcode')){
-   const qrImage=qr.querySelector('img');
-   if(qrImage){
-    qrImage.style.setProperty('display','block','important');
-    qrImage.style.setProperty('width','100%','important');
-    qrImage.style.setProperty('height','100%','important');
-    qrImage.style.setProperty('max-width','none','important');
-    qrImage.style.setProperty('max-height','none','important');
-    qrImage.style.setProperty('object-fit','fill','important');
-    if(qrImage.decode)try{await qrImage.decode();}catch{}
-   }
-  }
   const PDF=window.jspdf.jsPDF;
   const pdf=new PDF({orientation:'portrait',unit:'mm',format:[73,105],compress:true,precision:16});
   for(let index=0;index<cards.length;index++){
    status.textContent='Création du PDF : carte '+(index+1)+' sur '+cards.length+'…';
-   // Capturer la carte complète avec le QR d'origine visible, comme dans la première version.
-   // Le QR est généré en 104 × 104 px puis affiché dans son emplacement CSS existant.
    const card=cards[index];
-   const qrBox=card.querySelector('.qrcode');
-   const qrImage=qrBox?.querySelector('img');
-   if(!qrImage||!qrImage.complete||!qrImage.naturalWidth||!qrImage.naturalHeight||!qrImage.src.startsWith('data:image/png')){
-    throw new Error('Le QR code PNG original n’est pas prêt pour la carte '+(index+1)+'.');
-   }
    if(index>0)pdf.addPage([73,105],'portrait');
-   // Capturer la carte sans demander à html2canvas de rasteriser le QR.
-   // Le QR PNG est ensuite posé directement dans le PDF à sa position exacte.
-   const cardRect=card.getBoundingClientRect();
-   const qrRect=qrBox.getBoundingClientRect();
-   if(!cardRect.width||!cardRect.height||!qrRect.width||!qrRect.height){
-    throw new Error('Dimensions de carte/QR invalides pour la carte '+(index+1)+'.');
-   }
-   const previousVisibility=qrImage.style.visibility;
-   qrImage.style.visibility='hidden';
-   let canvas;
-   try{
-    canvas=await window.html2canvas(card,{
-     scale:8,
-     windowWidth:card.scrollWidth,
-     windowHeight:card.scrollHeight,
-     useCORS:true,
-     allowTaint:false,
-     backgroundColor:'#ffffff',
-     logging:false,
-     width:card.offsetWidth,
-     height:card.offsetHeight,
-     foreignObjectRendering:false,
-     removeContainer:true
-    });
-   }finally{
-    qrImage.style.visibility=previousVisibility;
-   }
+   const canvas=await window.html2canvas(card,{
+    scale:8,
+    windowWidth:card.scrollWidth,
+    windowHeight:card.scrollHeight,
+    useCORS:true,
+    allowTaint:false,
+    backgroundColor:'#ffffff',
+    logging:false,
+    width:card.offsetWidth,
+    height:card.offsetHeight,
+    foreignObjectRendering:false,
+    removeContainer:true
+   });
    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,73,105,undefined,'SLOW');
-   const qrX=(qrRect.left-cardRect.left)/cardRect.width*73;
-   const qrY=(qrRect.top-cardRect.top)/cardRect.height*105;
-   const qrW=qrRect.width/cardRect.width*73;
-   const qrH=qrRect.height/cardRect.height*105;
-   // PNG QR natif, non recapturé : aucune découpe/couche grise par html2canvas.
-   pdf.addImage(qrImage.src,'PNG',qrX,qrY,qrW,qrH,undefined,'NONE');
   }
   const safeName=(document.title||'cartes-membres').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
   pdf.save((safeName||'cartes-membres')+'-73x105mm.pdf');
