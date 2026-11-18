@@ -1526,6 +1526,20 @@ function printContributionReceipt(x){
   box-shadow:none!important;
   transform:none!important;
 }
+/* QR d’accès : position et dimensions prioritaires dans chaque carte 73 × 105 mm. */
+#memberCard .print-sheet .member-card .qrcode[data-access-url]{
+ position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+ max-width:44px!important;max-height:44px!important;margin:0!important;padding:2px!important;
+ transform:translateX(-50%)!important;box-sizing:border-box!important;overflow:hidden!important;
+ z-index:999!important;background:#fff!important;border:1px solid #075b35!important;border-radius:2px!important;
+}
+#memberCard .print-sheet .member-card .qrcode[data-access-url] img,
+#memberCard .print-sheet .member-card .qrcode[data-access-url] canvas{
+ display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ object-fit:contain!important;image-rendering:pixelated!important;
+}
 </style></head><body><div class="receipt">
   <h1>Daara Jazbul Qulub</h1><div class="sub">Reçu de cotisation</div>
   <div class="line"><b>N° membre</b><span>${esc(x.members?.member_number||'—')}</span></div>
@@ -1713,7 +1727,9 @@ function memberCardPrintMarkup(m){
  accessQr.className='qrcode';
  accessQr.setAttribute('data-access-url',accessUrl.toString());
  accessQr.setAttribute('aria-label','QR code d’accès sécurisé à l’espace du Dahira');
- card.appendChild(accessQr);
+ // Placer le QR avant les informations, dans le calque de la carte.
+ const cardInfo=card.querySelector('.card-info');
+ if(cardInfo)card.insertBefore(accessQr,cardInfo);else card.appendChild(accessQr);
 
  return card.outerHTML;
 }
@@ -1923,14 +1939,23 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 <button id="downloadCardsPdf" type="button" style="border:0;border-radius:6px;padding:11px 16px;background:#fff;color:#075b35;font-weight:700">Télécharger le PDF 73 × 105 mm</button>
 <span id="pdfStatus" role="status">Chaque carte sera une page PDF au format exact.</span></div>
 <main id="memberCard">${cards}</main><script>
-document.querySelectorAll('.qrcode[data-access-url]').forEach(element=>{
- try{
-  new QRCode(element,{text:element.dataset.accessUrl,width:104,height:104,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
- }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);}
+const qrReady=new Promise(resolve=>{
+ const renderAccessQrs=()=>{
+  document.querySelectorAll('.print-sheet .qrcode[data-access-url]').forEach(element=>{
+   try{
+    element.replaceChildren();
+    new QRCode(element,{text:element.dataset.accessUrl,width:160,height:160,colorDark:'#075c2d',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+   }catch(error){element.textContent='QR indisponible';console.error('Génération du QR d’accès impossible:',error);}
+  });
+  resolve();
+ };
+ if(window.QRCode)renderAccessQrs();
+ else window.addEventListener('load',renderAccessQrs,{once:true});
 });
 document.getElementById('downloadCardsPdf').addEventListener('click',async()=>{
  const button=document.getElementById('downloadCardsPdf'),status=document.getElementById('pdfStatus');
  button.disabled=true;status.textContent='Préparation du PDF…';
+  await qrReady;
  try{
   if(!window.html2canvas||!window.jspdf?.jsPDF)throw new Error('La bibliothèque PDF ne s’est pas chargée. Vérifie la connexion Internet puis réessaie.');
   const cards=[...document.querySelectorAll('.print-sheet .member-card')];
