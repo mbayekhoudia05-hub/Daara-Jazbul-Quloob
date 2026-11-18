@@ -2015,9 +2015,9 @@ html,body{width:73mm!important;min-width:73mm!important;max-width:73mm!important
 #memberCard .print-sheet .member-card .qrcode[data-access-url]{
  position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:8%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
- box-sizing:border-box!important;width:84px!important;height:84px!important;
- min-width:84px!important;min-height:84px!important;max-width:84px!important;max-height:84px!important;
- margin:0 0 0 -42px!important;padding:0!important;overflow:hidden!important;
+ box-sizing:border-box!important;width:46px!important;height:46px!important;
+ min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
+ margin:0 0 0 -23px!important;padding:2px!important;
  transform:none!important;z-index:999!important;background:#fff!important;
  border:1px solid #075b35!important;border-radius:2px!important;
 }
